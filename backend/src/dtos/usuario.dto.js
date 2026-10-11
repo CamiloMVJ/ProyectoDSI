@@ -26,12 +26,12 @@ email: Joi.string()
 
 password: Joi.string()
     .min(8)
-    .max(100)
+    .max(255)
     .required()
     .messages({
         'string.empty': 'La contraseña es obligatoria.',
         'string.min': 'La contraseña debe tener al menos 8 caracteres.',
-        'string.max': 'La contraseña no puede superar los 100 caracteres.',
+        'string.max': 'La contraseña no puede superar los 255 caracteres.',
         'any.required': 'La contraseña es obligatoria.'
     }),
 

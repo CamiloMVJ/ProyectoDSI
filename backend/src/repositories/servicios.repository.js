@@ -1,4 +1,4 @@
-import pool from '../db/db.js'
+import { pool } from '../db/db.js'
 
 // Columnas permitidas del script SQL. Los valores se pasan como parámetros.
 const fields = ["id_local", "nombre_servicio", "descripcion", "precio", "moneda", "tipo_cobro", "incluye", "duracion_estimada", "esta_disponible"]
@@ -45,7 +45,7 @@ export async function create(data, client = pool) {
 
   // Omitir campos conserva los DEFAULT definidos en PostgreSQL.
   if (entries.length === 0) throw new TypeError('Debés enviar al menos un campo para crear un servicio')
-  
+
   const sql = `INSERT INTO public.servicios (${columns}) VALUES (${placeholders}) RETURNING *`
 
   const { rows } = await client.query(sql, values)
