@@ -32,8 +32,10 @@ export async function create(data) {
   data = allowedData(data, fields)
 
   return execute(async () => {
+    // console.log("Data preparada: ", await prepare(data))
     const result = await repository.create(await prepare(data))
-    return publicUser(...result, result.id_usuario)
+    
+    return publicUser(result)
   })
 }
 

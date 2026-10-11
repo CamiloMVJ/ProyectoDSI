@@ -42,12 +42,12 @@ export async function create(data, client = pool) {
   const columns = entries.map(([field]) => field).join(', ')
   const placeholders = entries.map((_, index) => `$${index + 1}`).join(', ')
   const values = entries.map(([, value]) => value)
-
+  // console.log('Entries:', entries)
   // Omitir campos conserva los DEFAULT definidos en PostgreSQL.
   const sql = entries.length
     ? `INSERT INTO public.usuarios (${columns}) VALUES (${placeholders}) RETURNING id_usuario, nombre_completo, email, telefono`
     : 'INSERT INTO public.usuarios DEFAULT VALUES RETURNING id_usuario, nombre_completo, email, telefono'
-
+  // console.log("Data: ", data)
   const { rows } = await client.query(sql, values)
 
   return rows[0]

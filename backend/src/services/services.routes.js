@@ -10,7 +10,7 @@ import { resenaSchema } from '../dtos/resena.dto.js'
 import { servicioSchema } from '../dtos/servicio.dto.js'
 import { usuarioSchema } from '../dtos/usuario.dto.js'
 import { menuSchema } from '../dtos/menus.dto.js'
-// import * as updates from '../dtos/update.dto.js'
+import * as updates from '../dtos/update.dto.js'
 import * as campanias_publicitarias from './campanias_publicitarias.service.js'
 import * as categorias from './categorias.service.js'
 import * as eventos_nacionales from './eventos_nacionales.service.js'
@@ -38,15 +38,15 @@ function register(path, service, createSchema, updateSchema) {
   })
 }
 
-register('/campanias_publicitarias', campanias_publicitarias, campaniaSchema, /*updates.updateCampaniaSchema*/)
-register('/categorias', categorias, categoriaSchema, /*updates.updateCategoriaSchema*/)
-register('/eventos_nacionales', eventos_nacionales, eventoSchema, /*updates.updateEventoSchema*/)
-register('/lugares_turisticos', lugares_turisticos, lugarSchema, /*updates.updateLugarSchema*/)
-register('/menus', menus, menuSchema, /*updates.updateMenuSchema*/)
-register('/pagos_publicidad', pagos_publicidad, pagoSchema, /*updates.updatePagoSchema*/)
-register('/resenas', resenas, resenaSchema, /*updates.updateResenaSchema*/)
-register('/servicios', servicios, servicioSchema, /*updates.updateServicioSchema*/)
-register('/usuarios', usuarios, usuarioSchema, /*updates.updateUsuarioSchema*/)
-register('/items_menu', items_menu, itemMenuSchema, /*updates.updateItemMenuSchema*/)
+register('/campanias_publicitarias', campanias_publicitarias, campaniaSchema, updates.updateCampaniaSchema)
+register('/categorias', categorias, categoriaSchema, updates.updateCategoriaSchema)
+register('/eventos_nacionales', eventos_nacionales, eventoSchema, updates.updateEventoSchema)
+register('/lugares_turisticos', lugares_turisticos, lugarSchema, updates.updateLugarSchema)
+register('/menus', menus, menuSchema, updates.updateMenuSchema)
+register('/pagos_publicidad', pagos_publicidad, pagoSchema, updates.updatePagoSchema)
+register('/resenas', resenas, resenaSchema, updates.updateResenaSchema)
+register('/servicios', servicios, servicioSchema, updates.updateServicioSchema)
+register('/usuarios', usuarios, usuarioSchema, updates.updateUsuarioSchema)
+register('/items_menu', items_menu, itemMenuSchema, updates.updateItemMenuSchema)
 
 export default router
