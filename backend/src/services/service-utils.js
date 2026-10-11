@@ -47,7 +47,8 @@ export function checkDates(data) {
 }
 
 export function normalizeEvent(data) {
-  return { ...data,
+  return {
+    ...data,
     ...(data.hora_inicio === '' ? { hora_inicio: null } : {}),
     ...(data.hora_fin === '' ? { hora_fin: null } : {})
   }
@@ -80,24 +81,40 @@ export async function execute(operation) {
   }
 }
 
-export async function withLockedRecord(table, id, repository, label, operation) {
+// La operación recibe una única conexión para todas sus consultas.
+// Si falla ROLLBACK, se descarta esa conexión y se conserva el error original.
+export async function withTransaction(operation) {
   const client = await pool.connect()
   let started = false
+  let releaseError
+
   try {
     await client.query('BEGIN')
     started = true
-    if (!await lockOne(table, id, client)) throw new AppError(`${label} no existe`, 404)
-    const current = await repository.findOne(id, client)
-    if (!current) throw new AppError(`${label} no existe`, 404)
-    const result = await operation(current, client)
+    const result = await operation(client)
     await client.query('COMMIT')
     return result
   } catch (error) {
     if (started) {
-      try { await client.query('ROLLBACK') } catch { /* conservar el error original */ }
+      try {
+        await client.query('ROLLBACK')
+      } catch (rollbackError) {
+        releaseError = rollbackError
+      }
+    } else {
+      releaseError = error
     }
     throw error
   } finally {
-    client.release()
+    client.release(releaseError)
   }
+}
+
+export async function withLockedRecord(table, id, repository, label, operation) {
+  return withTransaction(async (client) => {
+    if (!await lockOne(table, id, client)) throw new AppError(`${label} no existe`, 404)
+    const current = await repository.findOne(id, client)
+    if (!current) throw new AppError(`${label} no existe`, 404)
+    return operation(current, client)
+  })
 }

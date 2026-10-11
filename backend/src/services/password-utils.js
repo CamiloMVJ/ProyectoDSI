@@ -2,6 +2,8 @@ import { randomBytes, scrypt, timingSafeEqual } from 'node:crypto'
 import { promisify } from 'node:util'
 import { AppError } from '../errors/app-error.js'
 
+//Almacenamiento de contraseñas mediante hashing con scrypt y salt aleatorio
+
 const derive = promisify(scrypt)
 const options = { N: 131072, r: 8, p: 1, maxmem: 256 * 1024 * 1024 }
 

@@ -15,17 +15,17 @@ export async function findOne(id, client = pool) {
     return rows[0] || null;
 }
 
-export async function create({ nombre, descripcion = null, icono_url = null, client = pool }) {
+export async function create({ nombre, descripcion = null, icono_url = null }, client = pool) {
     const { rows } = await client.query(
         `INSERT INTO categorias (nombre, descripcion, icono_url)
-		 VALUES ($1, $2)
+		 VALUES ($1, $2, $3)
 		 RETURNING *`,
         [nombre, descripcion, icono_url]
     )
     return rows[0]
 }
 
-export async function update(id, { nombre, descripcion = null, icono_url = null, client = pool }) {
+export async function update(id, { nombre, descripcion = null, icono_url = null }, client = pool) {
     const { rows } = await client.query(
         `UPDATE categorias
 		 SET nombre = $1, descripcion = $2, icono_url = $3

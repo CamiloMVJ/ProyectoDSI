@@ -1,4 +1,4 @@
-import pool from '../db/db.js'
+import { pool } from '../db/db.js'
 
 // Columnas permitidas del script SQL. Los valores se pasan como parámetros.
 const fields = ["id_dueno", "id_administrador", "fecha_solicitud", "documentos_adjuntos", "estado", "observaciones"]

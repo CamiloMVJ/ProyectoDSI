@@ -22,7 +22,7 @@ function getEntries(data) {
 
 export async function findAll(client = pool) {
   const { rows } = await client.query(
-    'SELECT * FROM public.usuarios ORDER BY id_usuario'
+    'SELECT id_usuario, nombre_completo, email, telefono FROM public.usuarios ORDER BY id_usuario'
   )
 
   return rows
@@ -30,7 +30,7 @@ export async function findAll(client = pool) {
 
 export async function findOne(id, client = pool) {
   const { rows } = await client.query(
-    'SELECT * FROM public.usuarios WHERE id_usuario = $1',
+    'SELECT id_usuario, nombre_completo, email, telefono FROM public.usuarios WHERE id_usuario = $1',
     [id]
   )
 
@@ -45,8 +45,8 @@ export async function create(data, client = pool) {
 
   // Omitir campos conserva los DEFAULT definidos en PostgreSQL.
   const sql = entries.length
-    ? `INSERT INTO public.usuarios (${columns}) VALUES (${placeholders}) RETURNING *`
-    : 'INSERT INTO public.usuarios DEFAULT VALUES RETURNING *'
+    ? `INSERT INTO public.usuarios (${columns}) VALUES (${placeholders}) RETURNING id_usuario, nombre_completo, email, telefono`
+    : 'INSERT INTO public.usuarios DEFAULT VALUES RETURNING id_usuario, nombre_completo, email, telefono'
 
   const { rows } = await client.query(sql, values)
 
@@ -68,7 +68,7 @@ export async function update(id, data, client = pool) {
   values.push(id)
 
   const { rows } = await client.query(
-    `UPDATE public.usuarios SET ${assignments} WHERE id_usuario = $${values.length} RETURNING *`,
+    `UPDATE public.usuarios SET ${assignments} WHERE id_usuario = $${values.length} RETURNING id_usuario, nombre_completo, email, telefono`,
     values
   )
 

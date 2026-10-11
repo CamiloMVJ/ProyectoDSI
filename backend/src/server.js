@@ -1,6 +1,6 @@
 import express from 'express'
 import cors from 'cors'
-// import servicesRoutes from './services/services.routes.js'
+import servicesRoutes from './services/services.routes.js'
 
 
 const app = express();
@@ -17,7 +17,7 @@ app.get('/api/health', (req, res) => {
   })
 })
 
-// app.use('/api', servicesRoutes)
+app.use('/api', servicesRoutes)
 
 app.listen(PORT, () => {
   console.log(`Servidor en http://localhost:${PORT}`)

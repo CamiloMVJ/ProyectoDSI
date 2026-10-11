@@ -13,9 +13,6 @@ async function prepare(data) {
   }
   return result
 }
-async function checkRules(data, client) {
-
-}
 
 export async function findAll() {
   return execute(async () => (await repository.findAll()).map(publicUser))
@@ -33,23 +30,19 @@ export async function findOne(id) {
 // Recibe datos ya validados por Joi (middleware validar).
 export async function create(data) {
   data = allowedData(data, fields)
-  
+
   return execute(async () => {
-    await checkRules(data)
     const result = await repository.create(await prepare(data))
-    return publicUser(result)
+    return publicUser(...result, result.id_usuario)
   })
 }
 
 export async function update(id, data) {
   id = parseId(id)
   data = allowedData(data, fields)
-  
+
   return execute(() => withLockedRecord(
     'usuarios', id, repository, 'El usuario', async (current, client) => {
-      // Conservar los campos omitidos y comprobar reglas con el estado final.
-      const merged = { ...pick(current, fields), ...data }
-      await checkRules(merged, client)
       const result = await repository.update(id, await prepare(data), client)
       if (!result) throw new AppError('El usuario no existe', 404)
       return publicUser(result)

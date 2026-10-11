@@ -1,4 +1,5 @@
-import Joi from 'joi';
+import Joi from 'joi'
+import { lugarSchema } from './lugar.dto.js'
 
 export const complejoTuristicoSchema = Joi.object({
     id_lugar: Joi.number()
@@ -40,3 +41,12 @@ export const complejoTuristicoSchema = Joi.object({
             'number.min': 'El costo de entrada no puede ser negativo.'
         })
 });
+
+// Crea el lugar y su tipo juntos. id_lugar lo genera PostgreSQL.
+// El schema original se conserva para asociar un lugar existente.
+export const createComplejoLugarSchema = lugarSchema.keys({
+  capacidad_locales: complejoTuristicoSchema.extract('capacidad_locales'),
+  cobro_entrada: complejoTuristicoSchema.extract('cobro_entrada'),
+  id_administrador: complejoTuristicoSchema.extract('id_administrador'),
+  costo_entrada: complejoTuristicoSchema.extract('costo_entrada')
+}).unknown(false).required()
