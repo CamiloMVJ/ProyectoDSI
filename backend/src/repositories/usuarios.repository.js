@@ -28,6 +28,11 @@ export async function findAll(client = pool) {
   return rows
 }
 
+export async function findByEmail(email, client = pool) {
+  const { rows } = await pool.query('SELECT * FROM usuarios WHERE email = $1', [email]);
+  return rows[0];
+}
+
 export async function findOne(id, client = pool) {
   const { rows } = await client.query(
     'SELECT id_usuario, nombre_completo, email, telefono FROM public.usuarios WHERE id_usuario = $1',

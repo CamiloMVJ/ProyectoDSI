@@ -10,6 +10,11 @@ export async function findOne(id, client = pool) {
   return rows[0] ?? null
 }
 
+export async function findByUserId (id , client = pool) {
+  const { rows } = await client.query('SELECT id_administrador, id_usuario, rol FROM public.administradores WHERE id_usuario = $1', [id])
+  return rows[0] ?? null
+}
+
 export async function create(data, client = pool) {
   const { rows } = await client.query(
     'INSERT INTO public.administradores (id_usuario, rol) VALUES ($1, $2) RETURNING id_administrador, id_usuario, rol',
