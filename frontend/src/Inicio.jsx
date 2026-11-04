@@ -10,7 +10,15 @@ import {
   Martini,
   Disc,
   Coffee,
-  Bus
+  Bus,
+  Star,
+  Heart,
+  MapPin,
+  Clock,
+  Calendar,
+  Sparkles,
+  ExternalLink,
+  Compass
 } from 'lucide-react';
 
 /* ============================================================================
@@ -38,48 +46,59 @@ export const HospedajeIcon = ({ className = 'w-11 h-11' }) => (
 
 /* ============================================================================
  * ARCHIVO: src/components/Navbar.jsx
- * Barra de navegación superior de SINATUR
+ * Barra de navegación superior con efecto Glassmorphism (fija al hacer scroll)
  * ============================================================================ */
 export const Navbar = ({ onLoginClick, onPublishClick, onLanguageToggle }) => {
   return (
-    <header className="w-full max-w-7xl mx-auto pt-6 pb-4 px-6 sm:px-10">
-      <nav className="flex flex-wrap items-center justify-between gap-4">
+    <header className="sticky top-0 z-50 w-full bg-white/85 backdrop-blur-md border-b border-gray-200/60 transition-all">
+      <nav className="max-w-7xl mx-auto py-4 px-6 sm:px-10 flex flex-wrap items-center justify-between gap-4">
         {/* Identidad / Logo */}
-        <a href="#inicio" className="flex flex-col items-center sm:items-start">
-          <span className="text-2xl sm:text-[26px] font-bold tracking-wider text-[#4A4A4A] font-serif leading-none">
-            SINATUR
-          </span>
-          <span className="text-[10px] sm:text-[11px] text-[#8C8C8C] tracking-tight mt-0.5">
-            Sistema Nacional de Turismo
-          </span>
+        <a href="#inicio" className="flex items-center gap-2.5 group">
+          <div className="flex flex-col">
+            <span className="text-2xl sm:text-[26px] font-bold tracking-wider text-[#3A3A3A] font-serif leading-none">
+              SINATUR
+            </span>
+            <span className="text-[10px] sm:text-[11px] text-[#8C8C8C] tracking-tight mt-0.5">
+              Sistema Nacional de Turismo
+            </span>
+          </div>
         </a>
 
         {/* Enlaces de Navegación */}
-        <ul className="flex items-center gap-6 sm:gap-9 text-xs sm:text-sm font-semibold text-[#2B2B2B]">
+        <ul className="flex items-center gap-6 sm:gap-9 text-xs sm:text-sm font-semibold text-[#3A3A3A]">
           <li>
-            <a href="#inicio" className="hover:text-[#FF7A2F] transition-colors">
+            <a
+              href="#inicio"
+              className="hover:text-[#FF7A2F] transition-colors relative after:content-[''] after:block after:w-0 after:h-[2px] after:bg-[#FF7A2F] after:transition-all hover:after:w-full"
+            >
               Inicio
             </a>
           </li>
           <li>
-            <a href="#departamentos" className="hover:text-[#FF7A2F] transition-colors">
+            <a
+              href="#departamentos"
+              className="hover:text-[#FF7A2F] transition-colors relative after:content-[''] after:block after:w-0 after:h-[2px] after:bg-[#FF7A2F] after:transition-all hover:after:w-full"
+            >
               Departamentos
             </a>
           </li>
           <li>
-            <a href="#contacto" className="hover:text-[#FF7A2F] transition-colors">
+            <a
+              href="#contacto"
+              className="hover:text-[#FF7A2F] transition-colors relative after:content-[''] after:block after:w-0 after:h-[2px] after:bg-[#FF7A2F] after:transition-all hover:after:w-full"
+            >
               Contacto
             </a>
           </li>
         </ul>
 
         {/* Acciones de Usuario */}
-        <div className="flex items-center gap-4 sm:gap-5">
+        <div className="flex items-center gap-3 sm:gap-5">
           <button
             type="button"
             onClick={onLanguageToggle}
             aria-label="Cambiar idioma"
-            className="text-[#4A4A4A] hover:text-[#FF7A2F] transition-colors p-1.5 rounded-lg border border-gray-300/80 bg-white/70 cursor-pointer"
+            className="text-[#4A4A4A] hover:text-[#FF7A2F] hover:border-[#FF7A2F]/50 transition-all p-2 rounded-xl border border-gray-200 bg-white shadow-2xs cursor-pointer"
           >
             <Languages className="w-4 h-4" />
           </button>
@@ -87,9 +106,9 @@ export const Navbar = ({ onLoginClick, onPublishClick, onLanguageToggle }) => {
           <button
             type="button"
             onClick={onLoginClick}
-            className="flex items-center gap-1.5 text-[#7A7A7A] hover:text-[#2B2B2B] transition-colors text-xs sm:text-sm font-medium cursor-pointer"
+            className="flex items-center gap-2 text-[#5A5A5A] hover:text-[#FF7A2F] transition-colors text-xs sm:text-sm font-semibold px-3 py-1.5 rounded-full hover:bg-gray-100/80 cursor-pointer"
           >
-            <div className="w-7 h-7 rounded-full bg-[#8C8C8C]/25 flex items-center justify-center text-[#7A7A7A]">
+            <div className="w-7 h-7 rounded-full bg-gray-200 flex items-center justify-center text-[#6A6A6A]">
               <User className="w-4 h-4 fill-current" />
             </div>
             <span>Ingresar</span>
@@ -98,7 +117,7 @@ export const Navbar = ({ onLoginClick, onPublishClick, onLanguageToggle }) => {
           <button
             type="button"
             onClick={onPublishClick}
-            className="bg-[#FF7A2F] hover:bg-[#e8661c] active:scale-[0.99] text-white text-xs sm:text-sm font-semibold px-5 sm:px-6 py-2.5 rounded-full shadow-sm transition-all cursor-pointer"
+            className="bg-[#FF7A2F] hover:bg-[#e8661c] active:scale-[0.98] text-white text-xs sm:text-sm font-semibold px-5 sm:px-6 py-2.5 rounded-full shadow-md shadow-[#FF7A2F]/25 hover:shadow-lg hover:shadow-[#FF7A2F]/35 transition-all cursor-pointer"
           >
             Publícate con nosotros
           </button>
@@ -110,48 +129,108 @@ export const Navbar = ({ onLoginClick, onPublishClick, onLanguageToggle }) => {
 
 /* ============================================================================
  * ARCHIVO: src/components/EventCarousel.jsx
- * Carrusel de próximos eventos
+ * Carrusel de próximos eventos con badges, overlay e indicadores inferiores
  * ============================================================================ */
 export const EventCarousel = ({
   title = 'Próximos eventos',
   events = [],
+  activeIndex = 0,
   onPrev,
-  onNext
+  onNext,
+  onSelectDot
 }) => {
-  const currentEvent = events.length > 0 ? events[0] : null;
+  const currentEvent = events.length > 0 ? events[activeIndex] : null;
+  const totalDots = events.length > 0 ? events.length : 3;
 
   return (
-    <section className="w-full max-w-7xl mx-auto mt-6 px-6 sm:px-10">
-      <h2 className="text-base sm:text-lg font-bold text-[#2D2D2D] mb-3 px-1">
-        {title}
-      </h2>
+    <section className="w-full max-w-7xl mx-auto mt-8 px-6 sm:px-10">
+      <div className="flex items-center justify-between mb-3 px-1">
+        <div className="flex items-center gap-2">
+          <Calendar className="w-5 h-5 text-[#FF7A2F]" />
+          <h2 className="text-base sm:text-lg font-bold text-[#2D2D2D]">
+            {title}
+          </h2>
+        </div>
+        <span className="text-xs font-medium text-[#8B9883] bg-[#8B9883]/15 px-3 py-1 rounded-full">
+          Agenda Nacional
+        </span>
+      </div>
 
-      <div className="relative w-full h-[220px] sm:h-[280px] bg-[#E2E2E2] rounded-[24px] flex items-center justify-between px-4 sm:px-6 overflow-hidden shadow-xs">
+      <div className="relative w-full h-[240px] sm:h-[320px] bg-[#E2E2E2] rounded-[28px] flex items-center justify-between px-4 sm:px-6 overflow-hidden shadow-inner border border-gray-300/60 group">
+        {/* Imagen dinámica si existe */}
         {currentEvent && currentEvent.imageUrl && (
           <img
             src={currentEvent.imageUrl}
-            alt={currentEvent.title || 'Evento'}
+            alt={currentEvent.titulo || 'Evento'}
             className="absolute inset-0 w-full h-full object-cover"
           />
         )}
 
+        {/* Degradado inferior para legibilidad */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/10 to-transparent pointer-events-none" />
+
+        {/* Información del evento (conectada a tabla eventos_nacionales) */}
+        <div className="absolute bottom-6 left-8 right-8 z-10 flex flex-col sm:flex-row sm:items-end justify-between gap-4 text-white">
+          <div>
+            <div className="flex flex-wrap items-center gap-2 mb-2">
+              <span className="bg-[#FF7A2F] text-white text-[11px] font-bold px-3 py-1 rounded-full shadow-xs">
+                {currentEvent?.tipo_evento || 'Categoría del evento'}
+              </span>
+              <span className="bg-white/25 backdrop-blur-md text-white text-[11px] font-medium px-3 py-1 rounded-full flex items-center gap-1">
+                <MapPin className="w-3 h-3" />
+                {currentEvent?.departamento || 'Departamento / Municipio'}
+              </span>
+              {currentEvent?.es_gratuito !== undefined && (
+                <span className="bg-[#8B9883] text-white text-[11px] font-semibold px-3 py-1 rounded-full">
+                  {currentEvent.es_gratuito ? 'Entrada Gratis' : `C$ ${currentEvent.costo_entrada}`}
+                </span>
+              )}
+            </div>
+            <h3 className="text-lg sm:text-2xl font-bold tracking-tight drop-shadow-xs">
+              {currentEvent?.titulo || 'Título del próximo evento nacional'}
+            </h3>
+            <p className="text-xs sm:text-sm text-white/85 line-clamp-1 mt-0.5">
+              {currentEvent?.descripcion || 'Descripción breve, fecha y hora del evento programado'}
+            </p>
+          </div>
+        </div>
+
+        {/* Botón Anterior */}
         <button
           type="button"
           onClick={onPrev}
           aria-label="Evento anterior"
-          className="relative z-10 text-white hover:scale-110 transition-transform p-1.5 cursor-pointer"
+          className="relative z-10 w-10 h-10 rounded-full bg-white/80 hover:bg-white text-gray-800 shadow-md flex items-center justify-center hover:scale-105 transition-all cursor-pointer"
         >
-          <ChevronLeft className="w-7 h-7 stroke-[1.8]" />
+          <ChevronLeft className="w-6 h-6 stroke-[2]" />
         </button>
 
+        {/* Botón Siguiente */}
         <button
           type="button"
           onClick={onNext}
           aria-label="Siguiente evento"
-          className="relative z-10 text-white hover:scale-110 transition-transform p-1.5 cursor-pointer"
+          className="relative z-10 w-10 h-10 rounded-full bg-white/80 hover:bg-white text-gray-800 shadow-md flex items-center justify-center hover:scale-105 transition-all cursor-pointer"
         >
-          <ChevronRight className="w-7 h-7 stroke-[1.8]" />
+          <ChevronRight className="w-6 h-6 stroke-[2]" />
         </button>
+
+        {/* Indicadores inferiores (Dots) */}
+        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-10 flex items-center gap-2">
+          {Array.from({ length: totalDots }).map((_, index) => (
+            <button
+              key={index}
+              type="button"
+              onClick={() => onSelectDot && onSelectDot(index)}
+              aria-label={`Ir al evento ${index + 1}`}
+              className={`h-2 rounded-full transition-all cursor-pointer ${
+                activeIndex === index
+                  ? 'w-6 bg-[#FF7A2F]'
+                  : 'w-2 bg-white/60 hover:bg-white'
+              }`}
+            />
+          ))}
+        </div>
       </div>
     </section>
   );
@@ -177,8 +256,8 @@ export const CategorySelector = ({
   onSelectCategory
 }) => {
   return (
-    <div className="w-full max-w-7xl mx-auto mt-10 px-6 sm:px-10 text-center">
-      <h2 className="text-base sm:text-lg font-medium text-[#6B6B6B] mb-7">
+    <div className="w-full max-w-7xl mx-auto mt-12 px-6 sm:px-10 text-center">
+      <h2 className="text-lg sm:text-xl font-semibold text-[#4A4A4A] mb-7">
         {title}
       </h2>
 
@@ -193,15 +272,21 @@ export const CategorySelector = ({
               className="group flex flex-col items-center focus:outline-none cursor-pointer"
             >
               <div
-                className={`w-[100px] h-[100px] sm:w-[112px] sm:h-[112px] rounded-[22px] bg-white flex items-center justify-center border-[2.5px] transition-all duration-200 ${
+                className={`w-[100px] h-[100px] sm:w-[112px] sm:h-[112px] rounded-[24px] flex items-center justify-center border-[2.5px] transition-all duration-200 ${
                   isSelected
-                    ? 'border-[#FF7A2F] text-[#FF7A2F] scale-105 shadow-[0_0_16px_rgba(255,122,47,0.45)]'
-                    : 'border-[#FF8A47] text-[#FF8A47] shadow-[0_2px_12px_rgba(255,122,47,0.28)] group-hover:scale-105 group-hover:shadow-[0_4px_16px_rgba(255,122,47,0.4)]'
+                    ? 'bg-[#FF7A2F] border-[#FF7A2F] text-white scale-105 shadow-[0_8px_20px_rgba(255,122,47,0.4)]'
+                    : 'bg-white border-[#FF8A47] text-[#FF8A47] shadow-[0_4px_14px_rgba(255,122,47,0.18)] group-hover:-translate-y-1 group-hover:shadow-[0_8px_20px_rgba(255,122,47,0.3)]'
                 }`}
               >
                 <Icon className="w-11 h-11 stroke-[1.8]" />
               </div>
-              <span className="mt-2.5 text-xs sm:text-[13px] font-bold text-[#7A7A7A] group-hover:text-[#FF7A2F] transition-colors">
+              <span
+                className={`mt-2.5 text-xs sm:text-[13px] font-bold transition-colors ${
+                  isSelected
+                    ? 'text-[#FF7A2F]'
+                    : 'text-[#6B6B6B] group-hover:text-[#FF7A2F]'
+                }`}
+              >
                 {label}
               </span>
             </button>
@@ -214,25 +299,62 @@ export const CategorySelector = ({
 
 /* ============================================================================
  * ARCHIVO: src/components/SearchBar.jsx
- * Barra de búsqueda redondeada
+ * Barra de búsqueda mejorada con filtro de departamento y botón de acción
  * ============================================================================ */
 export const SearchBar = ({
   value = '',
+  selectedDepartment = '',
+  departments = [],
   onChange,
+  onDepartmentChange,
+  onSearchSubmit,
   placeholder = '¿Sabes dónde deseas ir?'
 }) => {
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (onSearchSubmit) onSearchSubmit({ query: value, department: selectedDepartment });
+  };
+
   return (
-    <div className="w-full max-w-xl mx-auto mt-8 px-4">
-      <div className="relative flex items-center bg-white rounded-full border border-gray-200/90 shadow-xs px-4 py-2.5 focus-within:border-[#FF7A2F] transition-all">
-        <Search className="w-4 h-4 text-[#FF7A2F] mr-3 shrink-0" />
+    <div className="w-full max-w-2xl mx-auto mt-9 px-4">
+      <form
+        onSubmit={handleSubmit}
+        className="flex items-center bg-white rounded-full border border-gray-200 shadow-md hover:shadow-lg focus-within:border-[#FF7A2F] focus-within:ring-4 focus-within:ring-[#FF7A2F]/10 pl-5 pr-2 py-2 transition-all"
+      >
+        <Search className="w-5 h-5 text-[#FF7A2F] mr-3 shrink-0" />
         <input
           type="text"
           value={value}
           onChange={(e) => onChange && onChange(e.target.value)}
           placeholder={placeholder}
-          className="w-full bg-transparent text-xs sm:text-sm text-gray-700 placeholder-[#A6A6A6] focus:outline-none"
+          className="w-full bg-transparent text-xs sm:text-sm text-gray-700 placeholder-[#9E9E9E] focus:outline-none"
         />
-      </div>
+
+        {/* Filtro rápido por Departamento (se llena dinámicamente o muestra opción base) */}
+        <div className="hidden sm:flex items-center border-l border-gray-200 pl-3 mr-2">
+          <MapPin className="w-4 h-4 text-[#8B9883] mr-1.5 shrink-0" />
+          <select
+            value={selectedDepartment}
+            onChange={(e) => onDepartmentChange && onDepartmentChange(e.target.value)}
+            aria-label="Filtrar por departamento"
+            className="bg-transparent text-xs font-medium text-[#5A5A5A] focus:outline-none cursor-pointer pr-2"
+          >
+            <option value="">Todo el país</option>
+            {departments.map((dep) => (
+              <option key={dep} value={dep}>
+                {dep}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <button
+          type="submit"
+          className="bg-[#FF7A2F] hover:bg-[#e8661c] text-white text-xs font-semibold px-5 py-2.5 rounded-full transition-colors shrink-0 cursor-pointer shadow-xs"
+        >
+          Buscar
+        </button>
+      </form>
     </div>
   );
 };
@@ -270,7 +392,7 @@ export const SectionHeaderDecoration = ({ title }) => {
         <rect x="60" y="13" width="4" height="6" stroke="currentColor" strokeWidth="1.2" />
       </svg>
 
-      <h3 className="text-[#4A4A4A] text-base md:text-lg font-medium tracking-wide px-1">
+      <h3 className="text-[#3A3A3A] text-base md:text-xl font-semibold tracking-wide px-2">
         {title}
       </h3>
 
@@ -305,7 +427,7 @@ export const SectionHeaderDecoration = ({ title }) => {
 
 /* ============================================================================
  * ARCHIVO: src/components/RecommendationSection.jsx
- * Tarjeta verde salvia (#8B9883) reutilizable para mostrar cada categoría
+ * Tarjeta verde salvia (#8B9883) enriquecida con Favoritos, Reseñas, Horario y Maps
  * ============================================================================ */
 export const RecommendationSection = ({
   id,
@@ -314,56 +436,113 @@ export const RecommendationSection = ({
   descripcion = 'Descripción',
   localidad = 'Localidad / Dirección',
   puntuacion = 'Puntuacion',
+  horario = 'Horario de atención',
+  mapsLink = null,
+  esDestacado = false,
+  esFavorito = false,
   imageUrl = null,
   imagePlaceholder = 'Imágenes ilustrativas del negocio',
+  onToggleFavorite,
+  onViewDetails,
   onPrevBusiness,
   onNextBusiness,
   onPrevImage,
   onNextImage
 }) => {
   return (
-    <div id={id} className="w-full">
-      {/* Título de la sección con ornamentos ARRIBA de la tarjeta */}
+    <div id={id} className="w-full scroll-mt-24">
+      {/* Título de la sección con ornamentos */}
       <SectionHeaderDecoration title={sectionTitle} />
 
       {/* Contenedor Verde Salvia (#8B9883) */}
-      <div className="relative w-full bg-[#8B9883] rounded-[34px] px-10 sm:px-14 py-8 sm:py-10 shadow-sm">
+      <div className="relative w-full bg-[#8B9883] rounded-[34px] px-10 sm:px-14 py-8 sm:py-10 shadow-md hover:shadow-lg transition-shadow">
         {/* Flecha Izquierda de navegación de negocios */}
         <button
           type="button"
           onClick={onPrevBusiness}
           aria-label="Negocio anterior"
-          className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-white/85 hover:text-white transition-colors p-1 cursor-pointer"
+          className="absolute left-2.5 sm:left-4 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/15 hover:bg-white/30 text-white flex items-center justify-center transition-all cursor-pointer"
         >
-          <ChevronLeft className="w-7 h-7 stroke-[1.6]" />
+          <ChevronLeft className="w-6 h-6 stroke-[2]" />
         </button>
 
         {/* Contenido dividido en 2 columnas */}
         <div className="grid grid-cols-1 md:grid-cols-12 gap-6 sm:gap-8 items-center">
           {/* Columna Izquierda: Información del negocio */}
-          <div className="md:col-span-5 flex flex-col justify-between h-full min-h-[210px] sm:min-h-[240px] text-white py-2 text-left">
+          <div className="md:col-span-5 flex flex-col justify-between h-full min-h-[230px] sm:min-h-[260px] text-white py-1 text-left">
             <div>
-              <h4 className="text-lg sm:text-xl font-bold tracking-tight mb-2">
+              {/* Badges superiores (Horario y Destacado por campaña publicitaria) */}
+              <div className="flex flex-wrap items-center gap-2 mb-3">
+                <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold bg-white/20 backdrop-blur-xs px-3 py-1 rounded-full">
+                  <Clock className="w-3.5 h-3.5" />
+                  {horario}
+                </span>
+
+                {esDestacado && (
+                  <span className="inline-flex items-center gap-1 text-[11px] font-bold bg-[#FF7A2F] text-white px-3 py-1 rounded-full shadow-xs">
+                    <Sparkles className="w-3 h-3" />
+                    Destacado
+                  </span>
+                )}
+              </div>
+
+              <h4 className="text-xl sm:text-2xl font-bold tracking-tight mb-2">
                 {nombreNegocio}
               </h4>
-              <p className="text-xs sm:text-sm text-white/95 font-medium leading-relaxed pl-2 sm:pl-4">
+              <p className="text-xs sm:text-sm text-white/90 font-normal leading-relaxed pl-2 border-l-2 border-white/40">
                 {descripcion}
               </p>
             </div>
 
-            <div className="mt-8 sm:mt-12">
-              <h5 className="text-base sm:text-lg font-bold tracking-tight mb-1.5">
-                {localidad}
-              </h5>
-              <p className="text-xs sm:text-sm text-white/95 font-medium pl-2 sm:pl-4">
-                {puntuacion}
-              </p>
+            {/* Ubicación, Estrellas de Calificación y Botones de Acción */}
+            <div className="mt-6 pt-4 border-t border-white/20">
+              <div className="flex items-start gap-2 mb-2">
+                <MapPin className="w-4 h-4 text-white shrink-0 mt-0.5" />
+                <div>
+                  <h5 className="text-sm sm:text-base font-bold tracking-tight leading-snug">
+                    {localidad}
+                  </h5>
+                  {mapsLink && (
+                    <a
+                      href={mapsLink}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center gap-1 text-[11px] text-white/80 hover:text-white underline mt-0.5"
+                    >
+                      Ver en Google Maps
+                      <ExternalLink className="w-3 h-3" />
+                    </a>
+                  )}
+                </div>
+              </div>
+
+              {/* Calificación (conectada a tabla resenas) */}
+              <div className="flex items-center justify-between flex-wrap gap-3 mt-3">
+                <div className="flex items-center gap-1.5 bg-black/15 px-3 py-1.5 rounded-full">
+                  <div className="flex items-center text-amber-300">
+                    {[...Array(5)].map((_, i) => (
+                      <Star key={i} className="w-3.5 h-3.5 fill-current" />
+                    ))}
+                  </div>
+                  <span className="text-xs font-semibold text-white ml-1">
+                    {puntuacion}
+                  </span>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={onViewDetails}
+                  className="bg-white text-[#5F6B58] hover:bg-[#FF7A2F] hover:text-white text-xs font-bold px-4 py-2 rounded-full transition-colors shadow-xs cursor-pointer"
+                >
+                  Ver detalles
+                </button>
+              </div>
             </div>
           </div>
 
-          {/* Columna Derecha: Recuadro blanco para imágenes */}
+          {/* Columna Derecha: Recuadro blanco para galería de imágenes */}
           <div className="md:col-span-7">
-            <div className="relative bg-white rounded-[24px] h-[230px] sm:h-[270px] w-full flex items-center justify-center overflow-hidden">
+            <div className="relative bg-white rounded-[26px] h-[240px] sm:h-[280px] w-full flex items-center justify-center overflow-hidden shadow-inner group">
               {imageUrl ? (
                 <img
                   src={imageUrl}
@@ -371,19 +550,33 @@ export const RecommendationSection = ({
                   className="w-full h-full object-cover"
                 />
               ) : (
-                <span className="text-[#CCCCCC] text-xs sm:text-sm font-medium select-none px-8 text-center">
+                <span className="text-[#BDBDBD] text-xs sm:text-sm font-medium select-none px-8 text-center">
                   {imagePlaceholder}
                 </span>
               )}
+
+              {/* Botón de Guardar en Favoritos (conectado a tabla favoritos) */}
+              <button
+                type="button"
+                onClick={onToggleFavorite}
+                aria-label="Guardar en favoritos"
+                className={`absolute top-3.5 right-3.5 z-10 w-9 h-9 rounded-full flex items-center justify-center shadow-sm transition-all cursor-pointer ${
+                  esFavorito
+                    ? 'bg-red-50 text-red-500 scale-105'
+                    : 'bg-gray-100/90 hover:bg-white text-gray-400 hover:text-red-500'
+                }`}
+              >
+                <Heart className={`w-4 h-4 ${esFavorito ? 'fill-current' : ''}`} />
+              </button>
 
               {/* Flecha Izquierda de imagen */}
               <button
                 type="button"
                 onClick={onPrevImage}
                 aria-label="Imagen anterior"
-                className="absolute left-2.5 top-1/2 -translate-y-1/2 p-1.5 text-[#D0D0D0] hover:text-gray-500 transition-colors cursor-pointer"
+                className="absolute left-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-gray-100/80 hover:bg-white text-gray-500 hover:text-gray-800 flex items-center justify-center transition-all cursor-pointer shadow-2xs"
               >
-                <ChevronLeft className="w-5 h-5 stroke-[1.6]" />
+                <ChevronLeft className="w-5 h-5 stroke-[1.8]" />
               </button>
 
               {/* Flecha Derecha de imagen */}
@@ -391,9 +584,9 @@ export const RecommendationSection = ({
                 type="button"
                 onClick={onNextImage}
                 aria-label="Siguiente imagen"
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1.5 text-[#D0D0D0] hover:text-gray-500 transition-colors cursor-pointer"
+                className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-gray-100/80 hover:bg-white text-gray-500 hover:text-gray-800 flex items-center justify-center transition-all cursor-pointer shadow-2xs"
               >
-                <ChevronRight className="w-5 h-5 stroke-[1.6]" />
+                <ChevronRight className="w-5 h-5 stroke-[1.8]" />
               </button>
             </div>
           </div>
@@ -404,12 +597,49 @@ export const RecommendationSection = ({
           type="button"
           onClick={onNextBusiness}
           aria-label="Siguiente negocio"
-          className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 text-white/85 hover:text-white transition-colors p-1 cursor-pointer"
+          className="absolute right-2.5 sm:right-4 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/15 hover:bg-white/30 text-white flex items-center justify-center transition-all cursor-pointer"
         >
-          <ChevronRight className="w-7 h-7 stroke-[1.6]" />
+          <ChevronRight className="w-6 h-6 stroke-[2]" />
         </button>
       </div>
     </div>
+  );
+};
+
+/* ============================================================================
+ * ARCHIVO: src/components/Footer.jsx
+ * Pie de página institucional para cerrar el diseño visualmente
+ * ============================================================================ */
+export const Footer = () => {
+  return (
+    <footer id="contacto" className="w-full bg-[#2F362C] text-white mt-24">
+      <div className="max-w-7xl mx-auto px-6 sm:px-10 py-12 flex flex-col sm:flex-row items-center justify-between gap-6">
+        <div className="flex flex-col items-center sm:items-start">
+          <span className="text-xl font-bold tracking-wider font-serif">
+            SINATUR
+          </span>
+          <span className="text-xs text-white/70 mt-1">
+            Sistema Nacional de Turismo · Descubre y conecta con cada destino
+          </span>
+        </div>
+
+        <div className="flex items-center gap-6 text-xs text-white/80">
+          <a href="#inicio" className="hover:text-[#FF7A2F] transition-colors">
+            Inicio
+          </a>
+          <a href="#departamentos" className="hover:text-[#FF7A2F] transition-colors">
+            Departamentos
+          </a>
+          <a href="#contacto" className="hover:text-[#FF7A2F] transition-colors">
+            Publicidad
+          </a>
+        </div>
+
+        <p className="text-xs text-white/60">
+          © {new Date().getFullYear()} SINATUR. Todos los derechos reservados.
+        </p>
+      </div>
+    </footer>
   );
 };
 
@@ -427,6 +657,8 @@ const RECOMMENDATION_SECTIONS = [
 export default function App() {
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedDepartment, setSelectedDepartment] = useState('');
+  const [favorites, setFavorites] = useState({});
 
   const handleCategorySelect = (categoryId) => {
     setSelectedCategory(categoryId);
@@ -436,51 +668,64 @@ export default function App() {
     }
   };
 
+  const toggleFavorite = (sectionId) => {
+    setFavorites((prev) => ({
+      ...prev,
+      [sectionId]: !prev[sectionId]
+    }));
+  };
+
   return (
-    <div
-      className="w-full min-h-screen bg-[#F9F9F9] text-[#2D2D2D] pb-20"
-      style={{
-        backgroundImage: `
-          linear-gradient(to right, #EAEAEA 1px, transparent 1px),
-          linear-gradient(to bottom, #EAEAEA 1px, transparent 1px)
-        `,
-        backgroundSize: '34px 34px'
-      }}
-    >
-      {/* 1. Barra de Navegación */}
-      <Navbar />
+    <div id="inicio" className="w-full min-h-screen bg-[#F8F9FA] text-[#2D2D2D] flex flex-col justify-between">
+      <div>
+        {/* 1. Barra de Navegación Fija (Glassmorphism) */}
+        <Navbar />
 
-      {/* 2. Carrusel de Próximos Eventos */}
-      <EventCarousel />
+        {/* 2. Carrusel de Próximos Eventos */}
+        <EventCarousel />
 
-      {/* 3. Selector de Categorías y Barra de Búsqueda */}
-      <CategorySelector
-        selectedCategory={selectedCategory}
-        onSelectCategory={handleCategorySelect}
-      />
-      <SearchBar value={searchQuery} onChange={setSearchQuery} />
+        {/* 3. Selector de Categorías y Barra de Búsqueda con Filtro */}
+        <CategorySelector
+          selectedCategory={selectedCategory}
+          onSelectCategory={handleCategorySelect}
+        />
+        <SearchBar
+          value={searchQuery}
+          selectedDepartment={selectedDepartment}
+          onChange={setSearchQuery}
+          onDepartmentChange={setSelectedDepartment}
+        />
 
-      {/* 4. Sección de Recomendaciones */}
-      <section className="w-full max-w-7xl mx-auto mt-14 px-6 sm:px-10">
-        <div className="text-center mb-10">
-          <h2 className="text-base sm:text-lg font-medium text-[#6B6B6B]">
-            ¿Quieres una recomendación?
-          </h2>
-          <p className="text-sm sm:text-base font-medium text-[#6B6B6B] mt-0.5">
-            Echa un vistazo
-          </p>
-        </div>
+        {/* 4. Sección de Recomendaciones */}
+        <section className="w-full max-w-7xl mx-auto mt-16 px-6 sm:px-10">
+          <div className="text-center mb-12">
+            <span className="text-xs font-bold uppercase tracking-widest text-[#FF7A2F] bg-[#FF7A2F]/10 px-3.5 py-1.5 rounded-full">
+              Explora Destinos
+            </span>
+            <h2 className="text-xl sm:text-2xl font-bold text-[#3A3A3A] mt-3">
+              ¿Quieres una recomendación?
+            </h2>
+            <p className="text-sm sm:text-base font-medium text-[#7A7A7A] mt-1">
+              Echa un vistazo a los lugares mejor valorados por categoría
+            </p>
+          </div>
 
-        <div className="space-y-12">
-          {RECOMMENDATION_SECTIONS.map((section) => (
-            <RecommendationSection
-              key={section.id}
-              id={section.id}
-              sectionTitle={section.title}
-            />
-          ))}
-        </div>
-      </section>
+          <div className="space-y-14">
+            {RECOMMENDATION_SECTIONS.map((section) => (
+              <RecommendationSection
+                key={section.id}
+                id={section.id}
+                sectionTitle={section.title}
+                esFavorito={!!favorites[section.id]}
+                onToggleFavorite={() => toggleFavorite(section.id)}
+              />
+            ))}
+          </div>
+        </section>
+      </div>
+
+      {/* 5. Pie de Página (Footer) */}
+      <Footer />
     </div>
   );
 }
