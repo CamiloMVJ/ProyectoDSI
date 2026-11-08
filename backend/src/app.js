@@ -2,6 +2,8 @@ import express from "express"
 import apiRoutes from "./routes/index.js"
 import { notFound } from "./middlewares/notFound.middleware.js"
 import { errorHandler } from "./middlewares/error.middleware.js"
+import cors from 'cors'
+
 
 const app = express()
 
