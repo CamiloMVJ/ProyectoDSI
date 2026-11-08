@@ -2,7 +2,7 @@
 import { Router } from 'express';
 import { listar, obtener, crear, actualizar } from '../controllers/items_menu.controller.js';
 import { validate } from '../middlewares/validate.middleware.js';
-import { itemMenuSchema } from './../dtos/items_Menu.dto.js';
+import { itemMenuSchema } from './../dtos/Items_Menu.dto.js';
 import { updateItemMenuSchema } from '../dtos/update.dto.js';
 import { verifyToken, checkRole } from "../middlewares/auth.middleware.js";
 
