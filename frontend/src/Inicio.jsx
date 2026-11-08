@@ -1,5 +1,6 @@
 import './App.css';
-import React, { useState } from 'react';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Search,
   ChevronLeft,
@@ -18,7 +19,6 @@ import {
   Calendar,
   Sparkles,
   ExternalLink,
-  Compass
 } from 'lucide-react';
 
 /* ============================================================================
@@ -48,7 +48,7 @@ export const HospedajeIcon = ({ className = 'w-11 h-11' }) => (
  * ARCHIVO: src/components/Navbar.jsx
  * Barra de navegación superior con efecto Glassmorphism (fija al hacer scroll)
  * ============================================================================ */
-export const Navbar = ({ onLoginClick, onPublishClick, onLanguageToggle }) => {
+export const Navbar = ({ onLoginClick, onPublishClick }) => {
   return (
     <header className="sticky top-0 z-50 w-full bg-white/85 backdrop-blur-md border-b border-gray-200/60 transition-all">
       <nav className="max-w-7xl mx-auto py-4 px-6 sm:px-10 flex flex-wrap items-center justify-between gap-4">
@@ -69,23 +69,23 @@ export const Navbar = ({ onLoginClick, onPublishClick, onLanguageToggle }) => {
           <li>
             <a
               href="#inicio"
-              className="hover:text-[#FF7A2F] transition-colors relative after:content-[''] after:block after:w-0 after:h-[2px] after:bg-[#FF7A2F] after:transition-all hover:after:w-full"
+              className="hover:text-[#C45111] transition-colors relative after:content-[''] after:block after:w-0 after:h-[2px] after:bg-[#C45111] after:transition-all hover:after:w-full"
             >
               Inicio
             </a>
           </li>
           <li>
             <a
-              href="#departamentos"
-              className="hover:text-[#FF7A2F] transition-colors relative after:content-[''] after:block after:w-0 after:h-[2px] after:bg-[#FF7A2F] after:transition-all hover:after:w-full"
+              href="#explorar"
+              className="hover:text-[#C45111] transition-colors relative after:content-[''] after:block after:w-0 after:h-[2px] after:bg-[#C45111] after:transition-all hover:after:w-full"
             >
-              Departamentos
+              Explorar
             </a>
           </li>
           <li>
             <a
               href="#contacto"
-              className="hover:text-[#FF7A2F] transition-colors relative after:content-[''] after:block after:w-0 after:h-[2px] after:bg-[#FF7A2F] after:transition-all hover:after:w-full"
+              className="hover:text-[#C45111] transition-colors relative after:content-[''] after:block after:w-0 after:h-[2px] after:bg-[#C45111] after:transition-all hover:after:w-full"
             >
               Contacto
             </a>
@@ -94,19 +94,14 @@ export const Navbar = ({ onLoginClick, onPublishClick, onLanguageToggle }) => {
 
         {/* Acciones de Usuario */}
         <div className="flex items-center gap-3 sm:gap-5">
-          <button
-            type="button"
-            onClick={onLanguageToggle}
-            aria-label="Cambiar idioma"
-            className="text-[#4A4A4A] hover:text-[#FF7A2F] hover:border-[#FF7A2F]/50 transition-all p-2 rounded-xl border border-gray-200 bg-white shadow-2xs cursor-pointer"
-          >
-            <Languages className="w-4 h-4" />
-          </button>
+          <span className="hidden sm:inline-flex items-center gap-1 text-xs text-[#526554]" lang="es">
+            <Languages aria-hidden="true" className="w-4 h-4" /> Español
+          </span>
 
           <button
             type="button"
             onClick={onLoginClick}
-            className="flex items-center gap-2 text-[#5A5A5A] hover:text-[#FF7A2F] transition-colors text-xs sm:text-sm font-semibold px-3 py-1.5 rounded-full hover:bg-gray-100/80 cursor-pointer"
+            className="flex min-h-11 items-center gap-2 text-[#344e3b] hover:text-[#C45111] transition-colors text-xs sm:text-sm font-semibold px-3 py-1.5 rounded-full hover:bg-gray-100/80 cursor-pointer"
           >
             <div className="w-7 h-7 rounded-full bg-gray-200 flex items-center justify-center text-[#6A6A6A]">
               <User className="w-4 h-4 fill-current" />
@@ -117,7 +112,7 @@ export const Navbar = ({ onLoginClick, onPublishClick, onLanguageToggle }) => {
           <button
             type="button"
             onClick={onPublishClick}
-            className="bg-[#FF7A2F] hover:bg-[#e8661c] active:scale-[0.98] text-white text-xs sm:text-sm font-semibold px-5 sm:px-6 py-2.5 rounded-full shadow-md shadow-[#FF7A2F]/25 hover:shadow-lg hover:shadow-[#FF7A2F]/35 transition-all cursor-pointer"
+            className="min-h-11 bg-[#C45111] hover:bg-[#9d3e0b] active:scale-[0.98] text-white text-xs sm:text-sm font-semibold px-5 sm:px-6 py-2.5 rounded-full shadow-md shadow-[#C45111]/25 hover:shadow-lg hover:shadow-[#C45111]/35 transition-all cursor-pointer"
           >
             Publícate con nosotros
           </button>
@@ -143,15 +138,15 @@ export const EventCarousel = ({
   const totalDots = events.length > 0 ? events.length : 3;
 
   return (
-    <section className="w-full max-w-7xl mx-auto mt-8 px-6 sm:px-10">
+    <section id="eventos" className="w-full max-w-7xl mx-auto mt-8 px-6 sm:px-10 scroll-mt-28">
       <div className="flex items-center justify-between mb-3 px-1">
         <div className="flex items-center gap-2">
-          <Calendar className="w-5 h-5 text-[#FF7A2F]" />
+          <Calendar className="w-5 h-5 text-[#C45111]" />
           <h2 className="text-base sm:text-lg font-bold text-[#2D2D2D]">
             {title}
           </h2>
         </div>
-        <span className="text-xs font-medium text-[#8B9883] bg-[#8B9883]/15 px-3 py-1 rounded-full">
+        <span className="text-xs font-medium text-[#526554] bg-[#526554]/15 px-3 py-1 rounded-full">
           Agenda Nacional
         </span>
       </div>
@@ -173,7 +168,7 @@ export const EventCarousel = ({
         <div className="absolute bottom-6 left-8 right-8 z-10 flex flex-col sm:flex-row sm:items-end justify-between gap-4 text-white">
           <div>
             <div className="flex flex-wrap items-center gap-2 mb-2">
-              <span className="bg-[#FF7A2F] text-white text-[11px] font-bold px-3 py-1 rounded-full shadow-xs">
+              <span className="bg-[#C45111] text-white text-[11px] font-bold px-3 py-1 rounded-full shadow-xs">
                 {currentEvent?.tipo_evento || 'Categoría del evento'}
               </span>
               <span className="bg-white/25 backdrop-blur-md text-white text-[11px] font-medium px-3 py-1 rounded-full flex items-center gap-1">
@@ -181,7 +176,7 @@ export const EventCarousel = ({
                 {currentEvent?.departamento || 'Departamento / Municipio'}
               </span>
               {currentEvent?.es_gratuito !== undefined && (
-                <span className="bg-[#8B9883] text-white text-[11px] font-semibold px-3 py-1 rounded-full">
+                <span className="bg-[#526554] text-white text-[11px] font-semibold px-3 py-1 rounded-full">
                   {currentEvent.es_gratuito ? 'Entrada Gratis' : `C$ ${currentEvent.costo_entrada}`}
                 </span>
               )}
@@ -225,7 +220,7 @@ export const EventCarousel = ({
               aria-label={`Ir al evento ${index + 1}`}
               className={`h-2 rounded-full transition-all cursor-pointer ${
                 activeIndex === index
-                  ? 'w-6 bg-[#FF7A2F]'
+                  ? 'w-6 bg-[#C45111]'
                   : 'w-2 bg-white/60 hover:bg-white'
               }`}
             />
@@ -256,10 +251,10 @@ export const CategorySelector = ({
   onSelectCategory
 }) => {
   return (
-    <div className="w-full max-w-7xl mx-auto mt-12 px-6 sm:px-10 text-center">
-      <h2 className="text-lg sm:text-xl font-semibold text-[#4A4A4A] mb-7">
+    <div id="explorar" className="w-full max-w-7xl mx-auto mt-12 px-6 sm:px-10 text-center scroll-mt-28">
+      <h1 className="text-2xl sm:text-3xl font-semibold text-[#344e3b] mb-7">
         {title}
-      </h2>
+      </h1>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-5 sm:gap-6 max-w-4xl mx-auto justify-items-center">
         {categories.map(({ id, label, Icon }) => {
@@ -269,13 +264,14 @@ export const CategorySelector = ({
               key={id}
               type="button"
               onClick={() => onSelectCategory && onSelectCategory(id)}
-              className="group flex flex-col items-center focus:outline-none cursor-pointer"
+              className="group flex flex-col items-center focus-visible:outline-3 focus-visible:outline-offset-4 focus-visible:outline-[#C45111] cursor-pointer"
+              aria-pressed={isSelected}
             >
               <div
                 className={`w-[100px] h-[100px] sm:w-[112px] sm:h-[112px] rounded-[24px] flex items-center justify-center border-[2.5px] transition-all duration-200 ${
                   isSelected
-                    ? 'bg-[#FF7A2F] border-[#FF7A2F] text-white scale-105 shadow-[0_8px_20px_rgba(255,122,47,0.4)]'
-                    : 'bg-white border-[#FF8A47] text-[#FF8A47] shadow-[0_4px_14px_rgba(255,122,47,0.18)] group-hover:-translate-y-1 group-hover:shadow-[0_8px_20px_rgba(255,122,47,0.3)]'
+                    ? 'bg-[#C45111] border-[#C45111] text-white scale-105 shadow-[0_8px_20px_rgba(255,122,47,0.4)]'
+                    : 'bg-white border-[#C45111] text-[#C45111] shadow-[0_4px_14px_rgba(255,122,47,0.18)] group-hover:-translate-y-1 group-hover:shadow-[0_8px_20px_rgba(255,122,47,0.3)]'
                 }`}
               >
                 <Icon className="w-11 h-11 stroke-[1.8]" />
@@ -283,8 +279,8 @@ export const CategorySelector = ({
               <span
                 className={`mt-2.5 text-xs sm:text-[13px] font-bold transition-colors ${
                   isSelected
-                    ? 'text-[#FF7A2F]'
-                    : 'text-[#6B6B6B] group-hover:text-[#FF7A2F]'
+                    ? 'text-[#C45111]'
+                    : 'text-[#6B6B6B] group-hover:text-[#C45111]'
                 }`}
               >
                 {label}
@@ -319,11 +315,12 @@ export const SearchBar = ({
     <div className="w-full max-w-2xl mx-auto mt-9 px-4">
       <form
         onSubmit={handleSubmit}
-        className="flex items-center bg-white rounded-full border border-gray-200 shadow-md hover:shadow-lg focus-within:border-[#FF7A2F] focus-within:ring-4 focus-within:ring-[#FF7A2F]/10 pl-5 pr-2 py-2 transition-all"
+        className="flex items-center bg-white rounded-full border border-gray-200 shadow-md hover:shadow-lg focus-within:border-[#C45111] focus-within:ring-4 focus-within:ring-[#C45111]/10 pl-5 pr-2 py-2 transition-all"
       >
-        <Search className="w-5 h-5 text-[#FF7A2F] mr-3 shrink-0" />
+        <Search className="w-5 h-5 text-[#C45111] mr-3 shrink-0" />
         <input
           type="text"
+          aria-label="Buscar destinos o negocios"
           value={value}
           onChange={(e) => onChange && onChange(e.target.value)}
           placeholder={placeholder}
@@ -332,7 +329,7 @@ export const SearchBar = ({
 
         {/* Filtro rápido por Departamento (se llena dinámicamente o muestra opción base) */}
         <div className="hidden sm:flex items-center border-l border-gray-200 pl-3 mr-2">
-          <MapPin className="w-4 h-4 text-[#8B9883] mr-1.5 shrink-0" />
+          <MapPin className="w-4 h-4 text-[#526554] mr-1.5 shrink-0" />
           <select
             value={selectedDepartment}
             onChange={(e) => onDepartmentChange && onDepartmentChange(e.target.value)}
@@ -350,7 +347,7 @@ export const SearchBar = ({
 
         <button
           type="submit"
-          className="bg-[#FF7A2F] hover:bg-[#e8661c] text-white text-xs font-semibold px-5 py-2.5 rounded-full transition-colors shrink-0 cursor-pointer shadow-xs"
+          className="bg-[#C45111] hover:bg-[#9d3e0b] text-white text-xs font-semibold px-5 py-2.5 rounded-full transition-colors shrink-0 cursor-pointer shadow-xs"
         >
           Buscar
         </button>
@@ -372,7 +369,7 @@ export const SectionHeaderDecoration = ({ title }) => {
         height="22"
         viewBox="0 0 70 22"
         fill="none"
-        className="text-[#8B9883] shrink-0"
+        className="text-[#526554] shrink-0"
       >
         <line
           x1="2"
@@ -402,7 +399,7 @@ export const SectionHeaderDecoration = ({ title }) => {
         height="22"
         viewBox="0 0 70 22"
         fill="none"
-        className="text-[#8B9883] shrink-0"
+        className="text-[#526554] shrink-0"
       >
         <line
           x1="6"
@@ -427,7 +424,7 @@ export const SectionHeaderDecoration = ({ title }) => {
 
 /* ============================================================================
  * ARCHIVO: src/components/RecommendationSection.jsx
- * Tarjeta verde salvia (#8B9883) enriquecida con Favoritos, Reseñas, Horario y Maps
+ * Tarjeta verde salvia (#526554) enriquecida con Favoritos, Reseñas, Horario y Maps
  * ============================================================================ */
 export const RecommendationSection = ({
   id,
@@ -454,8 +451,8 @@ export const RecommendationSection = ({
       {/* Título de la sección con ornamentos */}
       <SectionHeaderDecoration title={sectionTitle} />
 
-      {/* Contenedor Verde Salvia (#8B9883) */}
-      <div className="relative w-full bg-[#8B9883] rounded-[34px] px-10 sm:px-14 py-8 sm:py-10 shadow-md hover:shadow-lg transition-shadow">
+      {/* Contenedor Verde Salvia (#526554) */}
+      <div className="relative w-full bg-[#526554] rounded-[34px] px-10 sm:px-14 py-8 sm:py-10 shadow-md hover:shadow-lg transition-shadow">
         {/* Flecha Izquierda de navegación de negocios */}
         <button
           type="button"
@@ -479,7 +476,7 @@ export const RecommendationSection = ({
                 </span>
 
                 {esDestacado && (
-                  <span className="inline-flex items-center gap-1 text-[11px] font-bold bg-[#FF7A2F] text-white px-3 py-1 rounded-full shadow-xs">
+                  <span className="inline-flex items-center gap-1 text-[11px] font-bold bg-[#C45111] text-white px-3 py-1 rounded-full shadow-xs">
                     <Sparkles className="w-3 h-3" />
                     Destacado
                   </span>
@@ -532,7 +529,7 @@ export const RecommendationSection = ({
                 <button
                   type="button"
                   onClick={onViewDetails}
-                  className="bg-white text-[#5F6B58] hover:bg-[#FF7A2F] hover:text-white text-xs font-bold px-4 py-2 rounded-full transition-colors shadow-xs cursor-pointer"
+                  className="bg-white text-[#5F6B58] hover:bg-[#C45111] hover:text-white text-xs font-bold px-4 py-2 rounded-full transition-colors shadow-xs cursor-pointer"
                 >
                   Ver detalles
                 </button>
@@ -624,13 +621,13 @@ export const Footer = () => {
         </div>
 
         <div className="flex items-center gap-6 text-xs text-white/80">
-          <a href="#inicio" className="hover:text-[#FF7A2F] transition-colors">
+          <a href="#inicio" className="hover:text-[#C45111] transition-colors">
             Inicio
           </a>
-          <a href="#departamentos" className="hover:text-[#FF7A2F] transition-colors">
-            Departamentos
+          <a href="#explorar" className="hover:text-[#C45111] transition-colors">
+            Explorar
           </a>
-          <a href="#contacto" className="hover:text-[#FF7A2F] transition-colors">
+          <a href="#contacto" className="hover:text-[#C45111] transition-colors">
             Publicidad
           </a>
         </div>
@@ -655,6 +652,7 @@ const RECOMMENDATION_SECTIONS = [
 ];
 
 export default function App() {
+  const navigate = useNavigate();
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedDepartment, setSelectedDepartment] = useState('');
@@ -676,15 +674,15 @@ export default function App() {
   };
 
   return (
-    <div id="inicio" className="w-full min-h-screen bg-[#F8F9FA] text-[#2D2D2D] flex flex-col justify-between">
+    <div id="inicio" className="w-full min-h-screen bg-[#f6f8f3] text-[#2D2D2D] flex flex-col justify-between">
       <div>
         {/* 1. Barra de Navegación Fija (Glassmorphism) */}
-        <Navbar />
+        <Navbar
+          onLoginClick={() => navigate('/ingresar')}
+          onPublishClick={() => navigate('/registro-negocio')}
+        />
 
-        {/* 2. Carrusel de Próximos Eventos */}
-        <EventCarousel />
-
-        {/* 3. Selector de Categorías y Barra de Búsqueda con Filtro */}
+        {/* Explorar primero, luego descubrir eventos y recomendaciones. */}
         <CategorySelector
           selectedCategory={selectedCategory}
           onSelectCategory={handleCategorySelect}
@@ -696,10 +694,12 @@ export default function App() {
           onDepartmentChange={setSelectedDepartment}
         />
 
+        <EventCarousel />
+
         {/* 4. Sección de Recomendaciones */}
         <section className="w-full max-w-7xl mx-auto mt-16 px-6 sm:px-10">
           <div className="text-center mb-12">
-            <span className="text-xs font-bold uppercase tracking-widest text-[#FF7A2F] bg-[#FF7A2F]/10 px-3.5 py-1.5 rounded-full">
+            <span className="text-xs font-bold uppercase tracking-widest text-[#C45111] bg-[#C45111]/10 px-3.5 py-1.5 rounded-full">
               Explora Destinos
             </span>
             <h2 className="text-xl sm:text-2xl font-bold text-[#3A3A3A] mt-3">
