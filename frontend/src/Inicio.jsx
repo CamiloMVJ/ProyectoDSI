@@ -1,10 +1,10 @@
-import './App.css';
+import './index.css';
 import { useState } from 'react';
-import   Navbar from './Components/Navbar';
+import Navbar from './Components/Navbar';
 import EventCarousel from './Components/EventCarousel';
 import SearchBar from './Components/SearchBar';
 import RecommendationSection from './Components/RecommendationSection';
-import  HospedajeIcon from './Components/Icons';  
+import HospedajeIcon from './Components/Icons';
 import Footer from './Components/Footer';
 import { useNavigate } from 'react-router-dom';
 import { Utensils, Martini, Disc, Coffee, Bus } from 'lucide-react';
@@ -43,24 +43,17 @@ export const CategorySelector = ({
               key={id}
               type="button"
               onClick={() => onSelectCategory && onSelectCategory(id)}
-              className="group flex flex-col items-center focus-visible:outline-3 focus-visible:outline-offset-4 focus-visible:outline-[#C45111] cursor-pointer"
+              className="group flex flex-col items-center focus-visible:outline-3 focus-visible:outline-offset-4 focus-visible:outline-[#c45111] cursor-pointer"
               aria-pressed={isSelected}
             >
-              <div
-                className={`w-[100px] h-[100px] sm:w-[112px] sm:h-[112px] rounded-[24px] flex items-center justify-center border-[2.5px] transition-all duration-200 ${
-                  isSelected
-                    ? 'bg-[#C45111] border-[#C45111] text-white scale-105 shadow-[0_8px_20px_rgba(255,122,47,0.4)]'
-                    : 'bg-white border-[#C45111] text-[#C45111] shadow-[0_4px_14px_rgba(255,122,47,0.18)] group-hover:-translate-y-1 group-hover:shadow-[0_8px_20px_rgba(255,122,47,0.3)]'
-                }`}
-              >
+              <div className={`category-card ${isSelected ? 'category-card-selected' : 'category-card-default'}`}>
                 <Icon className="w-11 h-11 stroke-[1.8]" />
               </div>
               <span
-                className={`mt-2.5 text-xs sm:text-[13px] font-bold transition-colors ${
-                  isSelected
-                    ? 'text-[#C45111]'
-                    : 'text-[#6B6B6B] group-hover:text-[#C45111]'
-                }`}
+                className={`mt-2.5 text-xs sm:text-[13px] font-bold transition-colors ${isSelected
+                  ? 'text-[#c45111]'
+                  : 'text-[#526554] group-hover:text-[#c45111]'
+                  }`}
               >
                 {label}
               </span>
@@ -107,7 +100,7 @@ export default function App() {
   };
 
   return (
-    <div id="inicio" className="w-full min-h-screen bg-[#f6f8f3] text-[#2D2D2D] flex flex-col justify-between">
+    <div id="inicio" className="w-full min-h-screen bg-[#f6f8f3] text-[#25382e] flex flex-col justify-between">
       <div>
         {/* 1. Barra de Navegación Fija (Glassmorphism) */}
         <Navbar
@@ -131,13 +124,13 @@ export default function App() {
         {/* 4. Sección de Recomendaciones */}
         <section className="w-full max-w-7xl mx-auto mt-16 px-6 sm:px-10">
           <div className="text-center mb-12">
-            <span className="text-xs font-bold uppercase tracking-widest text-[#C45111] bg-[#C45111]/10 px-3.5 py-1.5 rounded-full">
+            <span className="text-xs font-bold uppercase tracking-widest text-[#c45111] bg-[#c45111]/10 px-3.5 py-1.5 rounded-full">
               Explora Destinos
             </span>
-            <h2 className="text-xl sm:text-2xl font-bold text-[#3A3A3A] mt-3">
+            <h2 className="text-xl sm:text-2xl font-bold text-[#25382e] mt-3">
               ¿Quieres una recomendación?
             </h2>
-            <p className="text-sm sm:text-base font-medium text-[#7A7A7A] mt-1">
+            <p className="text-sm sm:text-base font-medium text-[#526554] mt-1">
               Echa un vistazo a los lugares mejor valorados por categoría
             </p>
           </div>

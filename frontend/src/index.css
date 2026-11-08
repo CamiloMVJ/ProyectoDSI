@@ -19,6 +19,30 @@
   box-sizing: border-box;
 }
 
+::-webkit-scrollbar {
+  width: 8px;
+  height: 7px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-muted);
+}
+
+@supports (-moz-appearance: none) {
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-border) transparent;
+  }
+}
+
 html,
 body,
 #root {
@@ -36,6 +60,42 @@ input {
 :focus-visible {
   outline: 3px solid var(--color-accent);
   outline-offset: 3px;
+}
+
+.category-card {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100px;
+  height: 100px;
+  border: 2.5px solid var(--color-accent);
+  border-radius: 24px;
+  transition: all .2s;
+}
+
+.category-card-selected {
+  color: white;
+  background: var(--color-accent);
+  transform: scale(1.05);
+  box-shadow: 0 8px 20px rgb(196 81 17 / 40%);
+}
+
+.category-card-default {
+  color: var(--color-accent);
+  background: var(--color-surface);
+  box-shadow: 0 4px 14px rgb(196 81 17 / 18%);
+}
+
+.group:hover .category-card-default {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgb(196 81 17 / 30%);
+}
+
+@media (min-width: 640px) {
+  .category-card {
+    width: 112px;
+    height: 112px;
+  }
 }
 
 .auth-page {
