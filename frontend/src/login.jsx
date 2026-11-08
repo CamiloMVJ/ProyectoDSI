@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { ArrowLeft, ArrowRight, Compass, Eye, EyeOff, LockKeyhole, Mail, MapPin } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Compass, Eye, EyeOff, LoaderCircle, LockKeyhole, Mail, MapPin } from 'lucide-react'
 import { useAuth } from './hooks/useAuth.js'
 
 export default function LoginSINATUR() {
@@ -110,7 +110,16 @@ export default function LoginSINATUR() {
               </div>
             </div>
             {message && <p className="auth-notice" role="status">{message}</p>}
-            <button type="submit" className="auth-primary">Iniciar sesión <ArrowRight aria-hidden="true" size={19} /></button>
+            <button type="submit" className="auth-primary" disabled={enviando} aria-busy={enviando}>
+              {enviando ? (
+                <>
+                  <LoaderCircle aria-hidden="true" size={19} className="animate-spin motion-reduce:animate-none" />
+                  Iniciando sesión…
+                </>
+              ) : (
+                <>Iniciar sesión <ArrowRight aria-hidden="true" size={19} /></>
+              )}
+            </button>
           </form>
           <p className="auth-switch">¿Tienes un negocio turístico? <Link to="/registro-negocio">Solicita una cuenta</Link></p>
         </section>
