@@ -8,9 +8,12 @@ import 'dotenv/config'
 const PORT = process.env.PORT || 3000;
 // app.use(express.json())
 
-app.use(cors({
-  origin: 'http://localhost:5173',
-}))
+const corsOptions = {
+  origin: process.env.FRONTEND_URL || 'http://localhost:5173', 
+  credentials: true // Recomendado si usas cookies o JWT
+};
+
+app.use(cors(corsOptions));
 
 app.get('/api/health', (req, res) => {
   res.json({
@@ -18,8 +21,6 @@ app.get('/api/health', (req, res) => {
   })
 })
 
-// app.use('/api', servicesRoutes)
-
 app.listen(PORT, () => {
-  console.log(`Servidor en http://localhost:${PORT}`)
+  console.log(`Servidor activo y escuchando en el puerto ${PORT}`)
 })
