@@ -1,79 +1,137 @@
-import {
-  User,
-  Languages,
-} from 'lucide-react';
+import { Link, useLocation } from 'react-router-dom'
+import { User, Languages, LogOut } from 'lucide-react'
 
-  const Navbar = ({ onLoginClick, onPublishClick }) => {
+export default function Navbar({
+  usuario = null,
+  onLogout,
+  onLoginClick,
+  onPublishClick,
+}) {
+  const { pathname } = useLocation()
+
+  const linkClass = `
+    text-sm font-semibold text-[#3A3A3A]
+    transition-colors hover:text-[#C45111]
+  `
+
   return (
-    <header className="sticky top-0 z-50 w-full bg-white/85 backdrop-blur-md border-b border-gray-200/60 transition-all">
-      <nav className="max-w-7xl mx-auto py-4 px-6 sm:px-10 flex flex-wrap items-center justify-between gap-4">
-        {/* Identidad / Logo */}
-        <a href="#inicio" className="flex items-center gap-2.5 group">
-          <div className="flex flex-col">
-            <span className="text-2xl sm:text-[26px] font-bold tracking-wider text-[#3A3A3A] font-serif leading-none">
-              SINATUR
-            </span>
-            <span className="text-[10px] sm:text-[11px] text-[#8C8C8C] tracking-tight mt-0.5">
-              Sistema Nacional de Turismo
-            </span>
-          </div>
-        </a>
+    <header
+      className="sticky top-0 z-50 w-full border-b
+        border-gray-200/60 bg-white/85 backdrop-blur-md"
+    >
+      <nav
+        aria-label="Navegación principal"
+        className="mx-auto flex max-w-7xl flex-wrap items-center
+          justify-between gap-4 px-6 py-4 sm:px-10"
+      >
+        <Link
+          to="/"
+          className="flex flex-col"
+          aria-label="SINATUR, ir al inicio"
+        >
+          <span
+            className="font-serif text-2xl font-bold
+              tracking-wider text-[#3A3A3A]"
+          >
+            SINATUR
+          </span>
 
-        {/* Enlaces de Navegación */}
-        <ul className="flex items-center gap-6 sm:gap-9 text-xs sm:text-sm font-semibold text-[#3A3A3A]">
+          <span className="text-[11px] text-[#6A6A6A]">
+            Sistema Nacional de Turismo
+          </span>
+        </Link>
+
+        <ul className="flex items-center gap-6">
           <li>
-            <a
-              href="#inicio"
-              className="hover:text-[#C45111] transition-colors relative after:content-[''] after:block after:w-0 after:h-[2px] after:bg-[#C45111] after:transition-all hover:after:w-full"
-            >
+            <Link to="/" className={linkClass}>
               Inicio
-            </a>
+            </Link>
           </li>
+
           <li>
-            <a
-              href="#explorar"
-              className="hover:text-[#C45111] transition-colors relative after:content-[''] after:block after:w-0 after:h-[2px] after:bg-[#C45111] after:transition-all hover:after:w-full"
-            >
-              Explorar
-            </a>
+            {pathname === '/' ? (
+              <a href="#explorar" className={linkClass}>
+                Explorar
+              </a>
+            ) : (
+              <Link to="/" className={linkClass}>
+                Explorar
+              </Link>
+            )}
           </li>
+
           <li>
-            <a
-              href="#contacto"
-              className="hover:text-[#C45111] transition-colors relative after:content-[''] after:block after:w-0 after:h-[2px] after:bg-[#C45111] after:transition-all hover:after:w-full"
-            >
+            <a href="#contacto" className={linkClass}>
               Contacto
             </a>
           </li>
         </ul>
 
-        {/* Acciones de Usuario */}
-        <div className="flex items-center gap-3 sm:gap-5">
-          <span className="hidden sm:inline-flex items-center gap-1 text-xs text-[#526554]" lang="es">
-            <Languages aria-hidden="true" className="w-4 h-4" /> Español
+        <div className="flex flex-wrap items-center gap-3">
+          <span
+            className="hidden items-center gap-1
+              text-xs text-[#526554] sm:inline-flex"
+            lang="es"
+          >
+            <Languages size={16} aria-hidden="true" />
+            Español
           </span>
 
-          <button
-            type="button"
-            onClick={onLoginClick}
-            className="flex min-h-11 items-center gap-2 text-[#344e3b] hover:text-[#C45111] transition-colors text-xs sm:text-sm font-semibold px-3 py-1.5 rounded-full hover:bg-gray-100/80 cursor-pointer"
-          >
-            <div className="w-7 h-7 rounded-full bg-gray-200 flex items-center justify-center text-[#6A6A6A]">
-              <User className="w-4 h-4 fill-current" />
-            </div>
-            <span>Ingresar</span>
-          </button>
+          {usuario ? (
+            <>
+              <Link
+                to="/mi-cuenta"
+                aria-current={
+                  pathname === '/mi-cuenta' ? 'page' : undefined
+                }
+                className="inline-flex min-h-11 items-center gap-2
+                  rounded-full bg-[#eaf0e7] px-4 text-sm
+                  font-semibold text-[#344e3b]"
+              >
+                <User size={18} aria-hidden="true" />
+                Mi cuenta
+              </Link>
 
-          <button
-            type="button"
-            onClick={onPublishClick}
-            className="min-h-11 bg-[#C45111] hover:bg-[#9d3e0b] active:scale-[0.98] text-white text-xs sm:text-sm font-semibold px-5 sm:px-6 py-2.5 rounded-full shadow-md shadow-[#C45111]/25 hover:shadow-lg hover:shadow-[#C45111]/35 transition-all cursor-pointer"
-          >
-            Publícate con nosotros
-          </button>
+              <button
+                type="button"
+                onClick={onLogout}
+                className="inline-flex min-h-11 items-center gap-2
+                  rounded-full border border-[#d8e1d5] px-4
+                  text-sm font-semibold text-[#344e3b]
+                  hover:bg-gray-100"
+              >
+                <LogOut size={17} aria-hidden="true" />
+                Cerrar sesión
+              </button>
+            </>
+          ) : (
+            <>
+              <button
+                type="button"
+                onClick={onLoginClick}
+                className="inline-flex min-h-11 items-center gap-2
+                  rounded-full px-4 text-sm font-semibold
+                  text-[#344e3b] hover:bg-gray-100"
+              >
+                <User size={18} aria-hidden="true" />
+                Ingresar
+              </button>
+
+              {onPublishClick && (
+                <button
+                  type="button"
+                  onClick={onPublishClick}
+                  className="min-h-11 rounded-full bg-[#C45111]
+                    px-5 text-sm font-semibold text-white
+                    hover:bg-[#9d3e0b]"
+                >
+                  Publícate con nosotros
+                </button>
+              )}
+            </>
+          )}
         </div>
       </nav>
     </header>
-  );
-};
-export default Navbar;
+  )
+}

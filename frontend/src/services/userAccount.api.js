@@ -1,6 +1,8 @@
 const API = (import.meta.env?.VITE_API_URL || "/api").replace(/\/$/, "")
 const SESSION_KEY = "sinatur.sesion"
 
+console.log("API URL:", API)
+
 function usuarioPublico(usuario) {
   return {
     id_usuario: usuario.id_usuario,
@@ -68,13 +70,34 @@ async function request(path, { token, ...options } = {}) {
   return body.data
 }
 
-export async function login(credenciales) {
-  const sesion = await request("/usuarios/login", {
-    method: "POST",
-    body: JSON.stringify(credenciales),
+export async function login({ email, password }) {
+  const response = await fetch(`${API}/usuarios/login`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      email: email.trim(),
+      password,
+    }),
   })
 
+  const respuesta = await response.json().catch(() => null)
+
+  if (!response.ok || respuesta?.success !== true) {
+    throw new Error(
+      respuesta?.message ||
+      respuesta?.mensaje ||
+      'No se pudo iniciar sesión'
+    )
+  }
+
+  // El controller coloca token y usuario dentro de "data".
+  const sesion = respuesta.data
+
   saveSession(sesion)
+
+  return sesion.usuario
 }
 
 export function getAccount(sesion, signal) {

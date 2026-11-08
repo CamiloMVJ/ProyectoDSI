@@ -1,16 +1,54 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { ArrowLeft, ArrowRight, Compass, Eye, EyeOff, LockKeyhole, Mail, MapPin } from 'lucide-react'
+import { login } from './services/userAccount.api.js'
 
 export default function LoginSINATUR() {
+  const navigate = useNavigate()
   const [showPassword, setShowPassword] = useState(false)
   const [message, setMessage] = useState('')
+  const [enviando, setEnviando] = useState(false)
+  const [credenciales, setCredenciales] = useState({
+    email: '',
+    password: '',
+  })
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault()
-    setMessage('El inicio de sesión estará disponible cuando se conecte el servicio de cuentas.')
+
+    if (enviando) return
+
+    setMessage('')
+    setEnviando(true)
+
+    try {
+      await login({
+        email: credenciales.email.trim(),
+        password: credenciales.password,
+      })
+
+      navigate('/mi-cuenta', { replace: true })
+    } catch (error) {
+      setMessage(
+        error instanceof TypeError
+          ? 'No se pudo conectar con el servidor.'
+          : error.message
+      )
+    } finally {
+      setEnviando(false)
+    }
   }
 
+  function handleChange(event) {
+    const { name, value } = event.target
+
+    setCredenciales(actual => ({
+      ...actual,
+      [name]: value,
+    }))
+
+    setMessage('')
+  }
   return (
     <div className="auth-page">
       <main className="auth-card auth-card-login">
@@ -37,11 +75,38 @@ export default function LoginSINATUR() {
           <form className="auth-form" onSubmit={handleSubmit}>
             <div className="auth-field">
               <label htmlFor="login-email">Correo electrónico</label>
-              <div className="auth-input-wrap"><Mail aria-hidden="true" size={19} /><input id="login-email" name="email" type="email" autoComplete="email" placeholder="ejemplo@correo.com" required /></div>
+              <div className="auth-input-wrap"><Mail aria-hidden="true" size={19} />
+                <input
+                  id="login-email"
+                  name="email"
+                  type="email"
+                  value={credenciales.email}
+                  onChange={handleChange}
+                  autoComplete="email"
+                  placeholder="ejemplo@correo.com"
+                  disabled={enviando}
+                  required
+                />
+              </div>
             </div>
             <div className="auth-field">
               <label htmlFor="login-password">Contraseña</label>
-              <div className="auth-input-wrap"><LockKeyhole aria-hidden="true" size={19} /><input id="login-password" name="password" type={showPassword ? 'text' : 'password'} autoComplete="current-password" placeholder="Ingresa tu contraseña" required /><button type="button" className="auth-icon-button" onClick={() => setShowPassword(!showPassword)} aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'} aria-pressed={showPassword}>{showPassword ? <EyeOff size={19} /> : <Eye size={19} />}</button></div>
+              <div className="auth-input-wrap"><LockKeyhole aria-hidden="true" size={19} />
+                <input
+                  id="login-password"
+                  name="password"
+                  type={showPassword ? 'text' : 'password'}
+                  value={credenciales.password}
+                  onChange={handleChange}
+                  autoComplete="current-password"
+                  placeholder="Ingresa tu contraseña"
+                  disabled={enviando}
+                  required
+                />
+                <button type="button" className="auth-icon-button" onClick={() => setShowPassword(!showPassword)} aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'} aria-pressed={showPassword}>
+                  {showPassword ? <EyeOff size={19} /> : <Eye size={19} />}
+                </button>
+              </div>
             </div>
             {message && <p className="auth-notice" role="status">{message}</p>}
             <button type="submit" className="auth-primary">Iniciar sesión <ArrowRight aria-hidden="true" size={19} /></button>
