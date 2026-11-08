@@ -1,4 +1,5 @@
- const EventCarousel = ({
+import { Calendar, MapPin, ChevronLeft, ChevronRight   } from "lucide-react";
+const EventCarousel = ({
   title = 'Próximos eventos',
   events = [],
   activeIndex = 0,
@@ -90,11 +91,10 @@
               type="button"
               onClick={() => onSelectDot && onSelectDot(index)}
               aria-label={`Ir al evento ${index + 1}`}
-              className={`h-2 rounded-full transition-all cursor-pointer ${
-                activeIndex === index
-                  ? 'w-6 bg-[#C45111]'
-                  : 'w-2 bg-white/60 hover:bg-white'
-              }`}
+              className={`h-2 rounded-full transition-all cursor-pointer ${activeIndex === index
+                ? 'w-6 bg-[#C45111]'
+                : 'w-2 bg-white/60 hover:bg-white'
+                }`}
             />
           ))}
         </div>

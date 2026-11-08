@@ -1,4 +1,6 @@
- const RecommendationSection = ({
+import SectionHeaderDecoration from './SectionHeaderDecoration';
+import { ChevronLeft, Clock, MapPin, Star, Heart, ChevronRight  } from "lucide-react";
+const RecommendationSection = ({
   id,
   sectionTitle,
   nombreNegocio = 'Nombre negocio',
@@ -129,11 +131,10 @@
                 type="button"
                 onClick={onToggleFavorite}
                 aria-label="Guardar en favoritos"
-                className={`absolute top-3.5 right-3.5 z-10 w-9 h-9 rounded-full flex items-center justify-center shadow-sm transition-all cursor-pointer ${
-                  esFavorito
-                    ? 'bg-red-50 text-red-500 scale-105'
-                    : 'bg-gray-100/90 hover:bg-white text-gray-400 hover:text-red-500'
-                }`}
+                className={`absolute top-3.5 right-3.5 z-10 w-9 h-9 rounded-full flex items-center justify-center shadow-sm transition-all cursor-pointer ${esFavorito
+                  ? 'bg-red-50 text-red-500 scale-105'
+                  : 'bg-gray-100/90 hover:bg-white text-gray-400 hover:text-red-500'
+                  }`}
               >
                 <Heart className={`w-4 h-4 ${esFavorito ? 'fill-current' : ''}`} />
               </button>

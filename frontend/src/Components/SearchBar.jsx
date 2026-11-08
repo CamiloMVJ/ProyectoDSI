@@ -1,3 +1,4 @@
+import { Search, MapPin } from "lucide-react";
 const SearchBar = ({
   value = '',
   selectedDepartment = '',
