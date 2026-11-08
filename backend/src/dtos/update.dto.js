@@ -13,7 +13,7 @@ import { atractivoIndependienteSchema } from './atractivos_independientes.dto.js
 import { localComercialSchema } from './local_comercial.dto.js';
 import { eventoSchema } from './evento.dto.js';
 import { servicioSchema } from './servicio.dto.js';
-import { menuSchema } from './menus.dto.js';
+import { menuSchema } from './Menus.dto.js';
 import { itemMenuSchema } from './items_Menu.dto.js';
 import { solicitudRegistroSchema } from './solicitud_registro.dto.js';
 import { campaniaSchema } from './campania.dto.js';
