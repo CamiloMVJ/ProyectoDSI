@@ -1,13 +1,18 @@
-import { Link, useLocation } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { User, Languages, LogOut } from 'lucide-react'
+import { useAuth } from '../hooks/useAuth.js'
 
 export default function Navbar({
-  usuario = null,
-  onLogout,
-  onLoginClick,
   onPublishClick,
 }) {
   const { pathname } = useLocation()
+  const navigate = useNavigate()
+  const { sesion, signOut } = useAuth()
+
+  function handleLogout() {
+    signOut()
+    navigate('/ingresar', { replace: true })
+  }
 
   const linkClass = `
     text-sm font-semibold text-[#3A3A3A]
@@ -77,12 +82,12 @@ export default function Navbar({
             Español
           </span>
 
-          {usuario ? (
+          {sesion ? (
             <>
               <Link
-                to="/mi-cuenta"
+                to="/account"
                 aria-current={
-                  pathname === '/mi-cuenta' ? 'page' : undefined
+                  pathname === '/account' ? 'page' : undefined
                 }
                 className="inline-flex min-h-11 items-center gap-2
                   rounded-full bg-[#eaf0e7] px-4 text-sm
@@ -94,7 +99,7 @@ export default function Navbar({
 
               <button
                 type="button"
-                onClick={onLogout}
+                onClick={handleLogout}
                 className="inline-flex min-h-11 items-center gap-2
                   rounded-full border border-[#d8e1d5] px-4
                   text-sm font-semibold text-[#344e3b]
@@ -106,16 +111,15 @@ export default function Navbar({
             </>
           ) : (
             <>
-              <button
-                type="button"
-                onClick={onLoginClick}
+              <Link
+                to="/ingresar"
                 className="inline-flex min-h-11 items-center gap-2
                   rounded-full px-4 text-sm font-semibold
                   text-[#344e3b] hover:bg-gray-100"
               >
                 <User size={18} aria-hidden="true" />
                 Ingresar
-              </button>
+              </Link>
 
               {onPublishClick && (
                 <button

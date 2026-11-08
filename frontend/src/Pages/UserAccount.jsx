@@ -25,7 +25,7 @@ function iniciales(nombre = '') {
     )
 }
 
-export default function CuentaUsuario() {
+export default function UserAccount() {
     const cuenta = useCuentaUsuario()
 
     if (!cuenta.sesion) {
@@ -39,10 +39,7 @@ export default function CuentaUsuario() {
             id="inicio"
             className="min-h-screen bg-[#f6f8f3] text-[#25382e]"
         >
-            <Navbar
-                usuario={usuario}
-                onLogout={cuenta.cerrarSesion}
-            />
+            <Navbar />
 
             <main>
                 <section className="bg-[#263f32] text-white">

@@ -1,5 +1,5 @@
 import SectionHeaderDecoration from './SectionHeaderDecoration';
-import { ChevronLeft, Clock, MapPin, Star, Heart, ChevronRight  } from "lucide-react";
+import { ChevronLeft, Clock, MapPin, Star, Heart, ChevronRight, Sparkles, ExternalLink } from "lucide-react";
 const RecommendationSection = ({
   id,
   sectionTitle,

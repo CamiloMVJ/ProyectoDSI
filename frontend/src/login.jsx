@@ -1,10 +1,11 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { ArrowLeft, ArrowRight, Compass, Eye, EyeOff, LockKeyhole, Mail, MapPin } from 'lucide-react'
-import { login } from './services/userAccount.api.js'
+import { useAuth } from './hooks/useAuth.js'
 
 export default function LoginSINATUR() {
   const navigate = useNavigate()
+  const { signIn } = useAuth()
   const [showPassword, setShowPassword] = useState(false)
   const [message, setMessage] = useState('')
   const [enviando, setEnviando] = useState(false)
@@ -22,12 +23,12 @@ export default function LoginSINATUR() {
     setEnviando(true)
 
     try {
-      await login({
+      await signIn({
         email: credenciales.email.trim(),
         password: credenciales.password,
       })
 
-      navigate('/mi-cuenta', { replace: true })
+      navigate('/account', { replace: true })
     } catch (error) {
       setMessage(
         error instanceof TypeError

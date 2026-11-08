@@ -1,16 +1,15 @@
 import { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import {
-  getSession,
-  delSession,
   getAccount,
   updateAccount,
 } from "../services/userAccount.api.js"
+import { useAuth } from './useAuth.js'
 
 export function useCuentaUsuario() {
   const navigate = useNavigate()
+  const { sesion, signOut } = useAuth()
 
-  const [sesion] = useState(getSession)
   const [usuario, setUsuario] = useState(null)
   const [cargando, setCargando] = useState(true)
   const [guardando, setGuardando] = useState(false)
@@ -23,7 +22,7 @@ export function useCuentaUsuario() {
 
     const controller = new AbortController()
 
-    obtenerMiCuenta(sesion, controller.signal)
+    getAccount(sesion, controller.signal)
       .then((usuario) => {
         if (!controller.signal.aborted) {
           setUsuario(usuario)
@@ -33,7 +32,7 @@ export function useCuentaUsuario() {
         if (controller.signal.aborted) return
 
         if ([401, 403].includes(error.status)) {
-          eliminarSesion()
+          signOut()
           navigate("/ingresar", { replace: true })
         } else {
           setError(error.message)
@@ -46,7 +45,7 @@ export function useCuentaUsuario() {
       })
 
     return () => controller.abort()
-  }, [sesion, intento, navigate])
+  }, [sesion, intento, navigate, signOut])
 
   async function guardar(datos) {
     setGuardando(true)
@@ -54,7 +53,7 @@ export function useCuentaUsuario() {
     setAviso("")
 
     try {
-      const actualizado = await actualizarMiCuenta(sesion, datos)
+      const actualizado = await updateAccount(sesion, datos)
 
       setUsuario(actualizado)
       setAviso("Tus cambios se guardaron correctamente.")
@@ -62,7 +61,7 @@ export function useCuentaUsuario() {
       return actualizado
     } catch (error) {
       if ([401, 403].includes(error.status)) {
-        eliminarSesion()
+        signOut()
         navigate("/ingresar", { replace: true })
       } else {
         setError(error.message)
@@ -75,7 +74,7 @@ export function useCuentaUsuario() {
   }
 
   function cerrarSesion() {
-    eliminarSesion()
+    signOut()
     navigate("/ingresar", { replace: true })
   }
 

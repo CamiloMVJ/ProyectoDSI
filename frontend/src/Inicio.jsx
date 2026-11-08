@@ -3,30 +3,11 @@ import { useState } from 'react';
 import   Navbar from './Components/Navbar';
 import EventCarousel from './Components/EventCarousel';
 import SearchBar from './Components/SearchBar';
-import SectionHeaderDecoration from './Components/SectionHeaderDecoration';
 import RecommendationSection from './Components/RecommendationSection';
 import  HospedajeIcon from './Components/Icons';  
 import Footer from './Components/Footer';
 import { useNavigate } from 'react-router-dom';
-import {
-  Search,
-  ChevronLeft,
-  ChevronRight,
-  User,
-  Languages,
-  Utensils,
-  Martini,
-  Disc,
-  Coffee,
-  Bus,
-  Star,
-  Heart,
-  MapPin,
-  Clock,
-  Calendar,
-  Sparkles,
-  ExternalLink,
-} from 'lucide-react';
+import { Utensils, Martini, Disc, Coffee, Bus } from 'lucide-react';
 
 
 /* ============================================================================
@@ -130,7 +111,6 @@ export default function App() {
       <div>
         {/* 1. Barra de Navegación Fija (Glassmorphism) */}
         <Navbar
-          onLoginClick={() => navigate('/ingresar')}
           onPublishClick={() => navigate('/registro-negocio')}
         />
 
