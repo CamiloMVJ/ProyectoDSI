@@ -1,4 +1,5 @@
-import Joi from 'joi';
+import Joi from 'joi'
+import { usuarioSchema } from './usuario.dto.js'
 
 export const turistaSchema = Joi.object({
     id_usuario: Joi.number()
@@ -22,3 +23,9 @@ export const turistaSchema = Joi.object({
             'any.required': 'El país de origen es obligatorio.'
         })
 });
+
+// Crea el usuario y su perfil juntos. id_usuario lo genera PostgreSQL.
+// El schema original se conserva para asociar un usuario existente.
+export const createTuristaUserSchema = usuarioSchema.keys({
+  pais_origen: turistaSchema.extract('pais_origen')
+}).unknown(false).required()

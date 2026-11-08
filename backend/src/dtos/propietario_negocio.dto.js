@@ -1,4 +1,5 @@
-import Joi from 'joi';
+import Joi from 'joi'
+import { usuarioSchema } from './usuario.dto.js'
 
 export const propietarioNegocioSchema = Joi.object({
     id_usuario: Joi.number()
@@ -16,3 +17,9 @@ export const propietarioNegocioSchema = Joi.object({
         .max(50)
         .default('Pendiente')
 });
+
+// Crea el usuario y su perfil juntos. id_usuario lo genera PostgreSQL.
+// El schema original se conserva para asociar un usuario existente.
+export const createPropietarioUserSchema = usuarioSchema.keys({
+  estado_verificacion: propietarioNegocioSchema.extract('estado_verificacion')
+}).unknown(false).required()

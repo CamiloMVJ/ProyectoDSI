@@ -16,6 +16,7 @@ id_local: Joi.number()
 fecha_inicio: Joi.date()
     .iso()
     .required()
+    .raw()
     .messages({
         'date.format': 'La fecha de inicio debe tener un formato válido.',
         'any.required': 'La fecha de inicio es obligatoria.'
@@ -25,6 +26,7 @@ fecha_fin: Joi.date()
     .iso()
     .min(Joi.ref('fecha_inicio'))
     .required()
+    .raw()
     .messages({
         'date.format': 'La fecha de finalización debe tener un formato válido.',
         'date.min': 'La fecha de finalización no puede ser anterior a la fecha de inicio.',

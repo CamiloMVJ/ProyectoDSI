@@ -1,4 +1,5 @@
-import Joi from 'joi';
+import Joi from 'joi'
+import { usuarioSchema } from './usuario.dto.js'
 
 export const administradorSchema = Joi.object({
     id_usuario: Joi.number()
@@ -17,3 +18,9 @@ export const administradorSchema = Joi.object({
         .max(100)
         .default('Administrador')
 });
+
+// Crea el usuario y su perfil juntos. id_usuario lo genera PostgreSQL.
+// El schema original se conserva para asociar un usuario existente.
+export const createAdminUserSchema = usuarioSchema.keys({
+  rol: administradorSchema.extract('rol')
+}).unknown(false).required()
