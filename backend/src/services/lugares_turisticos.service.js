@@ -1,9 +1,16 @@
 import * as repository from '../repositories/lugares_turisticos.repository.js'
 import * as departamentosRepository from '../repositories/departamentos.repository.js'
 import { AppError } from '../errors/app-error.js'
+import { buscarLugaresSchema } from '../dtos/lugar.dto.js'
 import { parseId, allowedData, pick, execute, requireReference, withLockedRecord, checkDates, checkEvent, normalizeEvent, publicUser } from './service-utils.js'
 
 const fields = ["nombre", "descripcion", "id_departamento", "municipio", "direccion_exacta", "maps_link"]
+
+export async function search(params) {
+  const { error, value } = buscarLugaresSchema.validate(params)
+  if (error) throw new AppError('Los filtros de búsqueda no son válidos', 400)
+  return execute(() => repository.search(value))
+}
 
 async function checkRules(data, client) {
   await requireReference(departamentosRepository, data.id_departamento, 'El departamento', client)

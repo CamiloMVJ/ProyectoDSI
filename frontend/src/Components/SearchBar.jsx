@@ -22,7 +22,7 @@ const SearchBar = ({
         <Search className="w-5 h-5 text-[#C45111] mr-3 shrink-0" />
         <input
           type="text"
-          aria-label="Buscar destinos o negocios"
+          aria-label="Buscar lugares turísticos"
           value={value}
           onChange={(e) => onChange && onChange(e.target.value)}
           placeholder={placeholder}
@@ -40,8 +40,8 @@ const SearchBar = ({
           >
             <option value="">Todo el país</option>
             {departments.map((dep) => (
-              <option key={dep} value={dep}>
-                {dep}
+              <option key={dep.id_departamento} value={dep.id_departamento}>
+                {dep.nombre}
               </option>
             ))}
           </select>
