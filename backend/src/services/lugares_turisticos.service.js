@@ -1,11 +1,12 @@
 import * as repository from '../repositories/lugares_turisticos.repository.js'
+import * as departamentosRepository from '../repositories/departamentos.repository.js'
 import { AppError } from '../errors/app-error.js'
 import { parseId, allowedData, pick, execute, requireReference, withLockedRecord, checkDates, checkEvent, normalizeEvent, publicUser } from './service-utils.js'
 
-const fields = ["nombre", "descripcion", "departamento", "municipio", "direccion_exacta", "maps_link"]
+const fields = ["nombre", "descripcion", "id_departamento", "municipio", "direccion_exacta", "maps_link"]
 
 async function checkRules(data, client) {
-
+  await requireReference(departamentosRepository, data.id_departamento, 'El departamento', client)
 }
 
 export async function findAll() {

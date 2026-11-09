@@ -14,26 +14,26 @@ export async function findOne(id, client = pool) {
 }
 
 export async function create(data, client = pool) {
-  const { nombre, descripcion, departamento, municipio, direccion_exacta, maps_link } = data;
+  const { nombre, descripcion, id_departamento, municipio, direccion_exacta, maps_link } = data;
   const query = `
-    INSERT INTO lugares_turisticos (nombre, descripcion, departamento, municipio, direccion_exacta, maps_link) 
-    VALUES ($1, $2, $3, $4, $5, $6) 
+    INSERT INTO lugares_turisticos (nombre, descripcion, id_departamento, municipio, direccion_exacta, maps_link)
+    VALUES ($1, $2, $3, $4, $5, $6)
     RETURNING *;
   `;
-  const values = [nombre, descripcion, departamento, municipio, direccion_exacta, maps_link];
+  const values = [nombre, descripcion, id_departamento, municipio, direccion_exacta, maps_link];
   const { rows } = await client.query(query, values);
   return rows[0];
 }
 
 export async function update(id, data, client = pool) {
-  const { nombre, descripcion, departamento, municipio, direccion_exacta, maps_link } = data;
+  const { nombre, descripcion, id_departamento, municipio, direccion_exacta, maps_link } = data;
   const query = `
-    UPDATE lugares_turisticos 
-    SET nombre = $1, descripcion = $2, departamento = $3, municipio = $4, direccion_exacta = $5, maps_link = $6 
-    WHERE id_lugar = $7 
+    UPDATE lugares_turisticos
+    SET nombre = $1, descripcion = $2, id_departamento = $3, municipio = $4, direccion_exacta = $5, maps_link = $6
+    WHERE id_lugar = $7
     RETURNING *;
   `;
-  const values = [nombre, descripcion, departamento, municipio, direccion_exacta, maps_link, id];
+  const values = [nombre, descripcion, id_departamento, municipio, direccion_exacta, maps_link, id];
   const { rows } = await client.query(query, values);
   return rows[0] || null;
 }

@@ -25,9 +25,9 @@ INSERT INTO categorias (nombre, descripcion, icono_url) VALUES
 ('Restaurantes', 'Establecimientos de comida y bebida.', 'https://iconos.com/restaurante.png');
 
 -- 6. Tabla Lugares Turísticos
-INSERT INTO lugares_turisticos (nombre, descripcion, departamento, municipio, direccion_exacta, maps_link) VALUES
-('Hotel y Restaurante La Gran Vista', 'Complejo turístico con vista a la laguna de Apoyo.', 'Masaya', 'Catarina', 'Mirador de Catarina, 200m al sur', 'https://maps.google.com/?q=laguna+apoyo'),
-('Mirador de Catarina', 'Atractivo natural con vista panorámica a la laguna de Apoyo.', 'Masaya', 'Catarina', 'Centro de Catarina', 'https://maps.google.com/?q=mirador+catarina');
+INSERT INTO lugares_turisticos (nombre, descripcion, id_departamento, municipio, direccion_exacta, maps_link) VALUES
+('Hotel y Restaurante La Gran Vista', 'Complejo turístico con vista a la laguna de Apoyo.', (SELECT id_departamento FROM departamentos WHERE nombre = 'Masaya'), 'Catarina', 'Mirador de Catarina, 200m al sur', 'https://maps.google.com/?q=laguna+apoyo'),
+('Mirador de Catarina', 'Atractivo natural con vista panorámica a la laguna de Apoyo.', (SELECT id_departamento FROM departamentos WHERE nombre = 'Masaya'), 'Catarina', 'Centro de Catarina', 'https://maps.google.com/?q=mirador+catarina');
 
 -- 7. Tabla Complejos Turísticos
 INSERT INTO complejos_turisticos (id_lugar, capacidad_locales, cobro_entrada, id_administrador, costo_entrada) VALUES
@@ -60,8 +60,8 @@ INSERT INTO favoritos (id_turista, id_lugar, fecha_guardado) VALUES
 (1, 1, '2024-03-01');
 
 -- 14. Tabla Eventos Nacionales
-INSERT INTO eventos_nacionales (titulo, descripcion, fecha_inicio, fecha_fin, hora_inicio, hora_fin, departamento, municipio, direccion_referencia, tipo_evento, costo_entrada, es_gratuito, es_anual_recurrente, id_lugar_asociado, estado) VALUES
-('Feria de Artesanía', 'Exposición de artesanías locales y gastronomía.', '2026-11-15', '2026-11-20', '09:00', '17:00', 'Masaya', 'Masaya', 'Parque Central de Masaya', 'Cultural', 0.00, TRUE, TRUE, NULL, 'Programado');
+INSERT INTO eventos_nacionales (titulo, descripcion, fecha_inicio, fecha_fin, hora_inicio, hora_fin, id_departamento, municipio, direccion_referencia, tipo_evento, costo_entrada, es_gratuito, es_anual_recurrente, id_lugar_asociado, estado) VALUES
+('Feria de Artesanía', 'Exposición de artesanías locales y gastronomía.', '2026-11-15', '2026-11-20', '09:00', '17:00', (SELECT id_departamento FROM departamentos WHERE nombre = 'Masaya'), 'Masaya', 'Parque Central de Masaya', 'Cultural', 0.00, TRUE, TRUE, NULL, 'Programado');
 
 -- 15. Tabla Servicios
 INSERT INTO servicios (id_local, nombre_servicio, descripcion, precio, moneda, tipo_cobro, incluye, duracion_estimada, esta_disponible) VALUES

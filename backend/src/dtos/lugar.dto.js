@@ -18,14 +18,15 @@ descripcion: Joi.string()
     .allow('', null)
     .optional(),
 
-departamento: Joi.string()
-    .trim()
-    .max(100)
+id_departamento: Joi.number()
+    .integer()
+    .positive()
     .required()
     .messages({
-        'string.empty': 'El departamento es obligatorio.',
-        'string.max': 'El departamento no puede superar los 100 caracteres.',
-        'any.required': 'El departamento es obligatorio.'
+        'number.base': 'El ID del departamento debe ser un número.',
+        'number.integer': 'El ID del departamento debe ser un entero.',
+        'number.positive': 'El ID del departamento debe ser positivo.',
+        'any.required': 'El ID del departamento es obligatorio.'
     }),
 
 municipio: Joi.string()

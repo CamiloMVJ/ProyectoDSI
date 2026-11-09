@@ -104,7 +104,7 @@ export const updateLugarSchema = lugarSchema
         [
             'nombre',
             'descripcion',
-            'departamento',
+            'id_departamento',
             'municipio',
             'direccion_exacta',
             'maps_link'
@@ -276,7 +276,7 @@ export const updateEventoSchema = eventoSchema
             'fecha_fin',
             'hora_inicio',
             'hora_fin',
-            'departamento',
+            'id_departamento',
             'municipio',
             'direccion_referencia',
             'tipo_evento',

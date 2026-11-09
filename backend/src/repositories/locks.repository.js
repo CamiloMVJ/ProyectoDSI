@@ -13,7 +13,8 @@ const keys = {
   horarios: 'id_horario',
   imagenes_lugares: 'id_imagen',
   favoritos: 'id_favorito',
-  solicitudes_registros: 'id_solicitud'
+  solicitudes_registros: 'id_solicitud',
+  departamentos: 'id_departamento'
 }
 
 export async function lockOne(table, id, client) {

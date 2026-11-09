@@ -19,10 +19,12 @@ import items_menuRoutes from './items_menu.routes.js';
 import solicitudes_registrosRoutes from './solicitudes_registros.routes.js';
 import campanias_publicitariasRoutes from './campanias_publicitarias.routes.js';
 import pagos_publicidadRoutes from './pagos_publicidad.routes.js';
+import departamentosRoutes from './departamentos.routes.js';
 
 const router = Router();
 router.get('/health', (req, res) => res.json({ success: true, status: 'ok' }));
 router.use('/categorias', categoriasRoutes);
+router.use('/departamentos', departamentosRoutes);
 router.use('/servicios', serviciosRoutes);
 router.use('/usuarios', usuariosRoutes);
 router.use('/turistas', turistasRoutes);
