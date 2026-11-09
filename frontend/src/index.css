@@ -120,6 +120,36 @@ input {
   min-height: 610px;
 }
 
+.auth-card-user-register {
+  min-height: 760px;
+}
+
+.auth-card-user-register .auth-form-panel {
+  padding-top: 36px;
+  padding-bottom: 36px;
+}
+
+.auth-card-user-register .auth-form {
+  gap: 15px;
+}
+
+.auth-card-user-register .auth-heading {
+  margin-bottom: 22px;
+}
+
+.auth-optional {
+  color: var(--color-text-muted);
+  font-weight: 400;
+}
+
+.auth-primary-link {
+  text-decoration: none;
+}
+
+.auth-switch-secondary {
+  margin-top: 10px;
+}
+
 .auth-intro {
   display: flex;
   flex-direction: column;

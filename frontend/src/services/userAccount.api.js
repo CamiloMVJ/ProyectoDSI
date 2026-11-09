@@ -72,6 +72,13 @@ export async function login({ email, password }) {
   return sesion.usuario
 }
 
+export function registerAccount(datos) {
+  return request('/usuarios', {
+    method: 'POST',
+    body: JSON.stringify(datos),
+  })
+}
+
 export function getAccount(sesion, signal) {
   return request(`/usuarios/${sesion.usuario.id_usuario}`, {
     token: sesion.token,
