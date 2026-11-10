@@ -60,5 +60,6 @@ export const buscarLugaresSchema = Joi.object({
     departamento: Joi.number().integer().positive().empty('').default(null),
     municipio: Joi.string().trim().max(100).allow('').default(''),
     tipo: Joi.string().valid('todos', 'complejo', 'atractivo', 'otro').default('todos'),
-    orden: Joi.string().valid('nombre-asc', 'nombre-desc', 'recientes').default('nombre-asc')
+    orden: Joi.string().valid('nombre-asc', 'nombre-desc', 'recientes').default('nombre-asc'),
+    max_budget: Joi.number().min(0).precision(2).empty('').default(null)
 }).unknown(false);

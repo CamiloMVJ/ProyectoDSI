@@ -4,33 +4,14 @@ export function getDepartments(signal) {
   return request('/departamentos', { signal })
 }
 
-export async function getPlacesCatalog(signal) {
-  const [places, departments, images, complexes, attractions] = await Promise.all([
-    request('/lugares_turisticos', { signal }),
-    getDepartments(signal),
-    request('/imagenes_lugares', { signal }),
-    request('/complejos_turisticos', { signal }),
-    request('/atractivos_independientes', { signal }),
-  ])
-
-  const departmentNames = new Map(departments.map(item => [Number(item.id_departamento), item.nombre]))
-  const placeImages = new Map()
-  images.forEach(image => {
-    const id = Number(image.id_lugar)
-    if (!placeImages.has(id)) placeImages.set(id, image.url_imagen)
-  })
-  const complexIds = new Set(complexes.map(item => Number(item.id_lugar)))
-  const attractionIds = new Set(attractions.map(item => Number(item.id_lugar)))
-
-  return {
-    departments,
-    places: places.map(place => ({
-      ...place,
-      departamento: departmentNames.get(Number(place.id_departamento)) ?? '',
-      url_imagen: placeImages.get(Number(place.id_lugar)) ?? null,
-      tipo: complexIds.has(Number(place.id_lugar)) ? 'complejo' : attractionIds.has(Number(place.id_lugar)) ? 'atractivo' : 'otro',
-    })),
-  }
+export async function getPlacesCatalog(signal, maxBudget = '') {
+  const params = new URLSearchParams()
+  if (maxBudget !== '') params.set('max_budget', maxBudget)
+  const places = await request(`/lugares_turisticos/buscar${params.size ? `?${params}` : ''}`, { signal })
+  const departmentNames = new Map(places.map(place => [place.id_departamento, place.departamento]))
+  const departments = Array.from(departmentNames, ([id_departamento, nombre]) => ({ id_departamento, nombre }))
+    .sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'))
+  return { departments, places }
 }
 
 function normalize(value) {

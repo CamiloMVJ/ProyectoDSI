@@ -6,11 +6,11 @@ const orderBy = {
   recientes: 'l.id_lugar DESC'
 };
 
-export async function search({ q, departamento, municipio, tipo, orden }, client = pool) {
+export async function search({ q, departamento, municipio, tipo, orden, max_budget }, client = pool) {
   const { rows } = await client.query(`
     SELECT l.id_lugar, l.nombre, l.descripcion, l.id_departamento,
            d.nombre AS departamento, l.municipio, l.direccion_exacta, l.maps_link,
-           imagen.url_imagen,
+           imagen.url_imagen, budget.precio_minimo, budget.precio_maximo,
            CASE WHEN c.id_lugar IS NOT NULL THEN 'complejo'
                 WHEN a.id_lugar IS NOT NULL THEN 'atractivo'
                 ELSE 'otro' END AS tipo
@@ -22,6 +22,11 @@ export async function search({ q, departamento, municipio, tipo, orden }, client
       SELECT url_imagen FROM public.imagenes_lugares
       WHERE id_lugar = l.id_lugar ORDER BY id_imagen LIMIT 1
     ) AS imagen ON TRUE
+    LEFT JOIN LATERAL (
+      SELECT MIN(precio_minimo) AS precio_minimo, MAX(precio_maximo) AS precio_maximo
+      FROM public.locales_comerciales
+      WHERE id_complejo_padre = l.id_lugar AND precio_minimo IS NOT NULL
+    ) AS budget ON TRUE
     WHERE ($1::text = '' OR strpos(lower(l.nombre), lower($1)) > 0
            OR strpos(lower(coalesce(l.descripcion, '')), lower($1)) > 0
            OR strpos(lower(l.municipio), lower($1)) > 0
@@ -32,8 +37,9 @@ export async function search({ q, departamento, municipio, tipo, orden }, client
            OR ($4 = 'complejo' AND c.id_lugar IS NOT NULL)
            OR ($4 = 'atractivo' AND a.id_lugar IS NOT NULL)
            OR ($4 = 'otro' AND c.id_lugar IS NULL AND a.id_lugar IS NULL))
+      AND ($5::numeric IS NULL OR budget.precio_minimo <= $5)
     ORDER BY ${orderBy[orden]}
-  `, [q, departamento, municipio, tipo]);
+  `, [q, departamento, municipio, tipo, max_budget]);
   return rows;
 }
 

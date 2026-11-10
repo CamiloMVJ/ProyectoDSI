@@ -21,6 +21,7 @@ import campanias_publicitariasRoutes from './campanias_publicitarias.routes.js';
 import pagos_publicidadRoutes from './pagos_publicidad.routes.js';
 import departamentosRoutes from './departamentos.routes.js';
 import imagesRoutes from './images.routes.js';
+import menuCategoriesRoutes from './menu-categories.routes.js';
 
 const router = Router();
 router.get('/health', (req, res) => res.json({ success: true, status: 'ok' }));
@@ -43,6 +44,7 @@ router.use('/locales_comerciales', locales_comercialesRoutes);
 router.use('/eventos_nacionales', eventos_nacionalesRoutes);
 router.use('/menus', menusRoutes);
 router.use('/items_menu', items_menuRoutes);
+router.use('/menu-categories', menuCategoriesRoutes);
 router.use('/solicitudes_registros', solicitudes_registrosRoutes);
 router.use('/campanias_publicitarias', campanias_publicitariasRoutes);
 router.use('/pagos_publicidad', pagos_publicidadRoutes);

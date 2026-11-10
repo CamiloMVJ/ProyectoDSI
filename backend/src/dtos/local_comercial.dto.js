@@ -31,24 +31,6 @@ export const localComercialSchema = Joi.object({
     es_independiente: Joi.boolean()
         .default(true),
 
-    precio_minimo: Joi.number()
-        .min(0)
-        .precision(2)
-        .allow(null)
-        .optional()
-        .messages({
-            'number.min': 'El precio mínimo no puede ser negativo.'
-        }),
-
-    precio_maximo: Joi.number()
-        .min(0)
-        .precision(2)
-        .allow(null)
-        .optional()
-        .messages({
-            'number.min': 'El precio máximo no puede ser negativo.'
-        }),
-
     id_categoria: Joi.number()
         .integer()
         .positive()

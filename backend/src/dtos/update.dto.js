@@ -250,8 +250,6 @@ export const updateLocalComercialSchema = localComercialSchema
             'id_dueno',
             'id_complejo_padre',
             'es_independiente',
-            'precio_minimo',
-            'precio_maximo',
             'id_categoria'
         ],
         (schema) => schema.optional()
@@ -356,7 +354,8 @@ export const updateItemMenuSchema = itemMenuSchema
             'moneda',
             'url_foto',
             'es_vegetariano',
-            'esta_disponible'
+            'esta_disponible',
+            'id_categoria_menu'
         ],
         (schema) => schema.optional()
     )

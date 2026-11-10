@@ -3,23 +3,23 @@ import * as propietarios_negociosRepository from '../repositories/propietarios_n
 import * as complejos_turisticosRepository from '../repositories/complejos_turisticos.repository.js'
 import * as categoriasRepository from '../repositories/categorias.repository.js'
 import { AppError } from '../errors/app-error.js'
+import Joi from 'joi'
 import { parseId, allowedData, pick, execute, requireReference, withLockedRecord } from './service-utils.js'
 
-const fields = ["codigo_ruc", "id_dueno", "id_complejo_padre", "es_independiente", "precio_minimo", "precio_maximo", "id_categoria"]
-const updateFields = ["codigo_ruc", "id_dueno", "id_complejo_padre", "es_independiente", "precio_minimo", "precio_maximo", "id_categoria"]
+const fields = ["codigo_ruc", "id_dueno", "id_complejo_padre", "es_independiente", "id_categoria"]
+const updateFields = fields
+const budgetFilterSchema = Joi.object({ max_budget: Joi.number().min(0).precision(2) }).unknown(false)
 
 async function checkRules(data, client) {
   await requireReference(propietarios_negociosRepository, data.id_dueno, 'El propietario', client)
   await requireReference(complejos_turisticosRepository, data.id_complejo_padre, 'El complejo', client)
   await requireReference(categoriasRepository, data.id_categoria, 'La categoría', client)
-  if (data.precio_minimo != null && data.precio_maximo != null &&
-      Number(data.precio_maximo) < Number(data.precio_minimo)) {
-    throw new AppError('El precio máximo no puede ser menor que el precio mínimo', 400)
-  }
 }
 
-export async function findAll() {
-  return execute(() => repository.findAll())
+export async function findAll(params = {}) {
+  const { error, value } = budgetFilterSchema.validate(params)
+  if (error) throw new AppError('El presupuesto máximo no es válido', 400)
+  return execute(() => repository.findAll(value.max_budget ?? null))
 }
 
 export async function findOne(id) {

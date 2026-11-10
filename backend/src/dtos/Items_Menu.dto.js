@@ -57,7 +57,12 @@ es_vegetariano: Joi.boolean()
     .default(false),
 
 esta_disponible: Joi.boolean()
-    .default(true)
+    .default(true),
+
+id_categoria_menu: Joi.number()
+    .integer()
+    .positive()
+    .required()
 
 
 });

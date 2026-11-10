@@ -1,7 +1,7 @@
 import { pool } from '../db/db.js'
 
 // Columnas permitidas del script SQL. Los valores se pasan como parámetros.
-const fields = ["codigo_ruc", "id_dueno", "id_complejo_padre", "es_independiente", "precio_minimo", "precio_maximo", "id_categoria"]
+const fields = ["codigo_ruc", "id_dueno", "id_complejo_padre", "es_independiente", "id_categoria"]
 
 function getEntries(data) {
   if (!data || typeof data !== 'object' || Array.isArray(data)) {
@@ -20,9 +20,12 @@ function getEntries(data) {
     .map((field) => [field, data[field]])
 }
 
-export async function findAll(client = pool) {
+export async function findAll(maxBudget = null, client = pool) {
   const { rows } = await client.query(
-    'SELECT * FROM public.locales_comerciales ORDER BY id_local'
+    `SELECT * FROM public.locales_comerciales
+     WHERE ($1::numeric IS NULL OR precio_minimo <= $1)
+     ORDER BY id_local`,
+    [maxBudget]
   )
 
   return rows

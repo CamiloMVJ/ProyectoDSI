@@ -14,6 +14,7 @@ function SearchFilters({ applied, departments, onApply, onClear }) {
     q: applied.get('q') ?? '',
     departamento: applied.get('departamento') ?? '',
     municipio: applied.get('municipio') ?? '',
+    max_budget: applied.get('max_budget') ?? '',
     tipo: applied.get('tipo') ?? 'todos',
     orden: applied.get('orden') ?? 'nombre-asc',
   }))
@@ -29,6 +30,7 @@ function SearchFilters({ applied, departments, onApply, onClear }) {
     if (filters.q.trim()) params.set('q', filters.q.trim())
     if (filters.departamento) params.set('departamento', filters.departamento)
     if (filters.municipio.trim()) params.set('municipio', filters.municipio.trim())
+    if (filters.max_budget !== '') params.set('max_budget', filters.max_budget)
     if (filters.tipo !== 'todos') params.set('tipo', filters.tipo)
     if (filters.orden !== 'nombre-asc') params.set('orden', filters.orden)
     onApply(params)
@@ -55,6 +57,11 @@ function SearchFilters({ applied, departments, onApply, onClear }) {
         <div>
           <label htmlFor="search-municipality" className="mb-2 block text-sm font-semibold">Municipio</label>
           <input id="search-municipality" name="municipio" value={filters.municipio} onChange={change} maxLength={100} placeholder="Cualquier municipio" className={inputClass} />
+        </div>
+        <div>
+          <label htmlFor="search-max-budget" className="mb-2 block text-sm font-semibold">Presupuesto máximo por persona (C$)</label>
+          <input id="search-max-budget" name="max_budget" type="number" min="0" step="0.01" inputMode="decimal" value={filters.max_budget} onChange={change} placeholder="Sin límite" className={inputClass} />
+          <p className="mt-1 text-xs text-[#526554]">Una comida y una bebida sin alcohol.</p>
         </div>
         <div>
           <label htmlFor="search-type" className="mb-2 block text-sm font-semibold">Tipo de lugar</label>
@@ -105,6 +112,9 @@ function PlaceCard({ place }) {
         <div className="mt-3 min-h-15 border-t border-[#d8e1d5] pt-3">
           {place.direccion_exacta && <p className="line-clamp-2 text-xs leading-5 text-[#526554]">{place.direccion_exacta}</p>}
         </div>
+        {place.precio_minimo != null && place.precio_maximo != null && (
+          <p className="mt-2 text-sm font-semibold text-[#344e3b]">Comida y bebida: C$ {place.precio_minimo} – C$ {place.precio_maximo} por persona</p>
+        )}
         <div className="mt-auto flex min-h-11 items-center">
           {place.maps_link && <a href={place.maps_link} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center gap-2 text-sm font-bold text-[#c45111] hover:text-[#9d3e0b]">Ver en Google Maps <ExternalLink size={15} aria-hidden="true" /></a>}
         </div>
@@ -118,21 +128,23 @@ export default function SearchResults() {
   const filterParams = new URLSearchParams(searchParams)
   filterParams.delete('page')
   const filtersKey = filterParams.toString()
+  const maxBudget = searchParams.get('max_budget') ?? ''
   const [retry, setRetry] = useState(0)
   const [catalog, setCatalog] = useState({ key: null, places: [], departments: [], error: '' })
+  const catalogKey = `${retry}:${maxBudget}`
 
   useEffect(() => {
     const controller = new AbortController()
-    getPlacesCatalog(controller.signal)
-      .then(data => { if (!controller.signal.aborted) setCatalog({ key: retry, ...data, error: '' }) })
+    getPlacesCatalog(controller.signal, maxBudget)
+      .then(data => { if (!controller.signal.aborted) setCatalog({ key: catalogKey, ...data, error: '' }) })
       .catch(error => {
-        if (!controller.signal.aborted) setCatalog({ key: retry, places: [], departments: [], error: error instanceof TypeError ? 'No se pudo conectar con el servidor.' : error.message })
+        if (!controller.signal.aborted) setCatalog({ key: catalogKey, places: [], departments: [], error: error instanceof TypeError ? 'No se pudo conectar con el servidor.' : error.message })
       })
     return () => controller.abort()
-  }, [retry])
+  }, [catalogKey, maxBudget])
 
   const places = useMemo(() => filterPlaces(catalog.places, Object.fromEntries(new URLSearchParams(filtersKey))), [catalog.places, filtersKey])
-  const loading = catalog.key !== retry
+  const loading = catalog.key !== catalogKey
   const hasFilters = Boolean(filtersKey)
   const totalPages = Math.max(1, Math.ceil(places.length / PAGE_SIZE))
   const requestedPage = Number(searchParams.get('page'))
