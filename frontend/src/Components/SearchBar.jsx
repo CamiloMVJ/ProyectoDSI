@@ -1,4 +1,5 @@
-import { Search, MapPin } from "lucide-react";
+import { ArrowRight, Search, MapPin } from "lucide-react";
+import DepartmentDropdown from './DepartmentDropdown.jsx';
 const SearchBar = ({
   value = '',
   selectedDepartment = '',
@@ -6,7 +7,7 @@ const SearchBar = ({
   onChange,
   onDepartmentChange,
   onSearchSubmit,
-  placeholder = '¿Sabes dónde deseas ir?'
+  placeholder = 'Lugar, actividad o experiencia...'
 }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -14,44 +15,40 @@ const SearchBar = ({
   };
 
   return (
-    <div className="w-full max-w-2xl mx-auto mt-9 px-4">
+    <div className="mx-auto mt-10 w-full max-w-5xl px-6 sm:px-10">
       <form
         onSubmit={handleSubmit}
-        className="flex items-center bg-white rounded-full border border-gray-200 shadow-md hover:shadow-lg focus-within:border-[#C45111] focus-within:ring-4 focus-within:ring-[#C45111]/10 pl-5 pr-2 py-2 transition-all"
+        role="search"
+        className="flex flex-col gap-2 rounded-[28px] border border-[#d8e1d5] bg-[#fffefa] p-2.5 shadow-[0_14px_40px_-20px_rgba(38,63,50,0.35)] md:flex-row md:items-stretch md:p-3"
       >
-        <Search className="w-5 h-5 text-[#C45111] mr-3 shrink-0" />
-        <input
-          type="text"
-          aria-label="Buscar lugares turísticos"
-          value={value}
-          onChange={(e) => onChange && onChange(e.target.value)}
-          placeholder={placeholder}
-          className="w-full bg-transparent text-xs sm:text-sm text-gray-700 placeholder-[#9E9E9E] focus:outline-none"
-        />
+        <div className="flex min-h-17 min-w-0 flex-1 items-center gap-3 rounded-[20px] border border-transparent bg-[#f4f7f1] px-4 transition-colors focus-within:border-[#c45111] focus-within:bg-white focus-within:ring-2 focus-within:ring-[#c45111]/10">
+          <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-[#fff0e6] text-[#c45111]"><Search size={20} aria-hidden="true" /></span>
+          <div className="min-w-0 flex-1">
+            <label htmlFor="home-destination" className="block text-[11px] font-bold uppercase tracking-[.12em] text-[#344e3b]">Busca tu destino</label>
+            <input
+              id="home-destination"
+              type="search"
+              value={value}
+              onChange={(e) => onChange?.(e.target.value)}
+              placeholder={placeholder}
+              className="home-search-control mt-0.5 w-full min-w-0 bg-transparent text-sm text-[#25382e] placeholder:text-[#718071]"
+            />
+          </div>
+        </div>
 
-        {/* Filtro rápido por Departamento (se llena dinámicamente o muestra opción base) */}
-        <div className="hidden sm:flex items-center border-l border-gray-200 pl-3 mr-2">
-          <MapPin className="w-4 h-4 text-[#526554] mr-1.5 shrink-0" />
-          <select
-            value={selectedDepartment}
-            onChange={(e) => onDepartmentChange && onDepartmentChange(e.target.value)}
-            aria-label="Filtrar por departamento"
-            className="bg-transparent text-xs font-medium text-[#5A5A5A] focus:outline-none cursor-pointer pr-2"
-          >
-            <option value="">Todo el país</option>
-            {departments.map((dep) => (
-              <option key={dep.id_departamento} value={dep.id_departamento}>
-                {dep.nombre}
-              </option>
-            ))}
-          </select>
+        <div className="flex min-h-17 items-center gap-3 rounded-[20px] border border-transparent bg-[#f4f7f1] px-4 transition-colors focus-within:border-[#c45111] focus-within:bg-white focus-within:ring-2 focus-within:ring-[#c45111]/10 md:w-56">
+          <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-[#e7eee4] text-[#344e3b]"><MapPin size={19} aria-hidden="true" /></span>
+          <div className="min-w-0 flex-1">
+            <label htmlFor="home-department" className="block text-[11px] font-bold uppercase tracking-[.12em] text-[#344e3b]">Departamento</label>
+            <DepartmentDropdown id="home-department" value={selectedDepartment} departments={departments} onChange={onDepartmentChange} variant="home" />
+          </div>
         </div>
 
         <button
           type="submit"
-          className="bg-[#C45111] hover:bg-[#9d3e0b] text-white text-xs font-semibold px-5 py-2.5 rounded-full transition-colors shrink-0 cursor-pointer shadow-xs"
+          className="flex min-h-14 shrink-0 cursor-pointer items-center justify-center gap-2 rounded-[20px] bg-[#c45111] px-7 text-sm font-bold text-white shadow-[0_8px_18px_-8px_rgba(196,81,17,0.8)] transition-colors hover:bg-[#9d3e0b] md:min-h-17"
         >
-          Buscar
+          Buscar <ArrowRight size={18} aria-hidden="true" />
         </button>
       </form>
     </div>
