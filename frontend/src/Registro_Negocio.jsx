@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { ArrowLeft, ArrowRight, Building2, Compass, FileText, LockKeyhole, Mail, Phone, ShieldCheck, UserRound } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Building2, Compass, FileText, LockKeyhole, Mail, MapPin, Phone, ShieldCheck, UserRound } from 'lucide-react'
 
 const ownerFields = [
   { id: 'owner-name', label: 'Nombre completo', name: 'nombre_completo', type: 'text', autoComplete: 'name', Icon: UserRound },
@@ -59,6 +59,21 @@ export default function RegistroNegocioSINATUR() {
                 <div className="auth-section-heading"><span className="auth-section-icon"><Building2 aria-hidden="true" size={22} /></span><div><h2 id="business-title">Datos del negocio</h2><p>Información comercial</p></div></div>
                 <div className="auth-field"><label htmlFor="business-name">Nombre del negocio</label><div className="auth-input-wrap"><Building2 aria-hidden="true" size={19} /><input id="business-name" name="nombre_negocio" type="text" autoComplete="organization" required /></div></div>
                 <div className="auth-field"><label htmlFor="business-ruc">Número RUC</label><div className="auth-input-wrap"><FileText aria-hidden="true" size={19} /><input id="business-ruc" name="codigo_ruc" type="text" required /></div></div>
+                <div className="auth-field">
+                  <label htmlFor="business-address">Dirección del negocio</label>
+                  <div className="auth-input-wrap">
+                    <MapPin aria-hidden="true" size={19} />
+                    <input
+                      id="business-address"
+                      name="direccion"
+                      type="text"
+                      autoComplete="street-address"
+                      placeholder="Barrio, calle, número y referencia"
+                      maxLength={240}
+                      required
+                    />
+                  </div>
+                </div>
                 <aside className="auth-info"><ShieldCheck aria-hidden="true" size={24} /><div><h3>Validación de solicitud</h3><p>La cuenta requiere una revisión de la información proporcionada. Cuando este servicio esté disponible, recibirás el estado de tu solicitud por correo electrónico.</p></div></aside>
               </section>
             </div>

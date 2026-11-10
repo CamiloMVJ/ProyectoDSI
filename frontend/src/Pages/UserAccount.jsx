@@ -154,6 +154,28 @@ export default function UserAccount() {
                             </span>
                         </div>
 
+                        <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-6 shadow-sm sm:p-7">
+                            <div className="flex size-12 items-center justify-center rounded-xl bg-[#f6eee5] text-[var(--color-accent)]">
+                                <Compass size={25} aria-hidden="true" />
+                            </div>
+                            <p className="mt-5 text-xs font-bold uppercase tracking-[.12em] text-[var(--color-accent)]">
+                                Para propietarios
+                            </p>
+                            <h2 className="mt-2 text-lg font-bold text-[var(--color-text)]">
+                                ¿Tienes un establecimiento?
+                            </h2>
+                            <p className="mt-2 text-sm leading-6 text-[var(--color-text-muted)]">
+                                Registra y administra tu negocio turístico en SINATUR.
+                            </p>
+                            <Link
+                                to="/gestion-establecimientos"
+                                className="mt-5 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full bg-[var(--color-accent)] px-4 py-3 text-center text-sm font-bold text-white transition-colors hover:bg-[var(--color-accent-hover)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-accent)]"
+                            >
+                                Publícate con nosotros
+                                <ArrowRight size={17} aria-hidden="true" />
+                            </Link>
+                        </div>
+
                         <div className="rounded-2xl border border-[var(--color-border)] bg-[#eaf0e7] p-6 sm:p-7">
                             <Compass size={26} aria-hidden="true" className="text-[var(--color-text-muted)]" />
                             <h2 className="mt-4 text-lg font-bold">Tu próxima escapada</h2>
