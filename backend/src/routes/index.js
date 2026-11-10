@@ -20,6 +20,7 @@ import solicitudes_registrosRoutes from './solicitudes_registros.routes.js';
 import campanias_publicitariasRoutes from './campanias_publicitarias.routes.js';
 import pagos_publicidadRoutes from './pagos_publicidad.routes.js';
 import departamentosRoutes from './departamentos.routes.js';
+import imagesRoutes from './images.routes.js';
 
 const router = Router();
 router.get('/health', (req, res) => res.json({ success: true, status: 'ok' }));
@@ -32,6 +33,7 @@ router.use('/administradores', administradoresRoutes);
 router.use('/propietarios_negocios', propietarios_negociosRoutes);
 router.use('/lugares_turisticos', lugares_turisticosRoutes);
 router.use('/imagenes_lugares', imagenes_lugaresRoutes);
+router.use('/imagenes', imagesRoutes);
 router.use('/horarios', horariosRoutes);
 router.use('/resenas', resenasRoutes);
 router.use('/favoritos', favoritosRoutes);
