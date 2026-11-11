@@ -84,7 +84,6 @@ export default function App() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedDepartment, setSelectedDepartment] = useState('');
   const [departments, setDepartments] = useState([]);
-  const [favorites, setFavorites] = useState({});
 
   useEffect(() => {
     const controller = new AbortController();
@@ -107,13 +106,6 @@ export default function App() {
     if (targetElement) {
       targetElement.scrollIntoView({ behavior: 'smooth' });
     }
-  };
-
-  const toggleFavorite = (sectionId) => {
-    setFavorites((prev) => ({
-      ...prev,
-      [sectionId]: !prev[sectionId]
-    }));
   };
 
   return (
@@ -160,8 +152,6 @@ export default function App() {
                 key={section.id}
                 id={section.id}
                 sectionTitle={section.title}
-                esFavorito={!!favorites[section.id]}
-                onToggleFavorite={() => toggleFavorite(section.id)}
               />
             ))}
           </div>

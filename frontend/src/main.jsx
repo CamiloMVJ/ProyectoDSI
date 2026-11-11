@@ -7,6 +7,7 @@ import RegistroNegocioSINATUR from './Registro_Negocio.jsx'
 import RegistroUsuarioSINATUR from './Registro_Usuario.jsx'
 import UserAccount from './Pages/UserAccount.jsx'
 import SearchResults from './Pages/SearchResults.jsx'
+import Favorites from './Pages/Favorites.jsx'
 import GuestOnly from './Components/GuestOnly.jsx'
 import AuthProvider from './context/AuthProvider.jsx'
 
@@ -15,6 +16,7 @@ import './index.css'
 const router = createBrowserRouter([
   { path: '/', element: <Inicio /> },
   { path: '/buscar', element: <SearchResults /> },
+  { path: '/favoritos', element: <Favorites /> },
   { path: '/ingresar', element: <GuestOnly><LoginSINATUR /></GuestOnly> },
   { path: '/registrarse', element: <GuestOnly><RegistroUsuarioSINATUR /></GuestOnly> },
   { path: '/registro-negocio', element: <RegistroNegocioSINATUR /> },
