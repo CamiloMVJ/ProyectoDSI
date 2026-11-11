@@ -5,6 +5,7 @@ import Inicio from './Inicio.jsx'
 import LoginSINATUR from './login.jsx'
 import RegistroNegocioSINATUR from './Registro_Negocio.jsx'
 import UserAccount from './Pages/UserAccount.jsx'
+import PerfilLugar from './Pages/PerfilLugar.jsx'
 import GuestOnly from './Components/GuestOnly.jsx'
 import AuthProvider from './context/AuthProvider.jsx'
 
@@ -15,6 +16,7 @@ const router = createBrowserRouter([
   { path: '/ingresar', element: <GuestOnly><LoginSINATUR /></GuestOnly> },
   { path: '/registro-negocio', element: <RegistroNegocioSINATUR /> },
   { path: '/account', element: <UserAccount /> },
+  { path: '/perfil-lugar/:id', element: <PerfilLugar /> },
 ])
 
 createRoot(document.getElementById('root')).render(
