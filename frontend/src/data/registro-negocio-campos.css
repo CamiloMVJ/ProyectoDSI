@@ -1,0 +1,5 @@
+.sinatur-select{background:transparent;border:0;width:100%;min-width:0;height:49px;color:#25382e;outline:0;font:inherit}
+.sinatur-select-outside,.sinatur-textarea{width:100%;background:#f4f7f1;color:#25382e;border:1px solid #d8e1d5;border-radius:12px;padding:12px 14px;outline:0;font:inherit}
+.sinatur-textarea:focus,.sinatur-select-outside:focus{border-color:#c45111;box-shadow:0 0 0 3px #c4511126}
+
+.sinatur-form-help{font-size:12px;line-height:1.55;color:#526554;margin:0 0 15px}
