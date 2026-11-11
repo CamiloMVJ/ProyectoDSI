@@ -1,59 +1,27 @@
 import * as repository from '../repositories/favoritos.repository.js'
-import * as usuariosRepository from '../repositories/usuarios.repository.js'
 import * as localesRepository from '../repositories/locales.repository.js'
 import { AppError } from '../errors/app-error.js'
-import { parseId, allowedData, pick, execute, requireReference, withLockedRecord } from './service-utils.js'
+import { execute, parseId, requireReference } from './service-utils.js'
 
-const fields = ["id_usuario", "id_local"]
-const updateFields = fields
-
-async function checkRules(data, client) {
-  await requireReference(usuariosRepository, data.id_usuario, 'El usuario', client)
-  await requireReference(localesRepository, data.id_local, 'El local', client)
+export async function findByUser(idUsuario) {
+  return execute(() => repository.findByUser(parseId(idUsuario)))
 }
 
-export async function findAll() {
-  return execute(() => repository.findAll())
-}
-
-export async function findOne(id) {
-  id = parseId(id)
+export async function create(idUsuario, idLocal) {
+  idUsuario = parseId(idUsuario)
+  idLocal = parseId(idLocal)
   return execute(async () => {
-    const record = await repository.findOne(id)
-    if (!record) throw new AppError('El favorito no existe', 404)
-    return record
+    await requireReference(localesRepository, idLocal, 'El local')
+    return repository.create(idUsuario, idLocal)
   })
 }
 
-// El middleware debe validar el DTO de creación antes de llamar a esta función.
-export async function create(data) {
-  data = allowedData(data, fields)
+export async function remove(idFavorito, idUsuario) {
+  idFavorito = parseId(idFavorito)
+  idUsuario = parseId(idUsuario)
   return execute(async () => {
-    await checkRules(data)
-    return repository.create(data)
-  })
-}
-
-export async function update(id, data) {
-  id = parseId(id)
-  data = allowedData(data, updateFields)
-  return execute(() => withLockedRecord(
-    'favoritos', id, repository, 'El favorito', async (current, client) => {
-      // Validar referencias y reglas con los valores que quedarán guardados.
-      const merged = { ...pick(current, fields), ...data }
-      await checkRules(merged, client)
-      const result = await repository.update(id, merged, client)
-      if (!result) throw new AppError('El favorito no existe', 404)
-      return result
-    }
-  ))
-}
-
-export async function remove(id) {
-  id = parseId(id)
-  return execute(async () => {
-    const result = await repository.remove(id)
-    if (!result) throw new AppError('El favorito no existe', 404)
-    return { mensaje: 'Registro eliminado correctamente', id }
+    const deleted = await repository.remove(idFavorito, idUsuario)
+    if (!deleted) throw new AppError('El favorito no existe', 404)
+    return { mensaje: 'Favorito eliminado correctamente', id_favorito: deleted.id_favorito }
   })
 }

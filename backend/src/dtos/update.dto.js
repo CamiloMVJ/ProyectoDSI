@@ -6,7 +6,6 @@ import { lugarSchema } from './lugar.dto.js';
 import { imagenLugarSchema } from './imagen_lugar.dto.js';
 import { horarioSchema } from './horario.dto.js';
 import { resenaSchema } from './resena.dto.js';
-import { favoritoSchema } from './favorito.dto.js';
 import { complejoTuristicoSchema } from './complejo_turistico.dto.js';
 import { atractivoIndependienteSchema } from './atractivos_independientes.dto.js';
 import { localComercialSchema } from './local_comercial.dto.js';
@@ -163,22 +162,6 @@ export const updateResenaSchema = resenaSchema
         'object.min': 'Debés enviar al menos un campo de la reseña para actualizar.',
         'object.unknown': 'El campo "{{#label}}" no está permitido en la reseña.',
         'any.required': 'Debés enviar los datos de la reseña que querés actualizar.'
-    });
-
-
-export const updateFavoritoSchema = favoritoSchema
-    .fork(
-        ['id_usuario', 'id_local'],
-        (schema) => schema.optional()
-    )
-    .prefs({ noDefaults: true })
-    .unknown(false)
-    .min(1)
-    .required()
-    .messages({
-        'object.min': 'Debés enviar al menos un campo del favorito para actualizar.',
-        'object.unknown': 'El campo "{{#label}}" no está permitido en el favorito.',
-        'any.required': 'Debés enviar los datos del favorito que querés actualizar.'
     });
 
 

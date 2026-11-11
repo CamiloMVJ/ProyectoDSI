@@ -3,8 +3,15 @@ import { pool } from '../db/db.js'
 // Columnas permitidas del script SQL. Los valores se pasan como parámetros.
 const fields = ["codigo_ruc", "id_dueno", "id_complejo_padre", "es_independiente"]
 const baseFields = ["nombre", "descripcion", "id_departamento", "municipio", "direccion_exacta", "maps_link"]
-const selection = `c.*, l.nombre, l.descripcion, l.id_departamento, l.municipio, l.direccion_exacta, l.maps_link`
-const relation = `FROM public.locales_comerciales AS c JOIN public.locales AS l ON l.id_local = c.id_local`
+const selection = `c.*, l.nombre, l.descripcion, l.id_departamento, l.municipio, l.direccion_exacta, l.maps_link,
+  d.nombre AS departamento, imagen.url_imagen`
+const relation = `FROM public.locales_comerciales AS c
+  JOIN public.locales AS l ON l.id_local = c.id_local
+  JOIN public.departamentos AS d ON d.id_departamento = l.id_departamento
+  LEFT JOIN LATERAL (
+    SELECT url_imagen FROM public.imagenes_locales
+    WHERE id_local = c.id_local ORDER BY id_imagen LIMIT 1
+  ) AS imagen ON TRUE`
 
 function getEntries(data) {
   if (!data || typeof data !== 'object' || Array.isArray(data)) {
