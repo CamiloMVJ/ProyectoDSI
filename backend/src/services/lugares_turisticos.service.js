@@ -2,7 +2,7 @@ import * as repository from '../repositories/lugares_turisticos.repository.js'
 import * as departamentosRepository from '../repositories/departamentos.repository.js'
 import { AppError } from '../errors/app-error.js'
 import { buscarLugaresSchema } from '../dtos/lugar.dto.js'
-import { parseId, allowedData, pick, execute, requireReference, withLockedRecord, checkDates, checkEvent, normalizeEvent, publicUser } from './service-utils.js'
+import { parseId, allowedData, pick, execute, requireReference, withLockedRecord, withTransaction } from './service-utils.js'
 
 const fields = ["nombre", "descripcion", "id_departamento", "municipio", "direccion_exacta", "maps_link"]
 
@@ -30,12 +30,14 @@ export async function findOne(id) {
 }
 
 // Recibe datos ya validados por Joi (middleware validar).
-export async function create(data) {
+export async function create(data, client) {
   data = allowedData(data, fields)
   
   return execute(async () => {
-    await checkRules(data)
-    const result = await repository.create(data)
+    await checkRules(data, client)
+    const result = client
+      ? await repository.create(data, client)
+      : await withTransaction((transaction) => repository.create(data, transaction))
     return result
   })
 }

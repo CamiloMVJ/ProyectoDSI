@@ -14,26 +14,26 @@ export async function findOne(id, client = pool) {
 }
 
 export async function create(data, client = pool) {
-  const { id_turista, id_lugar } = data;
+  const { id_usuario, id_local } = data;
   const query = `
-    INSERT INTO favoritos (id_turista, id_lugar) 
-    VALUES ($1, $2) 
+    INSERT INTO favoritos (id_usuario, id_local)
+    VALUES ($1, $2)
     RETURNING *;
   `;
-  const values = [id_turista, id_lugar];
+  const values = [id_usuario, id_local];
   const { rows } = await client.query(query, values);
   return rows[0];
 }
 
 export async function update(id, data, client = pool) {
-  const { id_turista, id_lugar } = data;
+  const { id_usuario, id_local } = data;
   const query = `
-    UPDATE favoritos 
-    SET id_turista = $1, id_lugar = $2 
-    WHERE id_favorito = $3 
+    UPDATE favoritos
+    SET id_usuario = $1, id_local = $2
+    WHERE id_favorito = $3
     RETURNING *;
   `;
-  const values = [id_turista, id_lugar, id];
+  const values = [id_usuario, id_local, id];
   const { rows } = await client.query(query, values);
   return rows[0] || null;
 }

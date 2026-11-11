@@ -1,19 +1,19 @@
 import * as repository from '../repositories/locales_comerciales.repository.js'
 import * as propietarios_negociosRepository from '../repositories/propietarios_negocios.repository.js'
 import * as complejos_turisticosRepository from '../repositories/complejos_turisticos.repository.js'
-import * as categoriasRepository from '../repositories/categorias.repository.js'
+import * as departamentosRepository from '../repositories/departamentos.repository.js'
 import { AppError } from '../errors/app-error.js'
 import Joi from 'joi'
-import { parseId, allowedData, pick, execute, requireReference, withLockedRecord } from './service-utils.js'
+import { parseId, allowedData, pick, execute, requireReference, withLockedRecord, withTransaction } from './service-utils.js'
 
-const fields = ["codigo_ruc", "id_dueno", "id_complejo_padre", "es_independiente", "id_categoria"]
+const fields = ["nombre", "descripcion", "id_departamento", "municipio", "direccion_exacta", "maps_link", "codigo_ruc", "id_dueno", "id_complejo_padre", "es_independiente"]
 const updateFields = fields
 const budgetFilterSchema = Joi.object({ max_budget: Joi.number().min(0).precision(2) }).unknown(false)
 
 async function checkRules(data, client) {
   await requireReference(propietarios_negociosRepository, data.id_dueno, 'El propietario', client)
   await requireReference(complejos_turisticosRepository, data.id_complejo_padre, 'El complejo', client)
-  await requireReference(categoriasRepository, data.id_categoria, 'La categoría', client)
+  await requireReference(departamentosRepository, data.id_departamento, 'El departamento', client)
 }
 
 export async function findAll(params = {}) {
@@ -34,10 +34,10 @@ export async function findOne(id) {
 // El middleware debe validar el DTO de creación antes de llamar a esta función.
 export async function create(data) {
   data = allowedData(data, fields)
-  return execute(async () => {
-    await checkRules(data)
-    return repository.create(data)
-  })
+  return execute(() => withTransaction(async (client) => {
+    await checkRules(data, client)
+    return repository.create(data, client)
+  }))
 }
 
 export async function update(id, data) {

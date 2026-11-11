@@ -1,14 +1,14 @@
 import * as repository from '../repositories/resenas.repository.js'
-import * as turistasRepository from '../repositories/turistas.repository.js'
-import * as lugares_turisticosRepository from '../repositories/lugares_turisticos.repository.js'
+import * as usuariosRepository from '../repositories/usuarios.repository.js'
+import * as localesRepository from '../repositories/locales.repository.js'
 import { AppError } from '../errors/app-error.js'
 import { parseId, allowedData, pick, execute, requireReference, withLockedRecord, checkDates, checkEvent, normalizeEvent, publicUser } from './service-utils.js'
 
-const fields = ["id_turista", "id_lugar", "calificacion", "comentario", "respuesta_propietario", "estado_moderacion"]
+const fields = ["id_usuario", "id_local", "calificacion", "comentario", "respuesta_propietario", "estado_moderacion"]
 
 async function checkRules(data, client) {
-  await requireReference(turistasRepository, data.id_turista, 'El turista', client)
-  await requireReference(lugares_turisticosRepository, data.id_lugar, 'El lugar', client)
+  await requireReference(usuariosRepository, data.id_usuario, 'El usuario', client)
+  await requireReference(localesRepository, data.id_local, 'El local', client)
 }
 
 export async function findAll() {

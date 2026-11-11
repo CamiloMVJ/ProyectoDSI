@@ -1,25 +1,25 @@
 import Joi from 'joi';
 
 export const favoritoSchema = Joi.object({
-    id_turista: Joi.number()
+    id_usuario: Joi.number()
         .integer()
         .positive()
         .required()
         .messages({
-            'number.base': 'El ID del turista debe ser un número.',
-            'number.integer': 'El ID del turista debe ser un número entero.',
-            'number.positive': 'El ID del turista debe ser positivo.',
-            'any.required': 'El ID del turista es obligatorio.'
+            'number.base': 'El ID del usuario debe ser un número.',
+            'number.integer': 'El ID del usuario debe ser un número entero.',
+            'number.positive': 'El ID del usuario debe ser positivo.',
+            'any.required': 'El ID del usuario es obligatorio.'
         }),
 
-    id_lugar: Joi.number()
+    id_local: Joi.number()
         .integer()
         .positive()
         .required()
         .messages({
-            'number.base': 'El ID del lugar debe ser un número.',
-            'number.integer': 'El ID del lugar debe ser un número entero.',
-            'number.positive': 'El ID del lugar debe ser positivo.',
-            'any.required': 'El ID del lugar es obligatorio.'
+            'number.base': 'El ID del local debe ser un número.',
+            'number.integer': 'El ID del local debe ser un número entero.',
+            'number.positive': 'El ID del local debe ser positivo.',
+            'any.required': 'El ID del local es obligatorio.'
         })
 });

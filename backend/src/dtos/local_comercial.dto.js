@@ -1,6 +1,7 @@
 import Joi from 'joi';
+import { lugarSchema } from './lugar.dto.js';
 
-export const localComercialSchema = Joi.object({
+export const localComercialSchema = lugarSchema.keys({
     codigo_ruc: Joi.string()
         .trim()
         .max(50)
@@ -29,11 +30,5 @@ export const localComercialSchema = Joi.object({
         .optional(),
 
     es_independiente: Joi.boolean()
-        .default(true),
-
-    id_categoria: Joi.number()
-        .integer()
-        .positive()
-        .allow(null)
-        .optional()
+        .default(true)
 });

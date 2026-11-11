@@ -1,6 +1,5 @@
 import { categoriaSchema } from './categoria.dto.js';
 import { usuarioSchema } from './usuario.dto.js';
-import { turistaSchema } from './turista.dto.js';
 import { propietarioNegocioSchema } from './propietario_negocio.dto.js';
 import { administradorSchema } from './administradores.dto.js';
 import { lugarSchema } from './lugar.dto.js';
@@ -48,22 +47,6 @@ export const updateUsuarioSchema = usuarioSchema
         'object.min': 'Debés enviar al menos un campo del usuario para actualizar.',
         'object.unknown': 'El campo "{{#label}}" no está permitido en el usuario.',
         'any.required': 'Debés enviar los datos del usuario que querés actualizar.'
-    });
-
-
-export const updateTuristaSchema = turistaSchema
-    .fork(
-        ['id_usuario', 'pais_origen'],
-        (schema) => schema.optional()
-    )
-    .prefs({ noDefaults: true })
-    .unknown(false)
-    .min(1)
-    .required()
-    .messages({
-        'object.min': 'Debés enviar al menos un campo del turista para actualizar.',
-        'object.unknown': 'El campo "{{#label}}" no está permitido en el turista.',
-        'any.required': 'Debés enviar los datos del turista que querés actualizar.'
     });
 
 
@@ -124,7 +107,7 @@ export const updateLugarSchema = lugarSchema
 
 export const updateImagenLugarSchema = imagenLugarSchema
     .fork(
-        ['id_lugar', 'url_imagen', 'descripcion'],
+        ['id_local', 'url_imagen', 'descripcion'],
         (schema) => schema.optional()
     )
     .prefs({ noDefaults: true })
@@ -141,8 +124,8 @@ export const updateImagenLugarSchema = imagenLugarSchema
 export const updateHorarioSchema = horarioSchema
     .fork(
         [
-            'id_lugar',
-            'dia_semama',
+            'id_local',
+            'dia_semana',
             'hora_apertura',
             'hora_cierre',
             'es_feriado'
@@ -163,8 +146,8 @@ export const updateHorarioSchema = horarioSchema
 export const updateResenaSchema = resenaSchema
     .fork(
         [
-            'id_turista',
-            'id_lugar',
+            'id_usuario',
+            'id_local',
             'calificacion',
             'comentario',
             'respuesta_propietario',
@@ -185,7 +168,7 @@ export const updateResenaSchema = resenaSchema
 
 export const updateFavoritoSchema = favoritoSchema
     .fork(
-        ['id_turista', 'id_lugar'],
+        ['id_usuario', 'id_local'],
         (schema) => schema.optional()
     )
     .prefs({ noDefaults: true })
@@ -250,7 +233,12 @@ export const updateLocalComercialSchema = localComercialSchema
             'id_dueno',
             'id_complejo_padre',
             'es_independiente',
-            'id_categoria'
+            'nombre',
+            'descripcion',
+            'id_departamento',
+            'municipio',
+            'direccion_exacta',
+            'maps_link'
         ],
         (schema) => schema.optional()
     )
