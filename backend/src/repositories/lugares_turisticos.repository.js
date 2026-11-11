@@ -10,7 +10,20 @@ const orderBy = {
   recientes: 'l.id_lugar DESC'
 }
 
-export async function search({ q, departamento, municipio, tipo, orden, max_budget }, client = pool) {
+export async function search({ q, departamento, municipio, tipo, orden, max_budget, id_categoria }, client = pool) {
+  const values = [q, departamento, municipio, tipo]
+  const optionalFilters = []
+  if (max_budget != null && max_budget !== '') {
+    values.push(max_budget)
+    optionalFilters.push(`budget.precio_minimo <= $${values.length}`)
+  }
+  if (id_categoria != null && id_categoria !== '') {
+    values.push(id_categoria)
+    optionalFilters.push(`EXISTS (
+        SELECT 1 FROM public.locales_categorias AS lc
+        WHERE lc.id_local = l.id_lugar AND lc.id_categoria = $${values.length}
+      )`)
+  }
   const { rows } = await client.query(`
     SELECT ${columns}, d.nombre AS departamento,
            imagen.url_imagen, budget.precio_minimo, budget.precio_maximo,
@@ -40,9 +53,9 @@ export async function search({ q, departamento, municipio, tipo, orden, max_budg
            OR ($4 = 'complejo' AND c.id_lugar IS NOT NULL)
            OR ($4 = 'atractivo' AND a.id_lugar IS NOT NULL)
            OR ($4 = 'otro' AND c.id_lugar IS NULL AND a.id_lugar IS NULL))
-      AND ($5::numeric IS NULL OR budget.precio_minimo <= $5)
+      ${optionalFilters.map(filter => `AND ${filter}`).join('\n      ')}
     ORDER BY ${orderBy[orden]}
-  `, [q, departamento, municipio, tipo, max_budget])
+  `, values)
   return rows
 }
 

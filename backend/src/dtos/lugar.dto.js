@@ -58,6 +58,7 @@ maps_link: Joi.string()
 export const buscarLugaresSchema = Joi.object({
     q: Joi.string().trim().max(150).allow('').default(''),
     departamento: Joi.number().integer().positive().empty('').default(null),
+    id_categoria: Joi.number().integer().positive().empty('').default(null),
     municipio: Joi.string().trim().max(100).allow('').default(''),
     tipo: Joi.string().valid('todos', 'complejo', 'atractivo', 'otro').default('todos'),
     orden: Joi.string().valid('nombre-asc', 'nombre-desc', 'recientes').default('nombre-asc'),

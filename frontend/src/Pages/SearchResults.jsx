@@ -1,23 +1,24 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
-import { ArrowLeft, ArrowRight, Compass, ExternalLink, Filter, Heart, LoaderCircle, MapPin, Search, SlidersHorizontal } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Compass, ExternalLink, Filter, Heart, LoaderCircle, MapPin, Search, SlidersHorizontal, Store } from 'lucide-react'
 import Navbar from '../Components/Navbar.jsx'
 import Footer from '../Components/Footer.jsx'
 import DepartmentDropdown from '../Components/DepartmentDropdown.jsx'
-import { filterPlaces, getPlacesCatalog } from '../services/places.api.js'
+import { filterPlaces, getCategories, getCommercialCatalog, getDepartments, getPlacesCatalog } from '../services/places.api.js'
 import { useAuth } from '../hooks/useAuth.js'
 import { useFavorites } from '../hooks/useFavorites.js'
 
 const inputClass = 'min-h-11 w-full rounded-xl border border-[#d8e1d5] bg-[#f8faf6] px-4 text-sm text-[#25382e] outline-none focus:border-[#c45111] focus:ring-2 focus:ring-[#c45111]/15'
 const PAGE_SIZE = 8
 
-function SearchFilters({ applied, departments, onApply, onClear }) {
+function SearchFilters({ applied, departments, categories, onApply, onClear }) {
   const [filters, setFilters] = useState(() => ({
     q: applied.get('q') ?? '',
     departamento: applied.get('departamento') ?? '',
     municipio: applied.get('municipio') ?? '',
     max_budget: applied.get('max_budget') ?? '',
     tipo: applied.get('tipo') ?? 'todos',
+    id_categoria: applied.get('id_categoria') ?? '',
     orden: applied.get('orden') ?? 'nombre-asc',
   }))
 
@@ -34,6 +35,7 @@ function SearchFilters({ applied, departments, onApply, onClear }) {
     if (filters.municipio.trim()) params.set('municipio', filters.municipio.trim())
     if (filters.max_budget !== '') params.set('max_budget', filters.max_budget)
     if (filters.tipo !== 'todos') params.set('tipo', filters.tipo)
+    if (filters.id_categoria) params.set('id_categoria', filters.id_categoria)
     if (filters.orden !== 'nombre-asc') params.set('orden', filters.orden)
     onApply(params)
   }
@@ -68,10 +70,18 @@ function SearchFilters({ applied, departments, onApply, onClear }) {
         <div>
           <label htmlFor="search-type" className="mb-2 block text-sm font-semibold">Tipo de lugar</label>
           <select id="search-type" name="tipo" value={filters.tipo} onChange={change} className={inputClass}>
-            <option value="todos">Todos los lugares</option>
+            <option value="todos">Todos los lugares y locales</option>
             <option value="complejo">Complejos turísticos</option>
             <option value="atractivo">Atractivos independientes</option>
             <option value="otro">Otros lugares</option>
+            <option value="local">Locales comerciales</option>
+          </select>
+        </div>
+        <div>
+          <label htmlFor="search-category" className="mb-2 block text-sm font-semibold">Categoría</label>
+          <select id="search-category" name="id_categoria" value={filters.id_categoria} onChange={change} className={inputClass}>
+            <option value="">Todas las categorías</option>
+            {categories.map(category => <option key={category.id_categoria} value={category.id_categoria}>{category.nombre}</option>)}
           </select>
         </div>
         <div>
@@ -96,14 +106,15 @@ const typeLabels = {
   complejo: 'Complejo turístico',
   atractivo: 'Atractivo independiente',
   otro: 'Lugar turístico',
+  local: 'Local comercial',
 }
 
 function PlaceCard({ place, saved, pending, onToggle }) {
   return (
     <article className="flex h-full flex-col overflow-hidden rounded-2xl border border-[#d8e1d5] bg-[#fffefa] shadow-sm transition-shadow hover:shadow-md">
       <div className="relative flex h-48 shrink-0 items-center justify-center bg-[#eaf0e7]">
-        {place.url_imagen ? <img src={place.url_imagen} alt={place.nombre} className="h-full w-full object-cover" /> : <Compass size={42} aria-hidden="true" className="text-[#79927c]" />}
-        <button type="button" onClick={() => onToggle(place.id_lugar)} disabled={pending} aria-label={saved ? `Quitar ${place.nombre} de favoritos` : `Guardar ${place.nombre} en favoritos`} aria-pressed={saved} className={`absolute right-3 top-3 flex size-11 items-center justify-center rounded-full shadow-sm disabled:opacity-50 ${saved ? 'bg-[#c45111] text-white' : 'bg-white text-[#526554] hover:text-[#c45111]'}`}><Heart size={19} className={saved ? 'fill-current' : ''} aria-hidden="true" /></button>
+        {place.url_imagen ? <img src={place.url_imagen} alt={place.nombre} className="h-full w-full object-cover" /> : place.tipo === 'local' ? <Store size={42} aria-hidden="true" className="text-[#79927c]" /> : <Compass size={42} aria-hidden="true" className="text-[#79927c]" />}
+        <button type="button" onClick={() => onToggle(place.id_local)} disabled={pending} aria-label={saved ? `Quitar ${place.nombre} de favoritos` : `Guardar ${place.nombre} en favoritos`} aria-pressed={saved} className={`absolute right-3 top-3 flex size-11 items-center justify-center rounded-full shadow-sm disabled:opacity-50 ${saved ? 'bg-[#c45111] text-white' : 'bg-white text-[#526554] hover:text-[#c45111]'}`}><Heart size={19} className={saved ? 'fill-current' : ''} aria-hidden="true" /></button>
       </div>
       <div className="flex flex-1 flex-col p-5">
         <span className="inline-flex self-start rounded-full bg-[#f6eee5] px-3 py-1 text-xs font-bold text-[#9d3e0b]">{typeLabels[place.tipo] ?? typeLabels.otro}</span>
@@ -135,23 +146,37 @@ export default function SearchResults() {
   filterParams.delete('page')
   const filtersKey = filterParams.toString()
   const maxBudget = searchParams.get('max_budget') ?? ''
+  const categoryId = searchParams.get('id_categoria') ?? ''
   const [retry, setRetry] = useState(0)
-  const [catalog, setCatalog] = useState({ key: null, places: [], departments: [], error: '' })
-  const catalogKey = `${retry}:${maxBudget}`
+  const [catalog, setCatalog] = useState({ key: null, places: [], departments: [], categories: [], error: '' })
+  const catalogKey = `${retry}:${maxBudget}:${categoryId}`
 
   useEffect(() => {
     const controller = new AbortController()
-    getPlacesCatalog(controller.signal, maxBudget)
-      .then(data => { if (!controller.signal.aborted) setCatalog({ key: catalogKey, ...data, error: '' }) })
+    Promise.all([
+      getPlacesCatalog(controller.signal, maxBudget, categoryId),
+      getCommercialCatalog(controller.signal, maxBudget, categoryId),
+      getDepartments(controller.signal),
+      getCategories(controller.signal)
+    ])
+      .then(([tourism, commercial, departments, categories]) => {
+        if (controller.signal.aborted) return
+        const places = [
+          ...tourism.places.map(place => ({ ...place, id_local: place.id_lugar })),
+          ...commercial.map(local => ({ ...local, tipo: 'local' }))
+        ]
+        setCatalog({ key: catalogKey, places, departments, categories, error: '' })
+      })
       .catch(error => {
-        if (!controller.signal.aborted) setCatalog({ key: catalogKey, places: [], departments: [], error: error instanceof TypeError ? 'No se pudo conectar con el servidor.' : error.message })
+        if (!controller.signal.aborted) setCatalog({ key: catalogKey, places: [], departments: [], categories: [], error: error instanceof TypeError ? 'No se pudo conectar con el servidor.' : error.message })
       })
     return () => controller.abort()
-  }, [catalogKey, maxBudget])
+  }, [catalogKey, maxBudget, categoryId])
 
   const places = useMemo(() => filterPlaces(catalog.places, Object.fromEntries(new URLSearchParams(filtersKey))), [catalog.places, filtersKey])
   const loading = catalog.key !== catalogKey
   const hasFilters = Boolean(filtersKey)
+  const onlyCategoryFilter = categoryId !== '' && filterParams.size === 1
   const totalPages = Math.max(1, Math.ceil(places.length / PAGE_SIZE))
   const requestedPage = Number(searchParams.get('page'))
   const currentPage = Number.isSafeInteger(requestedPage) && requestedPage > 0
@@ -185,28 +210,28 @@ export default function SearchResults() {
         <header className="mt-5 border-b border-[#d8e1d5] pb-8">
           <p className="text-xs font-bold uppercase tracking-[.16em] text-[#c45111]">Explora Nicaragua</p>
           <h1 className="mt-3 text-3xl font-bold tracking-tight text-[#263f32] sm:text-4xl">Encuentra tu próximo destino</h1>
-          <p className="mt-3 max-w-2xl text-sm leading-6 text-[#526554] sm:text-base">Busca lugares turísticos y usa los filtros para encontrar experiencias a tu medida.</p>
+          <p className="mt-3 max-w-2xl text-sm leading-6 text-[#526554] sm:text-base">Busca lugares turísticos y locales comerciales por ubicación, tipo o categoría.</p>
         </header>
 
         <div id="explorar" className="mt-8 grid scroll-mt-28 items-start gap-8 lg:grid-cols-[300px_minmax(0,1fr)]">
           <aside aria-label="Filtros de búsqueda">
-            <SearchFilters key={filtersKey} applied={searchParams} departments={catalog.departments} onApply={setSearchParams} onClear={() => setSearchParams({})} />
+            <SearchFilters key={filtersKey} applied={searchParams} departments={catalog.departments} categories={catalog.categories} onApply={setSearchParams} onClear={() => setSearchParams({})} />
           </aside>
 
           <section aria-labelledby="results-title" className="min-w-0">
             {favoriteError && <p role="alert" className="mb-5 rounded-xl bg-[#fff0e9] p-4 text-sm text-[#9d3e0b]">{favoriteError}</p>}
             <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
-              <div><p className="text-xs font-bold uppercase tracking-widest text-[#c45111]">Lugares para descubrir</p><h2 id="results-title" className="mt-1 scroll-mt-28 text-2xl font-bold text-[#263f32]">Resultados de búsqueda</h2></div>
-              {!loading && !catalog.error && <span role="status" className="rounded-full bg-[#eaf0e7] px-3 py-2 text-xs font-bold text-[#344e3b]">{places.length} {places.length === 1 ? 'lugar' : 'lugares'}</span>}
+              <div><p className="text-xs font-bold uppercase tracking-widest text-[#c45111]">Destinos y negocios para descubrir</p><h2 id="results-title" className="mt-1 scroll-mt-28 text-2xl font-bold text-[#263f32]">Resultados de búsqueda</h2></div>
+              {!loading && !catalog.error && <span role="status" className="rounded-full bg-[#eaf0e7] px-3 py-2 text-xs font-bold text-[#344e3b]">{places.length} {places.length === 1 ? 'resultado' : 'resultados'}</span>}
             </div>
 
-            {loading && <p role="status" className="flex items-center gap-3 rounded-2xl border border-[#d8e1d5] bg-white p-8 text-sm text-[#526554]"><LoaderCircle size={20} aria-hidden="true" className="animate-spin" /> Buscando lugares…</p>}
+            {loading && <p role="status" className="flex items-center gap-3 rounded-2xl border border-[#d8e1d5] bg-white p-8 text-sm text-[#526554]"><LoaderCircle size={20} aria-hidden="true" className="animate-spin" /> Buscando lugares y locales…</p>}
             {!loading && catalog.error && <div role="alert" className="rounded-2xl border border-[#e9c7b6] bg-[#fff0e9] p-8"><p className="text-sm text-[#9d3e0b]">{catalog.error}</p><button type="button" onClick={() => setRetry(value => value + 1)} className="mt-4 min-h-11 rounded-full bg-[#c45111] px-5 text-sm font-bold text-white hover:bg-[#9d3e0b]">Reintentar</button></div>}
-            {!loading && !catalog.error && places.length === 0 && <div className="rounded-2xl border border-[#d8e1d5] bg-white px-6 py-12 text-center"><Search size={32} aria-hidden="true" className="mx-auto text-[#79927c]" /><h3 className="mt-4 text-lg font-bold">No encontramos lugares con esos filtros</h3><p className="mt-2 text-sm text-[#526554]">Prueba con otro término o amplía tu búsqueda.</p>{hasFilters && <button type="button" onClick={() => setSearchParams({})} className="mt-5 inline-flex min-h-11 items-center gap-2 rounded-full bg-[#c45111] px-5 text-sm font-bold text-white hover:bg-[#9d3e0b]">Ver todos los lugares <ArrowRight size={16} aria-hidden="true" /></button>}</div>}
+            {!loading && !catalog.error && places.length === 0 && <div className="rounded-2xl border border-[#d8e1d5] bg-white px-6 py-12 text-center"><Search size={32} aria-hidden="true" className="mx-auto text-[#79927c]" /><h3 className="mt-4 text-lg font-bold">{onlyCategoryFilter ? 'No hay lugares en esta categoría' : 'No encontramos lugares con esos filtros'}</h3><p className="mt-2 text-sm text-[#526554]">{onlyCategoryFilter ? 'No hay límite de presupuesto aplicado. Prueba con otra categoría o consulta todos los lugares.' : 'Prueba con otro término o amplía tu búsqueda.'}</p>{hasFilters && <button type="button" onClick={() => setSearchParams({})} className="mt-5 inline-flex min-h-11 items-center gap-2 rounded-full bg-[#c45111] px-5 text-sm font-bold text-white hover:bg-[#9d3e0b]">Ver todos los lugares <ArrowRight size={16} aria-hidden="true" /></button>}</div>}
             {!loading && !catalog.error && places.length > 0 && (
               <>
                 <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
-                  {visiblePlaces.map(place => <PlaceCard key={place.id_lugar} place={place} saved={favorites.some(item => Number(item.id_local) === Number(place.id_lugar))} pending={pendingId === place.id_lugar} onToggle={togglePlace} />)}
+                  {visiblePlaces.map(place => <PlaceCard key={`${place.tipo}-${place.id_local}`} place={place} saved={favorites.some(item => Number(item.id_local) === Number(place.id_local))} pending={pendingId === place.id_local} onToggle={togglePlace} />)}
                 </div>
                 {totalPages > 1 && (
                   <nav aria-label="Paginación de resultados" className="mt-8 flex flex-wrap items-center justify-center gap-2 pb-4">

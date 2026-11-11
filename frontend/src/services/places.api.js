@@ -4,9 +4,14 @@ export function getDepartments(signal) {
   return request('/departamentos', { signal })
 }
 
-export async function getPlacesCatalog(signal, maxBudget = '') {
+export function getCategories(signal) {
+  return request('/categorias', { signal })
+}
+
+export async function getPlacesCatalog(signal, maxBudget = '', category = '') {
   const params = new URLSearchParams()
   if (maxBudget !== '') params.set('max_budget', maxBudget)
+  if (category !== '') params.set('id_categoria', category)
   const places = await request(`/lugares_turisticos/buscar${params.size ? `?${params}` : ''}`, { signal })
   const departmentNames = new Map(places.map(place => [place.id_departamento, place.departamento]))
   const departments = Array.from(departmentNames, ([id_departamento, nombre]) => ({ id_departamento, nombre }))
@@ -14,8 +19,11 @@ export async function getPlacesCatalog(signal, maxBudget = '') {
   return { departments, places }
 }
 
-export function getCommercialCatalog(signal) {
-  return request('/locales_comerciales', { signal })
+export function getCommercialCatalog(signal, maxBudget = '', category = '') {
+  const params = new URLSearchParams()
+  if (maxBudget !== '') params.set('max_budget', maxBudget)
+  if (category !== '') params.set('id_categoria', category)
+  return request(`/locales_comerciales${params.size ? `?${params}` : ''}`, { signal })
 }
 
 function normalize(value) {
@@ -37,7 +45,7 @@ export function filterPlaces(places, filters) {
     return [place.nombre, place.descripcion, place.municipio, place.departamento, place.direccion_exacta]
       .some(value => normalize(value).includes(query))
   }).sort((a, b) => {
-    if (order === 'recientes') return Number(b.id_lugar) - Number(a.id_lugar)
+    if (order === 'recientes') return Number(b.id_local ?? b.id_lugar) - Number(a.id_local ?? a.id_lugar)
     const comparison = String(a.nombre ?? '').localeCompare(String(b.nombre ?? ''), 'es')
     return order === 'nombre-desc' ? -comparison : comparison
   })

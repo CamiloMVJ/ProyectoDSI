@@ -8,7 +8,10 @@ import { parseId, allowedData, pick, execute, requireReference, withLockedRecord
 
 const fields = ["nombre", "descripcion", "id_departamento", "municipio", "direccion_exacta", "maps_link", "codigo_ruc", "id_dueno", "id_complejo_padre", "es_independiente"]
 const updateFields = fields
-const budgetFilterSchema = Joi.object({ max_budget: Joi.number().min(0).precision(2) }).unknown(false)
+const budgetFilterSchema = Joi.object({
+  max_budget: Joi.number().min(0).precision(2).empty(''),
+  id_categoria: Joi.number().integer().positive().empty('')
+}).unknown(false)
 
 async function checkRules(data, client) {
   await requireReference(propietarios_negociosRepository, data.id_dueno, 'El propietario', client)
@@ -18,8 +21,8 @@ async function checkRules(data, client) {
 
 export async function findAll(params = {}) {
   const { error, value } = budgetFilterSchema.validate(params)
-  if (error) throw new AppError('El presupuesto máximo no es válido', 400)
-  return execute(() => repository.findAll(value.max_budget ?? null))
+  if (error) throw new AppError('Los filtros de locales comerciales no son válidos', 400)
+  return execute(() => repository.findAll(value.max_budget ?? null, value.id_categoria ?? null))
 }
 
 export async function findOne(id) {

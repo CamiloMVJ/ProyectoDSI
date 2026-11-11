@@ -30,12 +30,25 @@ function getEntries(data) {
     .map((field) => [field, data[field]])
 }
 
-export async function findAll(maxBudget = null, client = pool) {
+export async function findAll(maxBudget = null, idCategoria = null, client = pool) {
+  const filters = []
+  const values = []
+  if (maxBudget != null && maxBudget !== '') {
+    values.push(maxBudget)
+    filters.push(`c.precio_minimo <= $${values.length}`)
+  }
+  if (idCategoria != null && idCategoria !== '') {
+    values.push(idCategoria)
+    filters.push(`EXISTS (
+         SELECT 1 FROM public.locales_categorias AS lc
+         WHERE lc.id_local = c.id_local AND lc.id_categoria = $${values.length}
+       )`)
+  }
   const { rows } = await client.query(
     `SELECT ${selection} ${relation}
-     WHERE ($1::numeric IS NULL OR c.precio_minimo <= $1)
+     ${filters.length ? `WHERE ${filters.join('\n       AND ')}` : ''}
      ORDER BY c.id_local`,
-    [maxBudget]
+    values
   )
 
   return rows
