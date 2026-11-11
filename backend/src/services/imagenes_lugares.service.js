@@ -1,13 +1,13 @@
 import * as repository from '../repositories/imagenes_lugares.repository.js'
-import * as lugares_turisticosRepository from '../repositories/lugares_turisticos.repository.js'
+import * as localesRepository from '../repositories/locales.repository.js'
 import { AppError } from '../errors/app-error.js'
 import { parseId, allowedData, pick, execute, requireReference, withLockedRecord } from './service-utils.js'
 
-const fields = ["id_lugar", "url_imagen", "descripcion"]
-const updateFields = ["id_lugar", "url_imagen", "descripcion"]
+const fields = ["id_local", "url_imagen", "descripcion"]
+const updateFields = fields
 
 async function checkRules(data, client) {
-  await requireReference(lugares_turisticosRepository, data.id_lugar, 'El lugar', client)
+  await requireReference(localesRepository, data.id_local, 'El local', client)
 }
 
 export async function findAll() {
@@ -36,7 +36,7 @@ export async function update(id, data) {
   id = parseId(id)
   data = allowedData(data, updateFields)
   return execute(() => withLockedRecord(
-    'imagenes_lugares', id, repository, 'La imagen', async (current, client) => {
+    'imagenes_locales', id, repository, 'La imagen', async (current, client) => {
       // Validar referencias y reglas con los valores que quedarán guardados.
       const merged = { ...pick(current, fields), ...data }
       await checkRules(merged, client)

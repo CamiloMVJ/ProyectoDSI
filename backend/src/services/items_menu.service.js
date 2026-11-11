@@ -1,12 +1,14 @@
 import * as repository from '../repositories/items_menu.repository.js'
 import * as menusRepository from '../repositories/menus.repository.js'
+import * as menuCategoriesRepository from '../repositories/menu-categories.repository.js'
 import { AppError } from '../errors/app-error.js'
 import { parseId, allowedData, pick, execute, requireReference, withLockedRecord, checkDates, checkEvent, normalizeEvent, publicUser } from './service-utils.js'
 
-const fields = ["id_menu", "nombre_platillo", "descripcion", "precio", "moneda", "url_foto", "es_vegetariano", "esta_disponible"]
+const fields = ["id_menu", "nombre_platillo", "descripcion", "precio", "moneda", "url_foto", "es_vegetariano", "esta_disponible", "id_categoria_menu"]
 
 async function checkRules(data, client) {
   await requireReference(menusRepository, data.id_menu, 'El menú', client)
+  await requireReference(menuCategoriesRepository, data.id_categoria_menu, 'La categoría del menú', client)
 }
 
 export async function findAll() {

@@ -6,14 +6,14 @@ const keys = {
   servicios: 'id_servicio', usuarios: 'id_usuario', items_menu: 'id_item',
   administradores: 'id_administrador',
   propietarios_negocios: 'id_propietario',
-  turistas: 'id_turista',
   complejos_turisticos: 'id_lugar',
   atractivos_independientes: 'id_lugar',
   locales_comerciales: 'id_local',
   horarios: 'id_horario',
-  imagenes_lugares: 'id_imagen',
+  imagenes_locales: 'id_imagen',
   favoritos: 'id_favorito',
-  solicitudes_registros: 'id_solicitud'
+  solicitudes_registros: 'id_solicitud',
+  departamentos: 'id_departamento'
 }
 
 export async function lockOne(table, id, client) {

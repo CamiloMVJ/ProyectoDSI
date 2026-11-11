@@ -1,5 +1,5 @@
 import './index.css';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Navbar from './Components/Navbar';
 import EventCarousel from './Components/EventCarousel';
 import SearchBar from './Components/SearchBar';
@@ -8,6 +8,7 @@ import HospedajeIcon from './Components/Icons';
 import Footer from './Components/Footer';
 import { useNavigate } from 'react-router-dom';
 import { Utensils, Martini, Disc, Coffee, Bus } from 'lucide-react';
+import { getDepartments } from './services/places.api.js';
 
 
 /* ============================================================================
@@ -82,7 +83,22 @@ export default function App() {
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedDepartment, setSelectedDepartment] = useState('');
-  const [favorites, setFavorites] = useState({});
+  const [departments, setDepartments] = useState([]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    getDepartments(controller.signal)
+      .then(setDepartments)
+      .catch(error => { if (error.name !== 'AbortError') setDepartments([]); });
+    return () => controller.abort();
+  }, []);
+
+  const handleSearch = ({ query, department }) => {
+    const params = new URLSearchParams();
+    if (query.trim()) params.set('q', query.trim());
+    if (department) params.set('departamento', department);
+    navigate(`/buscar${params.size ? `?${params}` : ''}`);
+  };
 
   const handleCategorySelect = (categoryId) => {
     setSelectedCategory(categoryId);
@@ -90,13 +106,6 @@ export default function App() {
     if (targetElement) {
       targetElement.scrollIntoView({ behavior: 'smooth' });
     }
-  };
-
-  const toggleFavorite = (sectionId) => {
-    setFavorites((prev) => ({
-      ...prev,
-      [sectionId]: !prev[sectionId]
-    }));
   };
 
   return (
@@ -115,8 +124,10 @@ export default function App() {
         <SearchBar
           value={searchQuery}
           selectedDepartment={selectedDepartment}
+          departments={departments}
           onChange={setSearchQuery}
           onDepartmentChange={setSelectedDepartment}
+          onSearchSubmit={handleSearch}
         />
 
         <EventCarousel />
@@ -141,8 +152,6 @@ export default function App() {
                 key={section.id}
                 id={section.id}
                 sectionTitle={section.title}
-                esFavorito={!!favorites[section.id]}
-                onToggleFavorite={() => toggleFavorite(section.id)}
               />
             ))}
           </div>

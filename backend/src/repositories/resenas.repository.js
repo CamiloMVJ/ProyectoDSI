@@ -14,30 +14,30 @@ export async function findOne(id, client = pool) {
 }
 
 export async function create(data, client = pool) {
-  const { 
-    id_turista, 
-    id_lugar, 
-    calificacion, 
-    comentario, 
-    respuesta_propietario, 
-    estado_moderacion 
+  const {
+    id_usuario,
+    id_local,
+    calificacion,
+    comentario,
+    respuesta_propietario,
+    estado_moderacion
   } = data;
 
   const query = `
     INSERT INTO resenas (
-      id_turista, id_lugar, calificacion, comentario, 
+      id_usuario, id_local, calificacion, comentario,
       respuesta_propietario, estado_moderacion
-    ) 
-    VALUES ($1, $2, $3, $4, $5, $6) 
+    )
+    VALUES ($1, $2, $3, $4, $5, $6)
     RETURNING *;
   `;
 
   const values = [
-    id_turista, 
-    id_lugar, 
-    calificacion, 
-    comentario || null, 
-    respuesta_propietario || null, 
+    id_usuario,
+    id_local,
+    calificacion,
+    comentario || null,
+    respuesta_propietario || null,
     estado_moderacion || 'Pendiente'
   ];
 
@@ -46,30 +46,30 @@ export async function create(data, client = pool) {
 }
 
 export async function update(id, data, client = pool) {
-  const { 
-    id_turista, 
-    id_lugar, 
-    calificacion, 
-    comentario, 
-    respuesta_propietario, 
-    estado_moderacion 
+  const {
+    id_usuario,
+    id_local,
+    calificacion,
+    comentario,
+    respuesta_propietario,
+    estado_moderacion
   } = data;
 
   const query = `
-    UPDATE resenas 
-    SET id_turista = $1, id_lugar = $2, calificacion = $3, 
-        comentario = $4, respuesta_propietario = $5, estado_moderacion = $6 
-    WHERE id_resena = $7 
+    UPDATE resenas
+    SET id_usuario = $1, id_local = $2, calificacion = $3,
+        comentario = $4, respuesta_propietario = $5, estado_moderacion = $6
+    WHERE id_resena = $7
     RETURNING *;
   `;
 
   const values = [
-    id_turista, 
-    id_lugar, 
-    calificacion, 
-    comentario || null, 
-    respuesta_propietario || null, 
-    estado_moderacion || 'Pendiente', 
+    id_usuario,
+    id_local,
+    calificacion,
+    comentario || null,
+    respuesta_propietario || null,
+    estado_moderacion || 'Pendiente',
     id
   ];
 

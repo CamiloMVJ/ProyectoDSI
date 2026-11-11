@@ -1,5 +1,6 @@
 import * as repository from '../repositories/usuarios.repository.js'
 import * as repositoryAdmin from '../repositories/administradores.repository.js'
+import * as repositoryPropietario from '../repositories/propietarios_negocios.repository.js'
 import { AppError } from '../errors/app-error.js'
 import { parseId, allowedData, pick, execute, requireReference, withLockedRecord, checkDates, checkEvent, normalizeEvent, publicUser } from './service-utils.js'
 import { hashPassword, verifyPassword } from './password-utils.js'
@@ -78,10 +79,11 @@ export async function login(body) {
   }
 
   const admin = await repositoryAdmin.findByUserId(usuario.id_usuario)
+  const propietario = await repositoryPropietario.findByUserId(usuario.id_usuario)
 
   const payload = {
     id: usuario.id_usuario,
-    rol: admin ? admin.rol : usuario.rol 
+    rol: admin ? admin.rol : propietario ? propietario.rol : 'Usuario'
   }
 
   const token = jwt.sign(payload, process.env.JWT_SECRET, {

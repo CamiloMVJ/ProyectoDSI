@@ -20,3 +20,8 @@ export const actualizar = async (req, res, next) => {
   try { res.status(200).json({ success: true, data: await service.update(req.params.id, req.body) }); }
   catch (error) { next(error); }
 };
+
+export const removeItem = async (req, res, next) => {
+  try { res.status(200).json({ success: true, data: await service.remove(req.params.id) }); }
+  catch (error) { next(error); }
+};

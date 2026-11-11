@@ -1,6 +1,7 @@
 import Joi from 'joi';
+import { lugarSchema } from './lugar.dto.js';
 
-export const localComercialSchema = Joi.object({
+export const localComercialSchema = lugarSchema.keys({
     codigo_ruc: Joi.string()
         .trim()
         .max(50)
@@ -29,29 +30,5 @@ export const localComercialSchema = Joi.object({
         .optional(),
 
     es_independiente: Joi.boolean()
-        .default(true),
-
-    precio_minimo: Joi.number()
-        .min(0)
-        .precision(2)
-        .allow(null)
-        .optional()
-        .messages({
-            'number.min': 'El precio mínimo no puede ser negativo.'
-        }),
-
-    precio_maximo: Joi.number()
-        .min(0)
-        .precision(2)
-        .allow(null)
-        .optional()
-        .messages({
-            'number.min': 'El precio máximo no puede ser negativo.'
-        }),
-
-    id_categoria: Joi.number()
-        .integer()
-        .positive()
-        .allow(null)
-        .optional()
+        .default(true)
 });
