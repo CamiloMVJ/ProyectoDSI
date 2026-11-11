@@ -1,49 +1,51 @@
-import { Router } from 'express';
-import categoriasRoutes from './categorias.routes.js';
-import serviciosRoutes from './servicios.routes.js';
-import usuariosRoutes from './usuarios.routes.js';
-import administradoresRoutes from './administradores.routes.js';
-import propietarios_negociosRoutes from './propietarios_negocios.routes.js';
-import lugares_turisticosRoutes from './lugares_turisticos.routes.js';
-import imagenes_lugaresRoutes from './imagenes_lugares.routes.js';
-import horariosRoutes from './horarios.routes.js';
-import resenasRoutes from './resenas.routes.js';
-import favoritosRoutes from './favoritos.routes.js';
-import complejos_turisticosRoutes from './complejos_turisticos.routes.js';
-import atractivos_independientesRoutes from './atractivos_independientes.routes.js';
-import locales_comercialesRoutes from './locales_comerciales.routes.js';
-import eventos_nacionalesRoutes from './eventos_nacionales.routes.js';
-import menusRoutes from './menus.routes.js';
-import items_menuRoutes from './items_menu.routes.js';
-import solicitudes_registrosRoutes from './solicitudes_registros.routes.js';
-import campanias_publicitariasRoutes from './campanias_publicitarias.routes.js';
-import pagos_publicidadRoutes from './pagos_publicidad.routes.js';
-import departamentosRoutes from './departamentos.routes.js';
-import imagesRoutes from './images.routes.js';
-import menuCategoriesRoutes from './menu-categories.routes.js';
+import { Router } from "express"
+import categoriasRoutes from "./categorias.routes.js"
+import localesCategoriasRoutes from "./locales_categorias.routes.js"
+import serviciosRoutes from "./servicios.routes.js"
+import usuariosRoutes from "./usuarios.routes.js"
+import administradoresRoutes from "./administradores.routes.js"
+import propietarios_negociosRoutes from "./propietarios_negocios.routes.js"
+import lugares_turisticosRoutes from "./lugares_turisticos.routes.js"
+import imagenes_lugaresRoutes from "./imagenes_lugares.routes.js"
+import horariosRoutes from "./horarios.routes.js"
+import resenasRoutes from "./resenas.routes.js"
+import favoritosRoutes from "./favoritos.routes.js"
+import complejos_turisticosRoutes from "./complejos_turisticos.routes.js"
+import atractivos_independientesRoutes from "./atractivos_independientes.routes.js"
+import locales_comercialesRoutes from "./locales_comerciales.routes.js"
+import eventos_nacionalesRoutes from "./eventos_nacionales.routes.js"
+import menusRoutes from "./menus.routes.js"
+import items_menuRoutes from "./items_menu.routes.js"
+import solicitudes_registrosRoutes from "./solicitudes_registros.routes.js"
+import campanias_publicitariasRoutes from "./campanias_publicitarias.routes.js"
+import pagos_publicidadRoutes from "./pagos_publicidad.routes.js"
+import departamentosRoutes from "./departamentos.routes.js"
+import imagesRoutes from "./images.routes.js"
+import menuCategoriesRoutes from "./menu-categories.routes.js"
 
-const router = Router();
-router.get('/health', (req, res) => res.json({ success: true, status: 'ok' }));
-router.use('/categorias', categoriasRoutes);
-router.use('/departamentos', departamentosRoutes);
-router.use('/servicios', serviciosRoutes);
-router.use('/usuarios', usuariosRoutes);
-router.use('/administradores', administradoresRoutes);
-router.use('/propietarios_negocios', propietarios_negociosRoutes);
-router.use('/lugares_turisticos', lugares_turisticosRoutes);
-router.use('/imagenes_lugares', imagenes_lugaresRoutes);
-router.use('/imagenes', imagesRoutes);
-router.use('/horarios', horariosRoutes);
-router.use('/resenas', resenasRoutes);
-router.use('/favoritos', favoritosRoutes);
-router.use('/complejos_turisticos', complejos_turisticosRoutes);
-router.use('/atractivos_independientes', atractivos_independientesRoutes);
-router.use('/locales_comerciales', locales_comercialesRoutes);
-router.use('/eventos_nacionales', eventos_nacionalesRoutes);
-router.use('/menus', menusRoutes);
-router.use('/items_menu', items_menuRoutes);
-router.use('/menu-categories', menuCategoriesRoutes);
-router.use('/solicitudes_registros', solicitudes_registrosRoutes);
-router.use('/campanias_publicitarias', campanias_publicitariasRoutes);
-router.use('/pagos_publicidad', pagos_publicidadRoutes);
-export default router;
+const router = Router()
+router.get("/health", (req, res) => res.json({ success: true, status: "ok" }))
+router.use("/categorias", categoriasRoutes)
+router.use("/locales_categorias", localesCategoriasRoutes)
+router.use("/departamentos", departamentosRoutes)
+router.use("/servicios", serviciosRoutes)
+router.use("/usuarios", usuariosRoutes)
+router.use("/administradores", administradoresRoutes)
+router.use("/propietarios_negocios", propietarios_negociosRoutes)
+router.use("/imagenes_lugares", imagenes_lugaresRoutes)
+router.use("/imagenes", imagesRoutes)
+router.use("/horarios", horariosRoutes)
+router.use("/resenas", resenasRoutes)
+router.use("/favoritos", favoritosRoutes)
+router.use("/complejos_turisticos", complejos_turisticosRoutes)
+router.use("/atractivos_independientes", atractivos_independientesRoutes)
+router.use("/locales_comerciales", locales_comercialesRoutes)
+router.use("/lugares_turisticos", lugares_turisticosRoutes)
+router.use("/eventos_nacionales", eventos_nacionalesRoutes)
+router.use("/menus", menusRoutes)
+router.use("/items_menu", items_menuRoutes)
+router.use("/menu-categories", menuCategoriesRoutes)
+router.use("/solicitudes_registros", solicitudes_registrosRoutes)
+router.use("/campanias_publicitarias", campanias_publicitariasRoutes)
+router.use("/pagos_publicidad", pagos_publicidadRoutes)
+export default router
