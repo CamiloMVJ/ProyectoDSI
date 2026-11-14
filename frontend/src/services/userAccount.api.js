@@ -9,6 +9,7 @@ function usuarioPublico(usuario) {
     email: usuario.email,
     telefono: usuario.telefono ?? "",
     fecha_registro: usuario.fecha_registro ?? null,
+    rol: usuario.rol,
   }
 }
 

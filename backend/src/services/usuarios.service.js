@@ -1,12 +1,11 @@
 import * as repository from '../repositories/usuarios.repository.js'
-import * as repositoryAdmin from '../repositories/administradores.repository.js'
-import * as repositoryPropietario from '../repositories/propietarios_negocios.repository.js'
 import { AppError } from '../errors/app-error.js'
 import { parseId, allowedData, pick, execute, requireReference, withLockedRecord, checkDates, checkEvent, normalizeEvent, publicUser } from './service-utils.js'
 import { hashPassword, verifyPassword } from './password-utils.js'
 import jwt from 'jsonwebtoken'
 
 const fields = ["nombre_completo", "email", "password", "telefono"]
+const userWithRole = (usuario) => ({ ...publicUser(usuario), rol: usuario.rol })
 
 async function prepare(data) {
   const result = { ...data }
@@ -18,7 +17,7 @@ async function prepare(data) {
 }
 
 export async function findAll() {
-  return execute(async () => (await repository.findAll()).map(publicUser))
+  return execute(async () => (await repository.findAll()).map(userWithRole))
 }
 
 export async function findOne(id) {
@@ -26,7 +25,7 @@ export async function findOne(id) {
   return execute(async () => {
     const record = await repository.findOne(id)
     if (!record) throw new AppError('El usuario no existe', 404)
-    return publicUser(record)
+    return userWithRole(record)
   })
 }
 
@@ -38,7 +37,7 @@ export async function create(data) {
     // console.log("Data preparada: ", await prepare(data))
     const result = await repository.create(await prepare(data))
     
-    return publicUser(result)
+    return { ...publicUser(result), rol: 'Usuario' }
   })
 }
 
@@ -50,7 +49,7 @@ export async function update(id, data) {
     'usuarios', id, repository, 'El usuario', async (current, client) => {
       const result = await repository.update(id, await prepare(data), client)
       if (!result) throw new AppError('El usuario no existe', 404)
-      return publicUser(result)
+      return userWithRole(await repository.findOne(id, client))
     }
   ))
 }
@@ -78,12 +77,9 @@ export async function login(body) {
     throw new AppError('Credenciales inválidas', 401)
   }
 
-  const admin = await repositoryAdmin.findByUserId(usuario.id_usuario)
-  const propietario = await repositoryPropietario.findByUserId(usuario.id_usuario)
-
   const payload = {
     id: usuario.id_usuario,
-    rol: admin ? admin.rol : propietario ? propietario.rol : 'Usuario'
+    rol: usuario.rol
   }
 
   const token = jwt.sign(payload, process.env.JWT_SECRET, {
@@ -92,6 +88,6 @@ export async function login(body) {
 
   return { 
     token, 
-    usuario: publicUser(usuario)
+    usuario: userWithRole(usuario)
   }
 }
