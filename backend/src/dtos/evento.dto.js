@@ -56,7 +56,7 @@ hora_fin: Joi.string()
 
 id_departamento: Joi.number()
     .integer()
-    .positive()
+    .positive().max(2147483647)
     .required()
     .messages({
         'number.base': 'El ID del departamento debe ser un número.',
@@ -86,6 +86,7 @@ tipo_evento: Joi.string()
 
 costo_entrada: Joi.number()
     .min(0)
+    .max(99999999.99)
     .precision(2)
     .allow(null)
     .optional()
@@ -101,7 +102,7 @@ es_anual_recurrente: Joi.boolean()
 
 id_lugar_asociado: Joi.number()
     .integer()
-    .positive()
+    .positive().max(2147483647)
     .allow(null)
     .optional(),
 

@@ -3,7 +3,7 @@ import Joi from 'joi';
 export const itemMenuSchema = Joi.object({
 id_menu: Joi.number()
 .integer()
-.positive()
+.positive().max(2147483647)
 .required()
 .messages({
 'number.base': 'El ID del menú debe ser un número.',
@@ -31,6 +31,7 @@ descripcion: Joi.string()
 
 precio: Joi.number()
     .min(0)
+    .max(99999999.99)
     .precision(2)
     .required()
     .messages({
@@ -40,7 +41,7 @@ precio: Joi.number()
     }),
 
 moneda: Joi.string()
-    .max(10)
+    .valid('NIO', 'USD')
     .default('NIO'),
 
 url_foto: Joi.string()
@@ -61,8 +62,9 @@ esta_disponible: Joi.boolean()
 
 id_categoria_menu: Joi.number()
     .integer()
-    .positive()
-    .required()
+    .positive().max(2147483647)
+    .allow(null)
+    .optional()
 
 
 });

@@ -65,5 +65,27 @@ export async function cleanupPending({
       }
     }
   }
+  const documentStore = client.storage.from(config.documents)
+  const requests = await listAll(documentStore, 'pending/solicitudes')
+  for (const request of requests) {
+    if (!/^\d+$/.test(request.name)) continue
+    const users = await listAll(documentStore, `pending/solicitudes/${request.name}`)
+    for (const user of users) {
+      if (!/^\d+$/.test(user.name)) continue
+      const base = `pending/solicitudes/${request.name}/${user.name}`
+      const files = await listAll(documentStore, base)
+      for (const file of files) {
+        if (!FILE_NAME.test(file.name) || !file.name.endsWith('.pdf')) continue
+        const created = Date.parse(file.created_at)
+        if (!Number.isFinite(created) || created < since || now - created < MIN_AGE_MS) continue
+        result.candidates++
+        if (!dryRun) {
+          const { error } = await documentStore.remove([`${base}/${file.name}`])
+          if (error) throw new AppError('No se pudo limpiar un archivo pendiente', 502)
+          result.deleted++
+        }
+      }
+    }
+  }
   return result
 }

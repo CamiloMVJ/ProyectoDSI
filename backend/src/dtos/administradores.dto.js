@@ -4,7 +4,7 @@ import { usuarioSchema } from './usuario.dto.js'
 export const administradorSchema = Joi.object({
     id_usuario: Joi.number()
         .integer()
-        .positive()
+        .positive().max(2147483647)
         .required()
         .messages({
             'number.base': 'El ID del usuario debe ser un número.',

@@ -1,7 +1,7 @@
 import { useEffect, useId, useRef, useState } from 'react'
 import { Check, ChevronDown } from 'lucide-react'
 
-export default function DepartmentDropdown({ id, value = '', departments = [], onChange, variant = 'filter', placeholder = 'Todo el país', required = false }) {
+export default function DepartmentDropdown({ id, value = '', departments = [], onChange, variant = 'filter', placeholder = 'Todo el país', required = false, disabled = false }) {
   const [isOpen, setIsOpen] = useState(false)
   const [focusedIndex, setFocusedIndex] = useState(0)
   const containerRef = useRef(null)
@@ -38,6 +38,7 @@ export default function DepartmentDropdown({ id, value = '', departments = [], o
   }, [isOpen, focusedIndex])
 
   function openMenu(index = selectedIndex) {
+    if (disabled) return
     setFocusedIndex(index)
     setIsOpen(true)
   }
@@ -67,6 +68,7 @@ export default function DepartmentDropdown({ id, value = '', departments = [], o
         ref={triggerRef}
         id={id}
         type="button"
+        disabled={disabled}
         aria-haspopup="listbox"
         aria-required={required || undefined}
         aria-expanded={isOpen}

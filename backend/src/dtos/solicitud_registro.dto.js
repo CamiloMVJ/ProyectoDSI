@@ -6,5 +6,5 @@ export const solicitudRegistroSchema = Joi.object({
   descripcion: Joi.string().trim().allow('').optional(),
   municipio: Joi.string().trim().max(100).required(),
   direccion_exacta: Joi.string().trim().required(),
-  id_departamento: Joi.number().integer().positive().required(),
+  id_departamento: Joi.number().integer().positive().max(2147483647).required(),
 })

@@ -3,7 +3,7 @@ import Joi from 'joi';
 export const horarioSchema = Joi.object({
     id_local: Joi.number()
         .integer()
-        .positive()
+        .positive().max(2147483647)
         .required()
         .messages({
             'number.base': 'El ID del local debe ser un número.',

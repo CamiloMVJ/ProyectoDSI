@@ -1,7 +1,7 @@
 import Joi from 'joi'
 
 export const localCategoriaSchema = Joi.object({
-  id_categoria: Joi.number().integer().positive().required().messages({
+  id_categoria: Joi.number().integer().positive().max(2147483647).required().messages({
     'number.base': 'El ID de la categoría debe ser un número.',
     'number.integer': 'El ID de la categoría debe ser un entero.',
     'number.positive': 'El ID de la categoría debe ser positivo.',
@@ -10,5 +10,5 @@ export const localCategoriaSchema = Joi.object({
 }).unknown(false)
 
 export const asociacionCategoriaSchema = localCategoriaSchema.keys({
-  id_local: Joi.number().integer().positive().required()
+  id_local: Joi.number().integer().positive().max(2147483647).required()
 })

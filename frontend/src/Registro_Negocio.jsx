@@ -4,6 +4,7 @@ import { ArrowLeft, ArrowRight, Building2, Compass, FileText, MapPin, ShieldChec
 import { useAuth } from './hooks/useAuth.js'
 import DepartmentDropdown from './Components/DepartmentDropdown.jsx'
 import { createBusinessRequest, getDepartments } from './services/businessRequests.api.js'
+import { uploadStorageFile } from './services/uploads.api.js'
 
 const initialValues = {
   nombre_negocio: '', codigo_ruc: '', descripcion: '',
@@ -17,7 +18,10 @@ export default function RegistroNegocioSINATUR() {
   const [error, setError] = useState('')
   const [message, setMessage] = useState('')
   const [enviando, setEnviando] = useState(false)
-  const [documentos, setDocumentos] = useState({ ruc: '', permiso: '' })
+  const [documentos, setDocumentos] = useState({ ruc: null, permiso: null })
+  const [subidos, setSubidos] = useState({ ruc: false, permiso: false })
+  const [solicitudCreada, setSolicitudCreada] = useState(null)
+  const [progreso, setProgreso] = useState('')
 
   useEffect(() => {
     if (!sesion) return
@@ -47,7 +51,13 @@ export default function RegistroNegocioSINATUR() {
     setError('')
     setMessage('')
     setEnviando(true)
+    let currentSolicitud = solicitudCreada
     try {
+      for (const file of Object.values(documentos)) {
+        if (file && (file.type !== 'application/pdf' || file.size === 0 || file.size > 10485760)) {
+          throw new Error('Los documentos deben ser PDF de hasta 10 MB.')
+        }
+      }
       const data = {
         ...values,
         nombre_negocio: values.nombre_negocio.trim(),
@@ -57,14 +67,40 @@ export default function RegistroNegocioSINATUR() {
         direccion_exacta: values.direccion_exacta.trim(),
         id_departamento: Number(values.id_departamento),
       }
-      const solicitud = await createBusinessRequest(sesion.token, data)
-      setMessage(`Solicitud #${solicitud.id_solicitud} recibida. Estado: ${solicitud.estado}. Los documentos todavía no se envían; te indicaremos cómo adjuntarlos cuando esa función esté disponible.`)
+      const solicitud = currentSolicitud || await createBusinessRequest(sesion.token, data)
+      if (!currentSolicitud) {
+        currentSolicitud = solicitud
+        setSolicitudCreada(solicitud)
+      }
+      for (const [key, tipo] of [['ruc', 'RUC'], ['permiso', 'Permiso']]) {
+        const file = documentos[key]
+        if (!file || subidos[key]) continue
+        setProgreso(`Subiendo ${tipo}…`)
+        await uploadStorageFile(file, sesion.token, {
+          context: {
+            type: 'business-request',
+            requestId: solicitud.id_solicitud,
+            documentType: tipo,
+            fileName: file.name,
+          },
+          onStatus: status => {
+            if (status === 'confirming') setProgreso(`Validando ${tipo}…`)
+          },
+        })
+        setSubidos(current => ({ ...current, [key]: true }))
+      }
+      setMessage(`Solicitud #${solicitud.id_solicitud} recibida. Estado: ${solicitud.estado}. Los documentos seleccionados quedaron adjuntos.`)
       setValues(initialValues)
-      setDocumentos({ ruc: '', permiso: '' })
+      setDocumentos({ ruc: null, permiso: null })
+      setSubidos({ ruc: false, permiso: false })
+      setSolicitudCreada(null)
       form.reset()
-    } catch (error) {
-      setError(error.message)
+    } catch (submitError) {
+      setError(currentSolicitud
+        ? `La solicitud #${currentSolicitud.id_solicitud} ya existe. ${submitError.message} Puedes reintentar los documentos sin crear otra solicitud.`
+        : submitError.message)
     } finally {
+      setProgreso('')
       setEnviando(false)
     }
   }
@@ -86,24 +122,25 @@ export default function RegistroNegocioSINATUR() {
             <div className="auth-columns">
               <section className="auth-form-section" aria-labelledby="business-title">
                 <div className="auth-section-heading"><span className="auth-section-icon"><Building2 aria-hidden="true" size={22} /></span><div><h2 id="business-title">Datos del negocio</h2><p>Información para evaluar tu solicitud</p></div></div>
-                <div className="auth-field"><label htmlFor="business-name">Nombre del negocio</label><div className="auth-input-wrap"><Building2 aria-hidden="true" size={19} /><input id="business-name" name="nombre_negocio" value={values.nombre_negocio} onChange={change} maxLength={150} autoComplete="organization" required /></div></div>
-                <div className="auth-field"><label htmlFor="business-ruc">Número RUC</label><div className="auth-input-wrap"><FileText aria-hidden="true" size={19} /><input id="business-ruc" name="codigo_ruc" value={values.codigo_ruc} onChange={change} maxLength={50} required /></div></div>
-                <div className="auth-field"><label htmlFor="business-description">Descripción del negocio <span className="auth-optional">(opcional)</span></label><textarea className="sinatur-textarea" id="business-description" name="descripcion" value={values.descripcion} onChange={change} rows={4} placeholder="Qué ofrece tu establecimiento" /></div>
-                <aside className="auth-info"><ShieldCheck aria-hidden="true" size={24} /><div><h3>Revisión de solicitud</h3><p>Tu solicitud quedará pendiente de revisión administrativa. Sus documentos se registrarán por separado cuando se habilite la carga de archivos.</p></div></aside>
+                <div className="auth-field"><label htmlFor="business-name">Nombre del negocio</label><div className="auth-input-wrap"><Building2 aria-hidden="true" size={19} /><input id="business-name" name="nombre_negocio" value={values.nombre_negocio} onChange={change} maxLength={150} autoComplete="organization" required disabled={Boolean(solicitudCreada)} /></div></div>
+                <div className="auth-field"><label htmlFor="business-ruc">Número RUC</label><div className="auth-input-wrap"><FileText aria-hidden="true" size={19} /><input id="business-ruc" name="codigo_ruc" value={values.codigo_ruc} onChange={change} maxLength={50} required disabled={Boolean(solicitudCreada)} /></div></div>
+                <div className="auth-field"><label htmlFor="business-description">Descripción del negocio <span className="auth-optional">(opcional)</span></label><textarea className="sinatur-textarea" id="business-description" name="descripcion" value={values.descripcion} onChange={change} rows={4} placeholder="Qué ofrece tu establecimiento" disabled={Boolean(solicitudCreada)} /></div>
+                <aside className="auth-info"><ShieldCheck aria-hidden="true" size={24} /><div><h3>Revisión de solicitud</h3><p>Tu solicitud quedará pendiente de revisión administrativa. Los documentos PDF seleccionados se guardarán de forma privada y se vincularán a ella.</p></div></aside>
               </section>
               <section className="auth-form-section" aria-labelledby="location-title">
                 <div className="auth-section-heading"><span className="auth-section-icon"><MapPin aria-hidden="true" size={22} /></span><div><h2 id="location-title">Ubicación y documentos</h2><p>Dirección del establecimiento</p></div></div>
-                <div className="auth-field"><label htmlFor="business-department">Departamento o región</label><DepartmentDropdown id="business-department" value={values.id_departamento} departments={departamentos} onChange={value => { setValues(current => ({ ...current, id_departamento: value })); setError('') }} placeholder="Selecciona una opción" variant="form" required /></div>
-                <div className="auth-field"><label htmlFor="business-municipality">Municipio</label><div className="auth-input-wrap"><MapPin aria-hidden="true" size={19} /><input id="business-municipality" name="municipio" value={values.municipio} onChange={change} maxLength={100} required /></div></div>
-                <div className="auth-field"><label htmlFor="business-address">Dirección exacta</label><div className="auth-input-wrap"><MapPin aria-hidden="true" size={19} /><input id="business-address" name="direccion_exacta" value={values.direccion_exacta} onChange={change} autoComplete="street-address" placeholder="Barrio, calle, número y referencia" required /></div></div>
-                <div className="auth-field"><label htmlFor="document-ruc">Documento RUC </label><input className="auth-file-input" id="document-ruc" type="file" accept=".pdf,.jpg,.jpeg,.png" onChange={event => setDocumentos(current => ({ ...current, ruc: event.target.files?.[0]?.name || '' }))} /><label className="auth-upload" htmlFor="document-ruc"><Upload aria-hidden="true" size={18} /> {documentos.ruc || 'Seleccionar archivo'}</label></div>
-                <div className="auth-field"><label htmlFor="document-permit">Permiso o constancia del negocio </label><input className="auth-file-input" id="document-permit" type="file" accept=".pdf,.jpg,.jpeg,.png" onChange={event => setDocumentos(current => ({ ...current, permiso: event.target.files?.[0]?.name || '' }))} /><label className="auth-upload" htmlFor="document-permit"><Upload aria-hidden="true" size={18} /> {documentos.permiso || 'Seleccionar archivo'}</label></div>
-                <p className="sinatur-form-help">Puedes seleccionar archivos, pero todavía no se enviarán ni se guardarán con la solicitud.</p>
+                <div className="auth-field"><label htmlFor="business-department">Departamento o región</label><DepartmentDropdown id="business-department" value={values.id_departamento} departments={departamentos} onChange={value => { setValues(current => ({ ...current, id_departamento: value })); setError('') }} placeholder="Selecciona una opción" variant="form" required disabled={Boolean(solicitudCreada)} /></div>
+                <div className="auth-field"><label htmlFor="business-municipality">Municipio</label><div className="auth-input-wrap"><MapPin aria-hidden="true" size={19} /><input id="business-municipality" name="municipio" value={values.municipio} onChange={change} maxLength={100} required disabled={Boolean(solicitudCreada)} /></div></div>
+                <div className="auth-field"><label htmlFor="business-address">Dirección exacta</label><div className="auth-input-wrap"><MapPin aria-hidden="true" size={19} /><input id="business-address" name="direccion_exacta" value={values.direccion_exacta} onChange={change} autoComplete="street-address" placeholder="Barrio, calle, número y referencia" required disabled={Boolean(solicitudCreada)} /></div></div>
+                <div className="auth-field"><label htmlFor="document-ruc">Documento RUC <span className="auth-optional">(PDF, hasta 10 MB)</span></label><input className="auth-file-input" id="document-ruc" type="file" accept=".pdf,application/pdf" disabled={enviando || subidos.ruc} onChange={event => setDocumentos(current => ({ ...current, ruc: event.target.files?.[0] || null }))} /><label className="auth-upload" htmlFor="document-ruc"><Upload aria-hidden="true" size={18} /> {subidos.ruc ? 'RUC adjuntado' : documentos.ruc?.name || 'Seleccionar PDF'}</label></div>
+                <div className="auth-field"><label htmlFor="document-permit">Permiso o constancia del negocio <span className="auth-optional">(PDF, hasta 10 MB)</span></label><input className="auth-file-input" id="document-permit" type="file" accept=".pdf,application/pdf" disabled={enviando || subidos.permiso} onChange={event => setDocumentos(current => ({ ...current, permiso: event.target.files?.[0] || null }))} /><label className="auth-upload" htmlFor="document-permit"><Upload aria-hidden="true" size={18} /> {subidos.permiso ? 'Permiso adjuntado' : documentos.permiso?.name || 'Seleccionar PDF'}</label></div>
+                <p className="sinatur-form-help">Los documentos son opcionales. Se subirán al enviar la solicitud y quedarán asociados a ella.</p>
               </section>
             </div>
             {error && <p className="auth-error" role="alert">{error}</p>}
+            {progreso && <p className="auth-notice" role="status">{progreso}</p>}
             {message && <p className="auth-notice" role="status">{message}</p>}
-            <div className="auth-form-actions"><Link className="auth-back" to="/account"><ArrowLeft aria-hidden="true" size={18} /> Volver a mi cuenta</Link><div><button className="auth-primary" type="submit" disabled={enviando || departamentos.length === 0}>{enviando ? 'Enviando…' : 'Enviar solicitud'} <ArrowRight aria-hidden="true" size={19} /></button></div></div>
+            <div className="auth-form-actions"><Link className="auth-back" to="/account"><ArrowLeft aria-hidden="true" size={18} /> Volver a mi cuenta</Link><div><button className="auth-primary" type="submit" disabled={enviando || departamentos.length === 0}>{enviando ? 'Enviando…' : solicitudCreada ? 'Reintentar documentos' : 'Enviar solicitud'} <ArrowRight aria-hidden="true" size={19} /></button></div></div>
           </form>
         </div>
       </main>

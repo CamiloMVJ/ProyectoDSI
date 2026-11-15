@@ -4,12 +4,11 @@ import * as propietarios_negociosRepository from '../repositories/propietarios_n
 import { AppError } from '../errors/app-error.js'
 import { parseId, allowedData, pick, execute, requireReference, withLockedRecord, checkDates, checkEvent, normalizeEvent, publicUser } from './service-utils.js'
 
-const fields = ["id_campania", "id_dueno", "id_administrador", "monto", "moneda", "metodo_pago", "numero_referencia", "comprobante_url", "estado_pago"]
+const fields = ["id_campania", "id_dueno", "monto", "moneda", "metodo_pago", "numero_referencia", "comprobante_url", "estado_pago"]
 
 async function checkRules(data, client) {
   await requireReference(campanias_publicitariasRepository, data.id_campania, 'La campaña', client)
   await requireReference(propietarios_negociosRepository, data.id_dueno, 'El propietario', client)
-  await requireReference(propietarios_negociosRepository, data.id_administrador, 'El propietario encargado', client)
 }
 
 export async function findAll() {

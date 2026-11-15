@@ -5,14 +5,18 @@ const knownRoles = new Set(["Usuario", "Propietario", "Administrador"])
 // Punto de extensión: cada módulo podrá reemplazar esta política con reglas de propiedad.
 // La política de prueba solo da acceso al espacio sandbox del propio usuario.
 export function authorizeStorage(user, action, reference, config) {
+  const scope = reference?.scope || 'sandbox'
+  const allowedRole = scope === 'business-request'
+    ? ['Usuario', 'Propietario'].includes(user?.rol)
+    : knownRoles.has(config.testRole) && user?.rol === config.testRole
   if (
-    !knownRoles.has(config.testRole) ||
-    user?.rol !== config.testRole ||
+    !allowedRole ||
     !Number.isSafeInteger(user?.id) ||
     user.id <= 0 ||
     !["authorize", "confirm", "download", "delete"].includes(action) ||
+    (scope === 'business-request' && action === 'delete') ||
     (reference &&
-      (reference.userId !== user.id || reference.scope !== "sandbox"))
+      (reference.userId !== user.id || !['sandbox', 'business-request'].includes(reference.scope)))
   ) {
     throw new AppError("No tenés permiso para gestionar este archivo", 403)
   }

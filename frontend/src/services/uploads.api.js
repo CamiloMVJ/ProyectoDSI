@@ -5,7 +5,7 @@ import { prepareWebp } from "./prepareWebp.js"
 export async function uploadStorageFile(
   file,
   token,
-  { onStatus = () => {} } = {},
+  { onStatus = () => {}, context = { type: 'sandbox' } } = {},
   deps = {},
 ) {
   if (!(file instanceof File)) throw new Error("Selecciona un archivo válido.")
@@ -30,7 +30,7 @@ export async function uploadStorageFile(
       kind,
       size: prepared.size,
       mime: prepared.type,
-      context: { type: "sandbox" },
+      context,
     }),
   })
   onStatus("uploading")

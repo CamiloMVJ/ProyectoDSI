@@ -2,16 +2,16 @@
 
 ## Estado y alcance
 
-Esta infraestructura es independiente de los módulos de negocio actuales. La ruta de prueba `/probar-subidas` permite verificar imágenes y PDF con una sesión iniciada. PostgreSQL en Render y el esquema de Supabase no se modifican. La funcionalidad está deshabilitada por defecto (`SUPABASE_STORAGE_ENABLED=false`) y no se han creado ni cambiado buckets desde este código.
+El formulario `/registro-negocio` usa Storage para los documentos RUC y permiso. La ruta de prueba `/probar-subidas` permite verificar imágenes y PDF con una sesión iniciada. No se modificó el esquema PostgreSQL ni el de Supabase; se aprovecha la tabla existente `documentos_solicitudes`. No se crearon ni cambiaron buckets desde este código.
 
 El backend sigue usando el JWT propio de SINATUR. `@supabase/supabase-js` se usa solo para Storage; no se usa Supabase Auth. La clave secreta permanece en el backend. El navegador usa únicamente la clave publicable y un token temporal de subida emitido por el backend.
 
 ## Flujo
 
 1. React verifica el archivo. Una imagen JPEG, PNG o WebP se decodifica y convierte a WebP de hasta 1600 píxeles por lado y 2 MB. Un PDF conserva su formato y debe medir como máximo 10 MB.
-2. `POST /api/uploads/authorize` valida el JWT, el rol configurado, el contexto `sandbox`, el tipo MIME y el tamaño. El backend elige el bucket y la ruta `pending/sandbox/{id_usuario}/{uuid}.{ext}` y entrega un token firmado de subida, con un comprobante HMAC ligado al usuario.
+2. `POST /api/uploads/authorize` valida el JWT, el contexto, el tipo MIME y el tamaño. Para `sandbox` exige el rol de prueba configurado y usa `pending/sandbox/{id_usuario}/{uuid}.{ext}`. Para `business-request` exige que la solicitud esté pendiente, pertenezca al usuario y que el archivo sea PDF; usa `pending/solicitudes/{id_solicitud}/{id_usuario}/{uuid}.pdf`. El backend elige el bucket y entrega un token firmado de subida con un comprobante HMAC ligado al usuario.
 3. React sube el archivo directamente a Supabase con `uploadToSignedUrl`. El contenido no pasa por Express.
-4. `POST /api/uploads/confirm` valida el comprobante, consulta metadatos, lee el archivo con límite de bytes y analiza su contenido real. Un WebP validado se publica desde un bucket privado de staging hacia el bucket público. Un PDF validado se mueve de `pending/` a `final/` dentro del bucket privado.
+4. `POST /api/uploads/confirm` valida el comprobante, consulta metadatos, lee el archivo con límite de bytes y analiza su contenido real. Un WebP validado se publica desde un bucket privado de staging hacia el bucket público. Un PDF validado se mueve de `pending/` a `final/` dentro del bucket privado. Si pertenece a una solicitud, se registra su ruta privada, nombre y tipo en `documentos_solicitudes`.
 5. La confirmación devuelve un `fileId` firmado para operaciones posteriores. Para imágenes también devuelve `publicUrl`. `POST /api/uploads/signed-download` entrega una URL privada de 60 segundos. `DELETE /api/uploads` elimina un archivo final perteneciente al usuario del JWT.
 
 Los comprobantes de subida vencen en dos horas. Las rutas finales usan UUID y no permiten sobrescritura. La validación en el servidor usa `sharp` para decodificar WebP y `pdf-lib` para analizar PDF, además de comprobar tamaño y metadatos. Esto verifica que el archivo sea procesable; no desinfecta contenido activo de un PDF. Los PDF deben ofrecerse como descarga y no incrustarse automáticamente en páginas confiables.
@@ -34,13 +34,13 @@ Revisar manualmente las políticas de Storage: la clave publicable no debe tener
 
 Copiar [backend/.env.example](../backend/.env.example) y [frontend/.env.example](../frontend/.env.example) a variables de entorno locales y de Render/Vite, respectivamente. Generar `SUPABASE_RECEIPT_SECRET` con al menos 32 caracteres aleatorios. Mantener `SUPABASE_SECRET_KEY` exclusivamente en Render. Nunca ponerla en variables `VITE_`.
 
-`SUPABASE_STORAGE_TEST_ROLE` debe asignarse explícitamente a uno de los roles actuales (`Usuario`, `Propietario`, `Administrador`) para probar el espacio `sandbox`. Vacía, todas las operaciones quedan denegadas. Esta política no concede acceso a negocios, lugares ni perfiles; esos módulos necesitarán reglas propias de propiedad antes de integrarse. La limitación de autorizaciones es de 20 por usuario y hora **por proceso**; para múltiples instancias en Render hace falta un limitador compartido antes de usarlo en producción.
+`SUPABASE_STORAGE_TEST_ROLE` debe asignarse explícitamente a uno de los roles actuales (`Usuario`, `Propietario`, `Administrador`) para probar el espacio `sandbox`. Vacía, el espacio de prueba queda denegado. Los PDF de solicitudes usan su propia regla de propiedad y aceptan cuentas `Usuario` y `Propietario`, independientemente de ese valor. La limitación de autorizaciones es de 20 por usuario y hora **por proceso**; para múltiples instancias en Render hace falta un limitador compartido antes de usarlo en producción.
 
 Para usar la interfaz de prueba, configurar `SUPABASE_STORAGE_ENABLED=true`, `SUPABASE_BUCKET_STAGING` con el nombre exacto del bucket privado WebP, un `SUPABASE_RECEIPT_SECRET` aleatorio de al menos 32 caracteres y `SUPABASE_STORAGE_TEST_ROLE` con el rol de la cuenta de prueba. Iniciar sesión y abrir `/probar-subidas`. La imagen muestra su URL pública tras confirmarse; el PDF ofrece una descarga firmada. La ruta no aparece en la navegación principal.
 
 ## Limpieza
 
-Definir `SUPABASE_STORAGE_EPOCH` como fecha ISO UTC del inicio de esta infraestructura, anterior al primer archivo creado. `npm run storage:cleanup` recorre únicamente `pending/sandbox/`, con paginación de 100 elementos, y considera candidatos solo archivos UUID creados después de esa fecha y con al menos cuatro horas de antigüedad. Nunca consulta `final/`. Por defecto informa candidatos sin eliminar. Solo `SUPABASE_CLEANUP_APPLY=true` activa la eliminación.
+Definir `SUPABASE_STORAGE_EPOCH` como fecha ISO UTC del inicio de esta infraestructura, anterior al primer archivo creado. `npm run storage:cleanup` recorre `pending/sandbox/` y `pending/solicitudes/`, con paginación de 100 elementos, y considera candidatos solo archivos UUID creados después de esa fecha y con al menos cuatro horas de antigüedad. Nunca consulta `final/`. Por defecto informa candidatos sin eliminar. Solo `SUPABASE_CLEANUP_APPLY=true` activa la eliminación.
 
 En Render puede configurarse un Cron Job con el mismo código y variables del backend, usando `npm run storage:cleanup` como comando. Ejecutar primero varias veces en modo simulación y revisar los conteos. No se hizo ninguna eliminación real.
 

@@ -3,7 +3,7 @@ import Joi from 'joi';
 export const resenaSchema = Joi.object({
 id_usuario: Joi.number()
 .integer()
-.positive()
+.positive().max(2147483647)
 .required()
 .messages({
 'number.base': 'El ID del usuario debe ser un número.',
@@ -15,7 +15,7 @@ id_usuario: Joi.number()
 
 id_local: Joi.number()
     .integer()
-    .positive()
+    .positive().max(2147483647)
     .required()
     .messages({
         'number.base': 'El ID del local debe ser un número.',

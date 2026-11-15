@@ -374,7 +374,6 @@ export const updatePagoSchema = pagoSchema
         [
             'id_campania',
             'id_dueno',
-            'id_administrador',
             'monto',
             'moneda',
             'metodo_pago',

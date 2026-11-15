@@ -14,7 +14,7 @@ export const localComercialSchema = lugarSchema.keys({
 
     id_dueno: Joi.number()
         .integer()
-        .positive()
+        .positive().max(2147483647)
         .required()
         .messages({
             'number.base': 'El ID del dueño debe ser un número.',
@@ -25,7 +25,7 @@ export const localComercialSchema = lugarSchema.keys({
 
     id_complejo_padre: Joi.number()
         .integer()
-        .positive()
+        .positive().max(2147483647)
         .allow(null)
         .optional(),
 

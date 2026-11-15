@@ -20,7 +20,7 @@ descripcion: Joi.string()
 
 id_departamento: Joi.number()
     .integer()
-    .positive()
+    .positive().max(2147483647)
     .required()
     .messages({
         'number.base': 'El ID del departamento debe ser un número.',
@@ -57,8 +57,8 @@ maps_link: Joi.string()
 
 export const buscarLugaresSchema = Joi.object({
     q: Joi.string().trim().max(150).allow('').default(''),
-    departamento: Joi.number().integer().positive().empty('').default(null),
-    id_categoria: Joi.number().integer().positive().empty('').default(null),
+    departamento: Joi.number().integer().positive().max(2147483647).empty('').default(null),
+    id_categoria: Joi.number().integer().positive().max(2147483647).empty('').default(null),
     municipio: Joi.string().trim().max(100).allow('').default(''),
     tipo: Joi.string().valid('todos', 'complejo', 'atractivo', 'otro').default('todos'),
     orden: Joi.string().valid('nombre-asc', 'nombre-desc', 'recientes').default('nombre-asc'),
