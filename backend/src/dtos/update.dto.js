@@ -1,3 +1,4 @@
+import Joi from 'joi';
 import { categoriaSchema } from './categoria.dto.js';
 import { usuarioSchema } from './usuario.dto.js';
 import { propietarioNegocioSchema } from './propietario_negocio.dto.js';
@@ -13,7 +14,6 @@ import { eventoSchema } from './evento.dto.js';
 import { servicioSchema } from './servicio.dto.js';
 import { menuSchema } from './Menus.dto.js';
 import { itemMenuSchema } from './Items_Menu.dto.js';
-import { solicitudRegistroSchema } from './solicitud_registro.dto.js';
 import { campaniaSchema } from './campania.dto.js';
 import { pagoSchema } from './pago.dto.js';
 
@@ -341,26 +341,9 @@ export const updateItemMenuSchema = itemMenuSchema
     });
 
 
-export const updateSolicitudRegistroSchema = solicitudRegistroSchema
-    .fork(
-        [
-            'id_dueno',
-            'id_administrador',
-            'documentos_adjuntos',
-            'estado',
-            'observaciones'
-        ],
-        (schema) => schema.optional()
-    )
-    .prefs({ noDefaults: true })
-    .unknown(false)
-    .min(1)
-    .required()
-    .messages({
-        'object.min': 'Debés enviar al menos un campo de la solicitud de registro para actualizar.',
-        'object.unknown': 'El campo "{{#label}}" no está permitido en la solicitud de registro.',
-        'any.required': 'Debés enviar los datos de la solicitud de registro que querés actualizar.'
-    });
+export const updateSolicitudRegistroSchema = Joi.object({
+    estado: Joi.string().valid('Pendiente', 'Aprobada', 'Rechazada').required()
+});
 
 
 export const updateCampaniaSchema = campaniaSchema

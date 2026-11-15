@@ -60,6 +60,7 @@ export default function UserAccount() {
                 </header>
 
                 <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_300px] lg:gap-8">
+                    <div className="min-w-0 space-y-6">
                     <section
                         aria-labelledby="perfil-title"
                         className="min-w-0 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-6 shadow-sm sm:p-9"
@@ -142,6 +143,19 @@ export default function UserAccount() {
                             </button>
                         )}
                     </section>
+                    <section className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-6 shadow-sm sm:p-9">
+                        <div className="flex size-12 items-center justify-center rounded-xl bg-[#f6eee5] text-[var(--color-accent)]">
+                            <Compass size={25} aria-hidden="true" />
+                        </div>
+                        <h2 className="mt-4 text-lg font-bold">¿Tienes un establecimiento?</h2>
+                        <p className="mt-2 text-sm leading-6 text-[var(--color-text-muted)]">
+                            Solicita la publicación de tu negocio turístico con tu cuenta actual.
+                        </p>
+                        <Link to="/registro-negocio" className="mt-5 inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-[var(--color-accent)] px-5 py-3 text-sm font-bold text-white hover:bg-[var(--color-accent-hover)]">
+                            Publícate con nosotros <ArrowRight size={17} aria-hidden="true" />
+                        </Link>
+                    </section>
+                    </div>
 
                     <aside className="space-y-5" aria-label="Resumen de la cuenta">
                         <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-6 sm:p-7">
@@ -160,28 +174,6 @@ export default function UserAccount() {
                                     {nombreRol}
                                 </span>
                             )}
-                        </div>
-
-                        <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-6 shadow-sm sm:p-7">
-                            <div className="flex size-12 items-center justify-center rounded-xl bg-[#f6eee5] text-[var(--color-accent)]">
-                                <Compass size={25} aria-hidden="true" />
-                            </div>
-                            <p className="mt-5 text-xs font-bold uppercase tracking-[.12em] text-[var(--color-accent)]">
-                                Para propietarios
-                            </p>
-                            <h2 className="mt-2 text-lg font-bold text-[var(--color-text)]">
-                                ¿Tienes un establecimiento?
-                            </h2>
-                            <p className="mt-2 text-sm leading-6 text-[var(--color-text-muted)]">
-                                Registra y administra tu negocio turístico en SINATUR.
-                            </p>
-                            <Link
-                                to="/gestion-establecimientos"
-                                className="mt-5 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full bg-[var(--color-accent)] px-4 py-3 text-center text-sm font-bold text-white transition-colors hover:bg-[var(--color-accent-hover)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-accent)]"
-                            >
-                                Publícate con nosotros
-                                <ArrowRight size={17} aria-hidden="true" />
-                            </Link>
                         </div>
 
                         <div className="rounded-2xl border border-[var(--color-border)] bg-[#eaf0e7] p-6 sm:p-7">

@@ -1,14 +1,14 @@
 import { useEffect, useId, useRef, useState } from 'react'
 import { Check, ChevronDown } from 'lucide-react'
 
-export default function DepartmentDropdown({ id, value = '', departments = [], onChange, variant = 'filter' }) {
+export default function DepartmentDropdown({ id, value = '', departments = [], onChange, variant = 'filter', placeholder = 'Todo el país', required = false }) {
   const [isOpen, setIsOpen] = useState(false)
   const [focusedIndex, setFocusedIndex] = useState(0)
   const containerRef = useRef(null)
   const triggerRef = useRef(null)
   const optionRefs = useRef([])
   const menuId = useId()
-  const options = [{ value: '', label: 'Todo el país' }, ...departments.map(department => ({
+  const options = [{ value: '', label: placeholder }, ...departments.map(department => ({
     value: String(department.id_departamento),
     label: department.nombre,
   }))]
@@ -68,6 +68,7 @@ export default function DepartmentDropdown({ id, value = '', departments = [], o
         id={id}
         type="button"
         aria-haspopup="listbox"
+        aria-required={required || undefined}
         aria-expanded={isOpen}
         aria-controls={isOpen ? menuId : undefined}
         onClick={() => isOpen ? setIsOpen(false) : openMenu()}
@@ -85,7 +86,7 @@ export default function DepartmentDropdown({ id, value = '', departments = [], o
           role="listbox"
           aria-label="Departamentos"
           onKeyDown={handleKeyDown}
-          className={`absolute right-0 top-full z-50 mt-2 max-h-72 w-full min-w-56 overflow-y-auto rounded-2xl border border-[#d8e1d5] bg-[#fffefa] p-2 shadow-[0_18px_40px_-15px_rgba(38,63,50,0.35)] ${isHome ? 'xl:top-0 xl:right-auto xl:left-full xl:mt-0 xl:ml-3 xl:w-64' : 'lg:top-0 lg:right-auto lg:left-full lg:mt-0 lg:ml-3 lg:w-64'}`}
+          className={`absolute right-0 top-full z-50 mt-2 max-h-72 w-full min-w-56 overflow-y-auto rounded-2xl border border-[#d8e1d5] bg-[#fffefa] p-2 shadow-[0_18px_40px_-15px_rgba(38,63,50,0.35)] ${isHome ? 'xl:top-0 xl:right-auto xl:left-full xl:mt-0 xl:ml-3 xl:w-64' : variant === 'form' ? '' : 'lg:top-0 lg:right-auto lg:left-full lg:mt-0 lg:ml-3 lg:w-64'}`}
         >
           {options.map((option, index) => (
             <button

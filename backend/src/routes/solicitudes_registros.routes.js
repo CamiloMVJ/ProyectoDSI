@@ -9,6 +9,6 @@ import { verifyToken, checkRole } from "../middlewares/auth.middleware.js";
 const router = Router();
 router.get('/', verifyToken, checkRole(['Administrador', 'Propietario']), listar);
 router.get('/:id', verifyToken, checkRole(['Administrador', 'Propietario']), obtener);
-router.post('/', verifyToken, checkRole(['Propietario']), validate(solicitudRegistroSchema), crear);
+router.post('/', verifyToken, checkRole(['Usuario', 'Propietario']), validate(solicitudRegistroSchema), crear);
 router.patch('/:id', verifyToken, checkRole(['Administrador']), validate(updateSolicitudRegistroSchema), actualizar);
 export default router;

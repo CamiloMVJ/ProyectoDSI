@@ -1,7 +1,7 @@
 import { pool } from '../db/db.js'
 
 // Columnas permitidas del script SQL. Los valores se pasan como parámetros.
-const fields = ["id_dueno", "id_administrador", "fecha_solicitud", "documentos_adjuntos", "estado", "observaciones"]
+const fields = ["id_usuario", "nombre_negocio", "codigo_ruc", "descripcion", "municipio", "direccion_exacta", "id_departamento", "estado"]
 
 function getEntries(data) {
   if (!data || typeof data !== 'object' || Array.isArray(data)) {
