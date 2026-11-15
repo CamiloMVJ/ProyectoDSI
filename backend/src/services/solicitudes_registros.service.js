@@ -1,15 +1,9 @@
 import * as repository from '../repositories/solicitudes_registros.repository.js'
-import * as propietarios_negociosRepository from '../repositories/propietarios_negocios.repository.js'
+import * as departamentosRepository from '../repositories/departamentos.repository.js'
 import { AppError } from '../errors/app-error.js'
-import { parseId, allowedData, pick, execute, requireReference, withLockedRecord } from './service-utils.js'
+import { parseId, allowedData, execute, requireReference } from './service-utils.js'
 
-const fields = ["id_dueno", "id_administrador", "documentos_adjuntos", "estado", "observaciones"]
-const updateFields = ["id_dueno", "id_administrador", "documentos_adjuntos", "estado", "observaciones"]
-
-async function checkRules(data, client) {
-  await requireReference(propietarios_negociosRepository, data.id_dueno, 'El propietario', client)
-  await requireReference(propietarios_negociosRepository, data.id_administrador, 'El propietario encargado', client)
-}
+const fields = ['nombre_negocio', 'codigo_ruc', 'descripcion', 'municipio', 'direccion_exacta', 'id_departamento']
 
 export async function findAll() {
   return execute(() => repository.findAll())
@@ -25,27 +19,22 @@ export async function findOne(id) {
 }
 
 // El middleware debe validar el DTO de creación antes de llamar a esta función.
-export async function create(data) {
+export async function create(data, idUsuario) {
   data = allowedData(data, fields)
   return execute(async () => {
-    await checkRules(data)
-    return repository.create(data)
+    await requireReference(departamentosRepository, data.id_departamento, 'El departamento')
+    return repository.create({ ...data, id_usuario: parseId(idUsuario) })
   })
 }
 
 export async function update(id, data) {
   id = parseId(id)
-  data = allowedData(data, updateFields)
-  return execute(() => withLockedRecord(
-    'solicitudes_registros', id, repository, 'La solicitud', async (current, client) => {
-      // Validar referencias y reglas con los valores que quedarán guardados.
-      const merged = { ...pick(current, fields), ...data }
-      await checkRules(merged, client)
-      const result = await repository.update(id, data, client)
-      if (!result) throw new AppError('La solicitud no existe', 404)
-      return result
-    }
-  ))
+  data = allowedData(data, ['estado'])
+  return execute(async () => {
+    const result = await repository.update(id, data)
+    if (!result) throw new AppError('La solicitud no existe', 404)
+    return result
+  })
 }
 
 export async function remove(id) {

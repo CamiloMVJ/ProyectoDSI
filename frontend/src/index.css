@@ -544,6 +544,11 @@ input {
   line-height: 1.6;
 }
 
+.auth-optional { font-weight: 400; color: var(--color-text-muted); }
+.auth-upload { display: inline-flex !important; align-items: center; gap: 9px; min-height: 44px; padding: 10px 14px; border: 1px solid var(--color-border); border-radius: 10px; cursor: pointer; background: var(--color-muted); }
+.auth-file-input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+.auth-file-input:focus-visible + .auth-upload { outline: 2px solid var(--color-accent); }
+
 .auth-form-actions {
   display: flex;
   align-items: center;

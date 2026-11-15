@@ -263,6 +263,13 @@ CREATE TABLE solicitudes_registros (
     id_solicitud SERIAL PRIMARY KEY,
     id_usuario INTEGER NOT NULL 
         REFERENCES usuarios(id_usuario) ON DELETE CASCADE,
+    nombre_negocio VARCHAR(150) NOT NULL,
+    codigo_ruc VARCHAR(50) NOT NULL,
+    descripcion TEXT,
+    municipio VARCHAR(100) NOT NULL,
+    direccion_exacta TEXT NOT NULL,
+    id_departamento INTEGER NOT NULL
+        REFERENCES departamentos(id_departamento) ON DELETE RESTRICT,
     fecha_solicitud TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     estado VARCHAR(50) NOT NULL DEFAULT 'Pendiente' 
         CHECK (estado IN ('Pendiente', 'Aprobada', 'Rechazada'))
