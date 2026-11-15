@@ -1,5 +1,10 @@
 import * as service from '../services/lugares_turisticos.service.js';
 
+export const buscar = async (req, res, next) => {
+  try { res.status(200).json({ success: true, data: await service.search(req.query) }); }
+  catch (error) { next(error); }
+};
+
 // Capa HTTP: delega la lógica de negocio al servicio existente.
 export const listar = async (req, res, next) => {
   try { res.status(200).json({ success: true, data: await service.findAll() }); }

@@ -9,6 +9,7 @@ function usuarioPublico(usuario) {
     email: usuario.email,
     telefono: usuario.telefono ?? "",
     fecha_registro: usuario.fecha_registro ?? null,
+    rol: usuario.rol,
   }
 }
 
@@ -70,6 +71,13 @@ export async function login({ email, password }) {
   saveSession(sesion)
 
   return sesion.usuario
+}
+
+export function registerAccount(datos) {
+  return request('/usuarios', {
+    method: 'POST',
+    body: JSON.stringify(datos),
+  })
 }
 
 export function getAccount(sesion, signal) {

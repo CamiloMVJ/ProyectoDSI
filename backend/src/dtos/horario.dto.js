@@ -1,18 +1,18 @@
 import Joi from 'joi';
 
 export const horarioSchema = Joi.object({
-    id_lugar: Joi.number()
+    id_local: Joi.number()
         .integer()
         .positive()
         .required()
         .messages({
-            'number.base': 'El ID del lugar debe ser un número.',
-            'number.integer': 'El ID del lugar debe ser un número entero.',
-            'number.positive': 'El ID del lugar debe ser positivo.',
-            'any.required': 'El ID del lugar es obligatorio.'
+            'number.base': 'El ID del local debe ser un número.',
+            'number.integer': 'El ID del local debe ser un número entero.',
+            'number.positive': 'El ID del local debe ser positivo.',
+            'any.required': 'El ID del local es obligatorio.'
         }),
 
-    dia_semama: Joi.string()
+    dia_semana: Joi.string()
         .trim()
         .max(20)
         .required()

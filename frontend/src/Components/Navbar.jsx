@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { User, Languages, LogOut } from 'lucide-react'
+import { User, Languages, LogOut, Heart } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth.js'
 
 export default function Navbar({
@@ -84,6 +84,7 @@ export default function Navbar({
 
           {sesion ? (
             <>
+              <Link to="/favoritos" aria-current={pathname === '/favoritos' ? 'page' : undefined} className="inline-flex min-h-11 items-center gap-2 rounded-full px-4 text-sm font-semibold text-[#344e3b] hover:bg-[#eaf0e7]"><Heart size={18} aria-hidden="true" /> Favoritos</Link>
               <Link
                 to="/account"
                 aria-current={

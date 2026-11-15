@@ -8,7 +8,8 @@ const fields = [
     'moneda',
     'url_foto',
     'es_vegetariano',
-    'esta_disponible'
+    'esta_disponible',
+    'id_categoria_menu'
 ]
 
 function getEntries(data) {
@@ -93,7 +94,7 @@ export async function update(id, data, client = pool) {
      WHERE id_item = $${values.length}
      RETURNING
        id_item, id_menu, nombre_platillo, descripcion,
-       precio, moneda, url_foto, es_vegetariano, esta_disponible`,
+       precio, moneda, url_foto, es_vegetariano, esta_disponible, id_categoria_menu`,
         values
     )
 

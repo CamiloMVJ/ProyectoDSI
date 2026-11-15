@@ -32,6 +32,12 @@ export default function UserAccount() {
     }
 
     const usuario = cuenta.usuario ?? cuenta.sesion.usuario
+    const rol = cuenta.usuario?.rol ?? cuenta.sesion.usuario.rol
+    const nombreRol = rol === 'Usuario'
+        ? 'Cuenta personal'
+        : rol === 'Propietario'
+            ? 'Dueño de negocio'
+            : rol
 
     return (
         <div
@@ -148,10 +154,12 @@ export default function UserAccount() {
                             <p className="mt-1 break-all text-sm text-[var(--color-text-muted)]">
                                 {usuario.email}
                             </p>
-                            <span className="mt-5 inline-flex items-center gap-2 rounded-full bg-[#f6eee5] px-3 py-2 text-xs font-semibold text-[#9d3e0b]">
-                                <User size={14} aria-hidden="true" />
-                                Cuenta personal
-                            </span>
+                            {nombreRol && (
+                                <span className="mt-5 inline-flex items-center gap-2 rounded-full bg-[#f6eee5] px-3 py-2 text-xs font-semibold text-[#9d3e0b]">
+                                    <User size={14} aria-hidden="true" />
+                                    {nombreRol}
+                                </span>
+                            )}
                         </div>
 
                         <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-6 shadow-sm sm:p-7">

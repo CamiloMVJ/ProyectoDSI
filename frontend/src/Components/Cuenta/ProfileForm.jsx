@@ -144,7 +144,7 @@ export default function ProfileForm({
                                             ? 'perfil-error'
                                             : undefined
                                     }
-                                    className="min-h-12 w-full min-w-0 bg-transparent
+                                    className="profile-form-input min-h-12 w-full min-w-0 bg-transparent
                     text-sm text-[#25382e] outline-none"
                                 />
                             </div>

@@ -127,7 +127,7 @@ const RecommendationSection = ({
               )}
 
               {/* Botón de Guardar en Favoritos (conectado a tabla favoritos) */}
-              <button
+              {onToggleFavorite && <button
                 type="button"
                 onClick={onToggleFavorite}
                 aria-label="Guardar en favoritos"
@@ -137,7 +137,7 @@ const RecommendationSection = ({
                   }`}
               >
                 <Heart className={`w-4 h-4 ${esFavorito ? 'fill-current' : ''}`} />
-              </button>
+              </button>}
 
               {/* Flecha Izquierda de imagen */}
               <button

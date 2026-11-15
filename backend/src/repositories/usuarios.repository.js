@@ -2,6 +2,12 @@ import { pool } from '../db/db.js'
 
 // Columnas permitidas del script SQL. Los valores se pasan como parámetros.
 const fields = ["nombre_completo", "email", "password_hash", "fecha_registro", "telefono"]
+const roleSql = `COALESCE(
+  (SELECT a.rol FROM public.administradores a WHERE a.id_usuario = u.id_usuario LIMIT 1),
+  CASE WHEN EXISTS (
+    SELECT 1 FROM public.propietarios_negocios p WHERE p.id_usuario = u.id_usuario
+  ) THEN 'Propietario' ELSE 'Usuario' END
+) AS rol`
 
 function getEntries(data) {
   if (!data || typeof data !== 'object' || Array.isArray(data)) {
@@ -22,20 +28,25 @@ function getEntries(data) {
 
 export async function findAll(client = pool) {
   const { rows } = await client.query(
-    'SELECT id_usuario, nombre_completo, email, telefono FROM public.usuarios ORDER BY id_usuario'
+    `SELECT u.id_usuario, u.nombre_completo, u.email, u.telefono, ${roleSql}
+     FROM public.usuarios u ORDER BY u.id_usuario`
   )
 
   return rows
 }
 
 export async function findByEmail(email, client = pool) {
-  const { rows } = await pool.query('SELECT * FROM usuarios WHERE email = $1', [email]);
+  const { rows } = await client.query(
+    `SELECT u.*, ${roleSql} FROM public.usuarios u WHERE u.email = $1`,
+    [email]
+  );
   return rows[0];
 }
 
 export async function findOne(id, client = pool) {
   const { rows } = await client.query(
-    'SELECT id_usuario, nombre_completo, email, telefono FROM public.usuarios WHERE id_usuario = $1',
+    `SELECT u.id_usuario, u.nombre_completo, u.email, u.telefono, ${roleSql}
+     FROM public.usuarios u WHERE u.id_usuario = $1`,
     [id]
   )
 
