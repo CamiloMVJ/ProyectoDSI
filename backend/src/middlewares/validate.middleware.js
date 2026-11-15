@@ -1,8 +1,8 @@
-export const validate = (schema) => {
+export const validate = (schema, { stripUnknown = true } = {}) => {
   return (req, res, next) => {
     const { error, value } = schema.validate(req.body, {
       abortEarly: false,
-      stripUnknown: true
+      stripUnknown
     });
 
     if (error) {

@@ -21,6 +21,7 @@ import campanias_publicitariasRoutes from "./campanias_publicitarias.routes.js"
 import pagos_publicidadRoutes from "./pagos_publicidad.routes.js"
 import departamentosRoutes from "./departamentos.routes.js"
 import imagesRoutes from "./images.routes.js"
+import uploadsRoutes from "./uploads.routes.js"
 import menuCategoriesRoutes from "./menu-categories.routes.js"
 
 const router = Router()
@@ -34,6 +35,7 @@ router.use("/administradores", administradoresRoutes)
 router.use("/propietarios_negocios", propietarios_negociosRoutes)
 router.use("/imagenes_lugares", imagenes_lugaresRoutes)
 router.use("/imagenes", imagesRoutes)
+router.use("/uploads", uploadsRoutes)
 router.use("/horarios", horariosRoutes)
 router.use("/resenas", resenasRoutes)
 router.use("/favoritos", favoritosRoutes)
