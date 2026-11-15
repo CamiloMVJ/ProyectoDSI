@@ -77,7 +77,6 @@ CREATE TABLE administradores (
 -- 3. NÚCLEO GEOGRÁFICO Y LUGARES (HERENCIA)
 -- ==========================================
 
--- Tabla Padre: Contiene la información geográfica y compartida
 CREATE TABLE locales (
     id_local SERIAL PRIMARY KEY,
     nombre VARCHAR(150) NOT NULL,
@@ -90,13 +89,11 @@ CREATE TABLE locales (
 );
 CREATE INDEX locales_departamento_idx ON locales (id_departamento);
 
--- Tabla Hija 1: Lugares Turísticos
 CREATE TABLE lugares_turisticos (
     id_lugar INTEGER PRIMARY KEY 
         REFERENCES locales(id_local) ON DELETE CASCADE
 );
 
--- Sub-clasificación de Lugares Turísticos
 CREATE TABLE complejos_turisticos (
     id_lugar INTEGER PRIMARY KEY 
         REFERENCES lugares_turisticos(id_lugar) ON DELETE CASCADE,
@@ -104,7 +101,7 @@ CREATE TABLE complejos_turisticos (
     cobro_entrada BOOLEAN DEFAULT FALSE,
     costo_entrada NUMERIC(10,2),
     id_administrador INTEGER 
-        REFERENCES propietarios_negocios(id_propietario)
+        REFERENCES administradores(id_administrador) ON DELETE SET NULL
 );
 
 CREATE TABLE atractivos_independientes (
@@ -114,10 +111,9 @@ CREATE TABLE atractivos_independientes (
     entidad_encargada VARCHAR(150),
     normativa_visitantes TEXT,
     id_administrador INTEGER 
-        REFERENCES propietarios_negocios(id_propietario)
+        REFERENCES administradores(id_administrador) ON DELETE SET NULL
 );
 
--- Tabla Hija 2: Locales Comerciales
 CREATE TABLE locales_comerciales (
     id_local INTEGER PRIMARY KEY 
         REFERENCES locales(id_local) ON DELETE CASCADE,
@@ -265,15 +261,37 @@ CREATE INDEX IF NOT EXISTS items_menu_budget_idx
 
 CREATE TABLE solicitudes_registros (
     id_solicitud SERIAL PRIMARY KEY,
+    id_usuario INTEGER NOT NULL 
+        REFERENCES usuarios(id_usuario) ON DELETE CASCADE,
     fecha_solicitud TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    documentos_adjuntos TEXT,
-    estado VARCHAR(50) DEFAULT 'Pendiente',
-    observaciones TEXT,
-    id_dueno INTEGER NOT NULL 
-        REFERENCES propietarios_negocios(id_propietario) ON DELETE CASCADE,
-    id_administrador INTEGER 
-        REFERENCES propietarios_negocios(id_propietario)
+    estado VARCHAR(50) NOT NULL DEFAULT 'Pendiente' 
+        CHECK (estado IN ('Pendiente', 'Aprobada', 'Rechazada'))
 );
+CREATE INDEX solicitudes_registros_id_usuario_idx ON solicitudes_registros (id_usuario);
+
+CREATE TABLE documentos_solicitudes (
+    id_documento SERIAL PRIMARY KEY,
+    id_solicitud INTEGER NOT NULL 
+        REFERENCES solicitudes_registros(id_solicitud) ON DELETE CASCADE,
+    nombre_archivo VARCHAR(255),
+    tipo_documento VARCHAR(100),
+    url_archivo VARCHAR(255) NOT NULL,
+    fecha_subida TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX documentos_solicitudes_id_solicitud_idx ON documentos_solicitudes (id_solicitud);
+
+CREATE TABLE revisiones_solicitudes (
+    id_revision SERIAL PRIMARY KEY,
+    id_solicitud INTEGER NOT NULL 
+        REFERENCES solicitudes_registros(id_solicitud) ON DELETE CASCADE,
+    id_administrador INTEGER NOT NULL 
+        REFERENCES administradores(id_administrador) ON DELETE RESTRICT,
+    decision VARCHAR(50) NOT NULL 
+        CHECK (decision IN ('Aprobada', 'Rechazada')),
+    observaciones TEXT,
+    fecha_revision TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX revisiones_solicitudes_id_solicitud_idx ON revisiones_solicitudes (id_solicitud);
 
 CREATE TABLE campanias_publicitarias (
     id_campania SERIAL PRIMARY KEY,
@@ -291,8 +309,6 @@ CREATE TABLE pagos_publicidad (
     id_campania INTEGER NOT NULL 
         REFERENCES campanias_publicitarias(id_campania) ON DELETE CASCADE,
     id_dueno INTEGER 
-        REFERENCES propietarios_negocios(id_propietario),
-    id_administrador INTEGER 
         REFERENCES propietarios_negocios(id_propietario),
     monto NUMERIC(10,2) NOT NULL,
     moneda VARCHAR(3) DEFAULT 'NIO' CHECK (moneda IN ('NIO', 'USD')),
