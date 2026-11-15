@@ -24,6 +24,7 @@ function FavoriteCard({ item, saved, pending, onToggle }) {
         <p className="mt-2 flex items-start gap-2 text-sm text-[#526554]"><MapPin size={16} className="mt-0.5 shrink-0" aria-hidden="true" />{[item.municipio, item.departamento].filter(Boolean).join(', ')}</p>
         {item.descripcion && <p className="mt-3 line-clamp-3 text-sm leading-6 text-[#526554]">{item.descripcion}</p>}
         <div className="mt-auto pt-5">
+          <Link to={`/perfil-lugar/${item.id_local}`} className="mr-5 inline-flex min-h-11 items-center text-sm font-bold text-[#c45111] hover:text-[#9d3e0b]">Ver perfil</Link>
           {item.maps_link && <a href={item.maps_link} target="_blank" rel="noopener noreferrer" className="text-sm font-bold text-[#c45111] hover:text-[#9d3e0b]">Ver en el mapa</a>}
         </div>
       </div>
