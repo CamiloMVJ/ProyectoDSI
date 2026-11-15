@@ -2,7 +2,7 @@
 
 ## Estado y alcance
 
-Esta infraestructura es independiente de los módulos actuales. Ningún formulario ni ruta existente la utiliza todavía. PostgreSQL en Render y el esquema de Supabase no se modifican. La funcionalidad está deshabilitada por defecto (`SUPABASE_STORAGE_ENABLED=false`) y no se han creado ni cambiado buckets.
+Esta infraestructura es independiente de los módulos de negocio actuales. La ruta de prueba `/probar-subidas` permite verificar imágenes y PDF con una sesión iniciada. PostgreSQL en Render y el esquema de Supabase no se modifican. La funcionalidad está deshabilitada por defecto (`SUPABASE_STORAGE_ENABLED=false`) y no se han creado ni cambiado buckets desde este código.
 
 El backend sigue usando el JWT propio de SINATUR. `@supabase/supabase-js` se usa solo para Storage; no se usa Supabase Auth. La clave secreta permanece en el backend. El navegador usa únicamente la clave publicable y un token temporal de subida emitido por el backend.
 
@@ -35,6 +35,8 @@ Revisar manualmente las políticas de Storage: la clave publicable no debe tener
 Copiar [backend/.env.example](../backend/.env.example) y [frontend/.env.example](../frontend/.env.example) a variables de entorno locales y de Render/Vite, respectivamente. Generar `SUPABASE_RECEIPT_SECRET` con al menos 32 caracteres aleatorios. Mantener `SUPABASE_SECRET_KEY` exclusivamente en Render. Nunca ponerla en variables `VITE_`.
 
 `SUPABASE_STORAGE_TEST_ROLE` debe asignarse explícitamente a uno de los roles actuales (`Usuario`, `Propietario`, `Administrador`) para probar el espacio `sandbox`. Vacía, todas las operaciones quedan denegadas. Esta política no concede acceso a negocios, lugares ni perfiles; esos módulos necesitarán reglas propias de propiedad antes de integrarse. La limitación de autorizaciones es de 20 por usuario y hora **por proceso**; para múltiples instancias en Render hace falta un limitador compartido antes de usarlo en producción.
+
+Para usar la interfaz de prueba, configurar `SUPABASE_STORAGE_ENABLED=true`, `SUPABASE_BUCKET_STAGING` con el nombre exacto del bucket privado WebP, un `SUPABASE_RECEIPT_SECRET` aleatorio de al menos 32 caracteres y `SUPABASE_STORAGE_TEST_ROLE` con el rol de la cuenta de prueba. Iniciar sesión y abrir `/probar-subidas`. La imagen muestra su URL pública tras confirmarse; el PDF ofrece una descarga firmada. La ruta no aparece en la navegación principal.
 
 ## Limpieza
 

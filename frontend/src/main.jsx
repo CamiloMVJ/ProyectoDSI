@@ -8,6 +8,7 @@ import RegistroUsuarioSINATUR from './Registro_Usuario.jsx'
 import UserAccount from './Pages/UserAccount.jsx'
 import SearchResults from './Pages/SearchResults.jsx'
 import Favorites from './Pages/Favorites.jsx'
+import StorageUploadTest from './Pages/StorageUploadTest.jsx'
 import GuestOnly from './Components/GuestOnly.jsx'
 import AuthProvider from './context/AuthProvider.jsx'
 
@@ -21,6 +22,7 @@ const router = createBrowserRouter([
   { path: '/registrarse', element: <GuestOnly><RegistroUsuarioSINATUR /></GuestOnly> },
   { path: '/registro-negocio', element: <RegistroNegocioSINATUR /> },
   { path: '/account', element: <UserAccount /> },
+  { path: '/probar-subidas', element: <StorageUploadTest /> },
 ])
 
 createRoot(document.getElementById('root')).render(
