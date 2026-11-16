@@ -1,12 +1,24 @@
 import * as repository from '../repositories/solicitudes_registros.repository.js'
 import * as departamentosRepository from '../repositories/departamentos.repository.js'
+import { signedRequestDocument } from '../storage/uploads.service.js'
 import { AppError } from '../errors/app-error.js'
-import { parseId, allowedData, execute, requireReference } from './service-utils.js'
+import { parseId, allowedData, execute, requireReference, withTransaction } from './service-utils.js'
 
 const fields = ['nombre_negocio', 'codigo_ruc', 'descripcion', 'municipio', 'direccion_exacta', 'id_departamento']
 
 export async function findAll() {
   return execute(() => repository.findAll())
+}
+
+export async function findMine(idUsuario) {
+  idUsuario = parseId(idUsuario)
+  return execute(() => repository.findByUser(idUsuario))
+}
+
+export async function getMyDocument(user, requestId, documentId) {
+  requestId = parseId(requestId)
+  documentId = parseId(documentId)
+  return execute(() => signedRequestDocument(user, requestId, documentId))
 }
 
 export async function findOne(id) {
@@ -21,9 +33,17 @@ export async function findOne(id) {
 // El middleware debe validar el DTO de creación antes de llamar a esta función.
 export async function create(data, idUsuario) {
   data = allowedData(data, fields)
+  idUsuario = parseId(idUsuario)
   return execute(async () => {
     await requireReference(departamentosRepository, data.id_departamento, 'El departamento')
-    return repository.create({ ...data, id_usuario: parseId(idUsuario) })
+    return withTransaction(async (client) => {
+      await repository.lockRuc(data.codigo_ruc, client)
+      if (await repository.existsApprovedLocalWithRuc(data.codigo_ruc, client))
+        throw new AppError('Ya existe un local registrado con este RUC', 409)
+      if (await repository.existsPendingWithRuc(data.codigo_ruc, client))
+        throw new AppError('Ya existe una solicitud pendiente con este RUC', 409)
+      return repository.create({ ...data, id_usuario: idUsuario }, client)
+    })
   })
 }
 

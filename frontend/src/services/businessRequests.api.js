@@ -11,3 +11,11 @@ export function createBusinessRequest(token, data) {
     body: JSON.stringify(data),
   })
 }
+
+export function getMyBusinessRequests(token, signal) {
+  return request('/solicitudes_registros/mias', { token, signal })
+}
+
+export function getMyBusinessDocumentUrl(token, requestId, documentId) {
+  return request(`/solicitudes_registros/mias/${requestId}/documentos/${documentId}`, { token })
+}

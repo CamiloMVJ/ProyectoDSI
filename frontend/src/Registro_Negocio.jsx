@@ -140,6 +140,7 @@ export default function RegistroNegocioSINATUR() {
             {error && <p className="auth-error" role="alert">{error}</p>}
             {progreso && <p className="auth-notice" role="status">{progreso}</p>}
             {message && <p className="auth-notice" role="status">{message}</p>}
+            {message && <Link className="auth-back" to="/mis-solicitudes">Ver mis solicitudes <ArrowRight aria-hidden="true" size={18} /></Link>}
             <div className="auth-form-actions"><Link className="auth-back" to="/account"><ArrowLeft aria-hidden="true" size={18} /> Volver a mi cuenta</Link><div><button className="auth-primary" type="submit" disabled={enviando || departamentos.length === 0}>{enviando ? 'Enviando…' : solicitudCreada ? 'Reintentar documentos' : 'Enviar solicitud'} <ArrowRight aria-hidden="true" size={19} /></button></div></div>
           </form>
         </div>

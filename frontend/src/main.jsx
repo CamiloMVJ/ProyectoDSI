@@ -6,6 +6,7 @@ import LoginSINATUR from './login.jsx'
 import RegistroNegocioSINATUR from './Registro_Negocio.jsx'
 import RegistroUsuarioSINATUR from './Registro_Usuario.jsx'
 import UserAccount from './Pages/UserAccount.jsx'
+import MyBusinessRequests from './Pages/MyBusinessRequests.jsx'
 import GestionEstablecimientosVista from "./Pages/GestionEstablecimientos.jsx";
 import SearchResults from './Pages/SearchResults.jsx'
 import Favorites from './Pages/Favorites.jsx'
@@ -23,6 +24,7 @@ const router = createBrowserRouter([
   { path: '/registrarse', element: <GuestOnly><RegistroUsuarioSINATUR /></GuestOnly> },
   { path: '/registro-negocio', element: <RegistroNegocioSINATUR /> },
   { path: '/account', element: <UserAccount /> },
+  { path: '/mis-solicitudes', element: <MyBusinessRequests /> },
   { path: '/probar-subidas', element: <StorageUploadTest /> },
   { path: '/gestion-establecimientos', element: <GestionEstablecimientosVista /> },
 ])

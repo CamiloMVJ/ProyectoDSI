@@ -17,6 +17,17 @@ export async function findOwnedRequest(requestId, userId, db = pool) {
   return rows[0] ?? null
 }
 
+export async function findOwnedDocument(requestId, documentId, userId, db = pool) {
+  const { rows } = await db.query(
+    `SELECT doc.url_archivo
+     FROM public.documentos_solicitudes doc
+     JOIN public.solicitudes_registros s ON s.id_solicitud = doc.id_solicitud
+     WHERE doc.id_solicitud = $1 AND doc.id_documento = $2 AND s.id_usuario = $3`,
+    [requestId, documentId, userId],
+  )
+  return rows[0] ?? null
+}
+
 export async function saveRequestDocument(requestId, userId, fileName, documentType, path, db = pool) {
   const { rows } = await db.query(
     `INSERT INTO public.documentos_solicitudes

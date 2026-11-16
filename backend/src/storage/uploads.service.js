@@ -6,13 +6,13 @@ import { authorizeStorage } from "./policy.js"
 import { signReceipt, verifyReceipt } from "./receipt.js"
 import { limitAuthorizations } from "./rate-limit.js"
 import { readStorageFile, validateFileContent } from "./validate-content.js"
-import * as businessDocuments from './business-documents.repository.js'
+import * as businessDocuments from "./business-documents.repository.js"
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 const mimeFor = { image: "image/webp", document: "application/pdf" }
 const extensionFor = { image: "webp", document: "pdf" }
-const ownPath = (stage, userId, id, kind, scope = 'sandbox', requestId) =>
-  scope === 'business-request'
+const ownPath = (stage, userId, id, kind, scope = "sandbox", requestId) =>
+  scope === "business-request"
     ? `${stage}/solicitudes/${requestId}/${userId}/${id}.pdf`
     : `${stage}/sandbox/${userId}/${id}.${extensionFor[kind]}`
 
@@ -30,16 +30,29 @@ function checkedReference(token, expectedStage, user, config) {
   const ref = verifyReceipt(token, config.receiptSecret)
   if (
     ref.stage !== expectedStage ||
-    !['sandbox', 'business-request'].includes(ref.scope) ||
+    !["sandbox", "business-request"].includes(ref.scope) ||
     !UUID.test(ref.id || "") ||
     !mimeFor[ref.kind] ||
-    (ref.scope === 'business-request' &&
-      (ref.kind !== 'document' || !Number.isSafeInteger(ref.requestId) || ref.requestId <= 0 || ref.requestId > 2147483647 ||
-        !['RUC', 'Permiso'].includes(ref.documentType) ||
-        typeof ref.fileName !== 'string' || !ref.fileName || ref.fileName.length > 255)) ||
+    (ref.scope === "business-request" &&
+      (ref.kind !== "document" ||
+        !Number.isSafeInteger(ref.requestId) ||
+        ref.requestId <= 0 ||
+        ref.requestId > 2147483647 ||
+        !["RUC", "Permiso"].includes(ref.documentType) ||
+        typeof ref.fileName !== "string" ||
+        !ref.fileName ||
+        ref.fileName.length > 255)) ||
     !Number.isSafeInteger(ref.userId) ||
     ref.userId <= 0 ||
-    ref.path !== ownPath(expectedStage, ref.userId, ref.id, ref.kind, ref.scope, ref.requestId) ||
+    ref.path !==
+      ownPath(
+        expectedStage,
+        ref.userId,
+        ref.id,
+        ref.kind,
+        ref.scope,
+        ref.requestId,
+      ) ||
     ref.bucket !==
       (ref.kind === "image"
         ? expectedStage === "pending"
@@ -61,18 +74,33 @@ function checkedReference(token, expectedStage, user, config) {
 export async function authorizeUpload(user, input, deps) {
   const { config, client, business } = dependencies(deps)
   const context = input?.context
-  if (!['sandbox', 'business-request'].includes(context?.type))
+  if (!["sandbox", "business-request"].includes(context?.type))
     throw new AppError("Contexto de archivo no permitido", 400)
-  authorizeStorage(user, "authorize", { scope: context.type, userId: user.id }, config)
+  authorizeStorage(
+    user,
+    "authorize",
+    { scope: context.type, userId: user.id },
+    config,
+  )
   const { kind, size, mime } = input
-  if (context.type === 'business-request') {
-    if (kind !== 'document' || !Number.isSafeInteger(context.requestId) || context.requestId <= 0 || context.requestId > 2147483647 ||
-      !['RUC', 'Permiso'].includes(context.documentType) ||
-      typeof context.fileName !== 'string' || !context.fileName.trim() || context.fileName.length > 255) {
-      throw new AppError('Datos del documento inválidos', 400)
+  if (context.type === "business-request") {
+    if (
+      kind !== "document" ||
+      !Number.isSafeInteger(context.requestId) ||
+      context.requestId <= 0 ||
+      context.requestId > 2147483647 ||
+      !["RUC", "Permiso"].includes(context.documentType) ||
+      typeof context.fileName !== "string" ||
+      !context.fileName.trim() ||
+      context.fileName.length > 255
+    ) {
+      throw new AppError("Datos del documento inválidos", 400)
     }
-    if (!await business.findOwnedPendingRequest(context.requestId, user.id))
-      throw new AppError('La solicitud pendiente no existe o no te pertenece', 403)
+    if (!(await business.findOwnedPendingRequest(context.requestId, user.id)))
+      throw new AppError(
+        "La solicitud pendiente no existe o no te pertenece",
+        403,
+      )
   }
   const max = kind === "image" ? config.imageMax : config.documentMax
   if (
@@ -89,7 +117,14 @@ export async function authorizeUpload(user, input, deps) {
   limitAuthorizations(user.id)
   const id = randomUUID()
   const bucket = kind === "image" ? config.staging : config.documents
-  const path = ownPath("pending", user.id, id, kind, context.type, context.requestId)
+  const path = ownPath(
+    "pending",
+    user.id,
+    id,
+    kind,
+    context.type,
+    context.requestId,
+  )
   const { data, error } = await client.storage
     .from(bucket)
     .createSignedUploadUrl(path, { upsert: false })
@@ -99,11 +134,13 @@ export async function authorizeUpload(user, input, deps) {
     {
       stage: "pending",
       scope: context.type,
-      ...(context.type === 'business-request' ? {
-        requestId: context.requestId,
-        documentType: context.documentType,
-        fileName: context.fileName.trim(),
-      } : {}),
+      ...(context.type === "business-request"
+        ? {
+            requestId: context.requestId,
+            documentType: context.documentType,
+            fileName: context.fileName.trim(),
+          }
+        : {}),
       userId: user.id,
       kind,
       id,
@@ -121,9 +158,14 @@ export async function authorizeUpload(user, input, deps) {
 export async function confirmUpload(user, receipt, deps) {
   const { config, client, fetcher, business } = dependencies(deps)
   const ref = checkedReference(receipt, "pending", user, config)
-  if (ref.scope === 'business-request' &&
-    !await business.findOwnedPendingRequest(ref.requestId, user.id))
-    throw new AppError('La solicitud pendiente no existe o no te pertenece', 403)
+  if (
+    ref.scope === "business-request" &&
+    !(await business.findOwnedPendingRequest(ref.requestId, user.id))
+  )
+    throw new AppError(
+      "La solicitud pendiente no existe o no te pertenece",
+      403,
+    )
   const max = ref.kind === "image" ? config.imageMax : config.documentMax
   if (
     !Number.isSafeInteger(ref.size) ||
@@ -151,7 +193,14 @@ export async function confirmUpload(user, receipt, deps) {
   if (buffer.length !== ref.size)
     throw new AppError("La subida está incompleta", 400)
   await validateFileContent(buffer, ref.kind, max)
-  const finalPath = ownPath("final", ref.userId, ref.id, ref.kind, ref.scope, ref.requestId)
+  const finalPath = ownPath(
+    "final",
+    ref.userId,
+    ref.id,
+    ref.kind,
+    ref.scope,
+    ref.requestId,
+  )
   const finalBucket = ref.kind === "image" ? config.images : config.documents
   if (ref.kind === "image") {
     const { error } = await client.storage
@@ -167,12 +216,17 @@ export async function confirmUpload(user, receipt, deps) {
   } else {
     const { error } = await source.move(ref.path, finalPath)
     if (error) throw new AppError("No se pudo confirmar el documento", 502)
-    if (ref.scope === 'business-request') {
+    if (ref.scope === "business-request") {
       try {
         const saved = await business.saveRequestDocument(
-          ref.requestId, ref.userId, ref.fileName, ref.documentType, finalPath,
+          ref.requestId,
+          ref.userId,
+          ref.fileName,
+          ref.documentType,
+          finalPath,
         )
-        if (!saved) throw new AppError('La solicitud ya no admite documentos', 409)
+        if (!saved)
+          throw new AppError("La solicitud ya no admite documentos", 409)
       } catch (saveError) {
         await source.move(finalPath, ref.path)
         throw saveError
@@ -183,11 +237,13 @@ export async function confirmUpload(user, receipt, deps) {
     {
       stage: "final",
       scope: ref.scope,
-      ...(ref.scope === 'business-request' ? {
-        requestId: ref.requestId,
-        documentType: ref.documentType,
-        fileName: ref.fileName,
-      } : {}),
+      ...(ref.scope === "business-request"
+        ? {
+            requestId: ref.requestId,
+            documentType: ref.documentType,
+            fileName: ref.fileName,
+          }
+        : {}),
       userId: ref.userId,
       kind: ref.kind,
       id: ref.id,
@@ -207,9 +263,11 @@ export async function confirmUpload(user, receipt, deps) {
 export async function signedDownload(user, fileId, deps) {
   const { config, client, business } = dependencies(deps)
   const ref = checkedReference(fileId, "final", user, config)
-  if (ref.scope === 'business-request' &&
-    !await business.findOwnedRequest(ref.requestId, user.id))
-    throw new AppError('La solicitud no existe o no te pertenece', 403)
+  if (
+    ref.scope === "business-request" &&
+    !(await business.findOwnedRequest(ref.requestId, user.id))
+  )
+    throw new AppError("La solicitud no existe o no te pertenece", 403)
   if (ref.kind !== "document")
     throw new AppError(
       "Solo los documentos privados admiten descarga firmada",
@@ -218,6 +276,32 @@ export async function signedDownload(user, fileId, deps) {
   const { data, error } = await client.storage
     .from(ref.bucket)
     .createSignedUrl(ref.path, 60)
+  if (error || !data?.signedUrl)
+    throw new AppError("Documento no encontrado", 404)
+  return { url: data.signedUrl, expiresIn: 60 }
+}
+
+export async function signedRequestDocument(user, requestId, documentId, deps) {
+  const { config, client, business } = dependencies(deps)
+  if (!["Usuario", "Propietario"].includes(user?.rol))
+    throw new AppError("No tenés permiso para ver este documento", 403)
+  const document = await business.findOwnedDocument(
+    requestId,
+    documentId,
+    user.id,
+  )
+  if (!document) throw new AppError("Documento no encontrado", 404)
+  const escapedPath = `final/solicitudes/${requestId}/${user.id}/`
+  if (
+    typeof document.url_archivo !== "string" ||
+    !document.url_archivo.startsWith(escapedPath) ||
+    !UUID.test(document.url_archivo.slice(escapedPath.length, -4)) ||
+    !document.url_archivo.endsWith(".pdf")
+  )
+    throw new AppError("Referencia de documento inválida", 404)
+  const { data, error } = await client.storage
+    .from(config.documents)
+    .createSignedUrl(document.url_archivo, 60)
   if (error || !data?.signedUrl)
     throw new AppError("Documento no encontrado", 404)
   return { url: data.signedUrl, expiresIn: 60 }

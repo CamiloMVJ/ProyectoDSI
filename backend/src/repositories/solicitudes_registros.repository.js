@@ -28,6 +28,29 @@ export async function findAll(client = pool) {
   return rows
 }
 
+export async function findByUser(idUsuario, client = pool) {
+  const { rows } = await client.query(
+    `SELECT s.id_solicitud, s.nombre_negocio, s.codigo_ruc, s.descripcion,
+            s.municipio, s.direccion_exacta, s.id_departamento,
+            d.nombre AS nombre_departamento, s.fecha_solicitud, s.estado,
+            COALESCE((
+              SELECT json_agg(json_build_object(
+                'id_documento', doc.id_documento,
+                'nombre_archivo', doc.nombre_archivo,
+                'tipo_documento', doc.tipo_documento
+              ) ORDER BY doc.id_documento)
+              FROM public.documentos_solicitudes doc
+              WHERE doc.id_solicitud = s.id_solicitud
+            ), '[]'::json) AS documentos
+     FROM public.solicitudes_registros s
+     JOIN public.departamentos d ON d.id_departamento = s.id_departamento
+     WHERE s.id_usuario = $1
+     ORDER BY s.fecha_solicitud DESC, s.id_solicitud DESC`,
+    [idUsuario]
+  )
+  return rows
+}
+
 export async function findOne(id, client = pool) {
   const { rows } = await client.query(
     'SELECT * FROM public.solicitudes_registros WHERE id_solicitud = $1',
@@ -35,6 +58,29 @@ export async function findOne(id, client = pool) {
   )
 
   return rows[0] ?? null
+}
+
+export async function lockRuc(codigoRuc, client = pool) {
+  await client.query(
+    "SELECT pg_advisory_xact_lock(hashtext('solicitudes_registros'), hashtext($1))",
+    [codigoRuc]
+  )
+}
+
+export async function existsApprovedLocalWithRuc(codigoRuc, client = pool) {
+  const { rows } = await client.query(
+    'SELECT EXISTS (SELECT 1 FROM public.locales_comerciales WHERE codigo_ruc = $1) AS existe',
+    [codigoRuc]
+  )
+  return rows[0].existe
+}
+
+export async function existsPendingWithRuc(codigoRuc, client = pool) {
+  const { rows } = await client.query(
+    "SELECT EXISTS (SELECT 1 FROM public.solicitudes_registros WHERE codigo_ruc = $1 AND estado = 'Pendiente') AS existe",
+    [codigoRuc]
+  )
+  return rows[0].existe
 }
 
 export async function create(data, client = pool) {

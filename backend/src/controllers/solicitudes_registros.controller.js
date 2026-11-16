@@ -6,6 +6,16 @@ export const listar = async (req, res, next) => {
   catch (error) { next(error); }
 };
 
+export const listarMias = async (req, res, next) => {
+  try { res.status(200).json({ success: true, data: await service.findMine(req.user.id) }); }
+  catch (error) { next(error); }
+};
+
+export const obtenerMiDocumento = async (req, res, next) => {
+  try { res.status(200).json({ success: true, data: await service.getMyDocument(req.user, req.params.id, req.params.documentId) }); }
+  catch (error) { next(error); }
+};
+
 export const obtener = async (req, res, next) => {
   try { res.status(200).json({ success: true, data: await service.findOne(req.params.id) }); }
   catch (error) { next(error); }

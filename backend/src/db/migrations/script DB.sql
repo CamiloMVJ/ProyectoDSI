@@ -63,6 +63,10 @@ CREATE TABLE propietarios_negocios (
     id_propietario SERIAL PRIMARY KEY,
     id_usuario INTEGER NOT NULL 
         REFERENCES usuarios(id_usuario) ON DELETE CASCADE,
+    numero_cedula VARCHAR(30),
+    tipo_persona VARCHAR(30) 
+        CHECK (tipo_persona IN ('Persona Natural', 'Persona Jurídica')),
+    direccion_domicilio TEXT,
     estado_verificacion VARCHAR(50) NOT NULL DEFAULT 'Pendiente'
 );
 
@@ -84,6 +88,9 @@ CREATE TABLE locales (
     municipio VARCHAR(100) NOT NULL,
     direccion_exacta TEXT,
     maps_link VARCHAR(255),
+    telefono_contacto VARCHAR(30),
+    correo_contacto VARCHAR(150),
+    sitio_web VARCHAR(255),
     id_departamento INTEGER NOT NULL 
         REFERENCES departamentos(id_departamento) ON DELETE RESTRICT
 );
@@ -118,7 +125,9 @@ CREATE TABLE locales_comerciales (
     id_local INTEGER PRIMARY KEY 
         REFERENCES locales(id_local) ON DELETE CASCADE,
     codigo_ruc VARCHAR(50) UNIQUE NOT NULL,
+    razon_social VARCHAR(150),
     es_independiente BOOLEAN DEFAULT TRUE,
+    esta_publicado BOOLEAN DEFAULT FALSE,
     precio_minimo NUMERIC(10,2),
     precio_maximo NUMERIC(10,2),
     id_dueno INTEGER NOT NULL 
@@ -264,10 +273,21 @@ CREATE TABLE solicitudes_registros (
     id_usuario INTEGER NOT NULL 
         REFERENCES usuarios(id_usuario) ON DELETE CASCADE,
     nombre_negocio VARCHAR(150) NOT NULL,
+    razon_social VARCHAR(150),
     codigo_ruc VARCHAR(50) NOT NULL,
+    numero_cedula_solicitante VARCHAR(30),
+    tipo_persona VARCHAR(30) 
+        CHECK (tipo_persona IN ('Persona Natural', 'Persona Jurídica')),
     descripcion TEXT,
+    es_independiente BOOLEAN DEFAULT TRUE,
+    id_complejo_padre INTEGER 
+        REFERENCES complejos_turisticos(id_lugar) ON DELETE SET NULL,
     municipio VARCHAR(100) NOT NULL,
     direccion_exacta TEXT NOT NULL,
+    maps_link VARCHAR(255),
+    telefono_contacto VARCHAR(30),
+    correo_contacto VARCHAR(150),
+    sitio_web VARCHAR(255),
     id_departamento INTEGER NOT NULL
         REFERENCES departamentos(id_departamento) ON DELETE RESTRICT,
     fecha_solicitud TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -275,6 +295,14 @@ CREATE TABLE solicitudes_registros (
         CHECK (estado IN ('Pendiente', 'Aprobada', 'Rechazada'))
 );
 CREATE INDEX solicitudes_registros_id_usuario_idx ON solicitudes_registros (id_usuario);
+
+CREATE TABLE solicitudes_categorias (
+    id_solicitud INTEGER NOT NULL 
+        REFERENCES solicitudes_registros(id_solicitud) ON DELETE CASCADE,
+    id_categoria INTEGER NOT NULL 
+        REFERENCES categorias(id_categoria) ON DELETE CASCADE,
+    PRIMARY KEY (id_solicitud, id_categoria)
+);
 
 CREATE TABLE documentos_solicitudes (
     id_documento SERIAL PRIMARY KEY,
