@@ -13,6 +13,7 @@ import Footer from '../Components/Footer.jsx'
 import PerfilFormulario from '../Components/Cuenta/ProfileForm.jsx'
 import { useCuentaUsuario } from '../hooks/useUserAccount.js'
 import { getMyBusinessRequests } from '../services/businessRequests.api.js'
+import { getManagedEstablishments } from '../services/establishments.api.js'
 
 function iniciales(nombre = '') {
     return (
@@ -30,12 +31,22 @@ function iniciales(nombre = '') {
 export default function UserAccount() {
     const cuenta = useCuentaUsuario()
     const [tieneSolicitudes, setTieneSolicitudes] = useState(false)
+    const [tieneEstablecimientos, setTieneEstablecimientos] = useState(false)
 
     useEffect(() => {
         if (!cuenta.sesion?.token || !['Usuario', 'Propietario'].includes(cuenta.sesion.usuario.rol)) return
         const controller = new AbortController()
         getMyBusinessRequests(cuenta.sesion.token, controller.signal)
             .then(solicitudes => setTieneSolicitudes(solicitudes.length > 0))
+            .catch(() => {})
+        return () => controller.abort()
+    }, [cuenta.sesion])
+
+    useEffect(() => {
+        if (!cuenta.sesion?.token || !['Usuario', 'Propietario'].includes(cuenta.sesion.usuario.rol)) return
+        const controller = new AbortController()
+        getManagedEstablishments(cuenta.sesion.token, controller.signal)
+            .then(locales => { if (!controller.signal.aborted) setTieneEstablecimientos(locales.length > 0) })
             .catch(() => {})
         return () => controller.abort()
     }, [cuenta.sesion])
@@ -170,6 +181,24 @@ export default function UserAccount() {
                         </Link>
                     </section>
                     )}
+                    {tieneEstablecimientos && rol !== 'Administrador' && (
+                    <section className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-6 shadow-sm sm:p-9">
+                        <div className="flex size-12 items-center justify-center rounded-xl bg-[#eaf0e7] text-[var(--color-primary)]"><Compass size={25} aria-hidden="true" /></div>
+                        <h2 className="mt-4 text-lg font-bold">Mis establecimientos</h2>
+                        <p className="mt-2 text-sm leading-6 text-[var(--color-text-muted)]">Actualiza los datos, servicios y publicación de tus locales.</p>
+                        <Link to="/gestion-establecimientos" className="mt-5 inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-[var(--color-primary)] px-5 py-3 text-sm font-bold text-white hover:bg-[var(--color-primary-deep)]">Gestionar mis establecimientos <ArrowRight size={17} aria-hidden="true" /></Link>
+                    </section>
+                    )}
+                    {rol === 'Administrador' && (
+                    <section className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-6 shadow-sm sm:p-9">
+                        <div className="flex size-12 items-center justify-center rounded-xl bg-[#eaf0e7] text-[var(--color-primary)]"><ClipboardList size={25} aria-hidden="true" /></div>
+                        <h2 className="mt-4 text-lg font-bold">Revisión de solicitudes</h2>
+                        <p className="mt-2 text-sm leading-6 text-[var(--color-text-muted)]">Consulta los datos y documentos de los negocios que esperan aprobación.</p>
+                        <Link to="/admin/solicitudes" className="mt-5 inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-[var(--color-primary)] px-5 py-3 text-sm font-bold text-white hover:bg-[var(--color-primary-deep)]">Revisar solicitudes <ArrowRight size={17} aria-hidden="true" /></Link>
+                        <Link to="/gestion-establecimientos" className="ml-0 mt-3 inline-flex min-h-11 items-center gap-2 px-2 text-sm font-bold text-[var(--color-primary)] hover:text-[var(--color-accent)] sm:ml-3">Gestionar establecimientos <ArrowRight size={17} aria-hidden="true" /></Link>
+                    </section>
+                    )}
+                    {rol !== 'Administrador' && (
                     <section className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-6 shadow-sm sm:p-9">
                         <div className="flex size-12 items-center justify-center rounded-xl bg-[#f6eee5] text-[var(--color-accent)]">
                             <Compass size={25} aria-hidden="true" />
@@ -182,6 +211,7 @@ export default function UserAccount() {
                             Publícate con nosotros <ArrowRight size={17} aria-hidden="true" />
                         </Link>
                     </section>
+                    )}
                     </div>
 
                     <aside className="space-y-5" aria-label="Resumen de la cuenta">

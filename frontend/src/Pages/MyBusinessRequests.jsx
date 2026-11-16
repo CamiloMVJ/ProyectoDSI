@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, Navigate } from 'react-router-dom'
-import { ArrowLeft, ArrowRight, Building2, CalendarDays, ClipboardList, ExternalLink, FileText, LoaderCircle, MapPin } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Building2, CalendarDays, ClipboardList, ExternalLink, FileText, IdCard, LoaderCircle, MapPin, Tags } from 'lucide-react'
 import Navbar from '../Components/Navbar.jsx'
 import Footer from '../Components/Footer.jsx'
 import { useAuth } from '../hooks/useAuth.js'
@@ -16,6 +16,20 @@ const estadoClass = {
   Pendiente: 'bg-[#fff2df] text-[#87500c]',
   Aprobada: 'bg-[#eaf0e7] text-[#344e3b]',
   Rechazada: 'bg-[#fff0e9] text-[#9d3e0b]',
+}
+
+function DetailItem({ label, value }) {
+  return <div><dt className="font-semibold text-[var(--color-text-muted)]">{label}</dt><dd className="mt-1 whitespace-pre-wrap break-words">{value || 'No proporcionado'}</dd></div>
+}
+
+function ExternalValue({ value }) {
+  if (!value) return 'No proporcionado'
+  let href
+  try {
+    const url = new URL(value)
+    if (['http:', 'https:'].includes(url.protocol)) href = url.href
+  } catch { /* Mostrar el texto si el enlace guardado no es válido. */ }
+  return href ? <a href={href} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 break-all font-semibold text-[var(--color-primary)] underline underline-offset-2 hover:text-[var(--color-accent)]">{value}<ExternalLink size={15} className="shrink-0" aria-hidden="true" /></a> : value
 }
 
 export default function MyBusinessRequests() {
@@ -97,8 +111,9 @@ export default function MyBusinessRequests() {
                     </div>
                   </div>
                   {expanded && <div id={`solicitud-detalles-${solicitud.id_solicitud}`} className="grid gap-6 border-t border-[var(--color-border)] bg-[#fbfcf9] p-6 sm:grid-cols-2 sm:p-8">
-                    <div><h3 className="flex items-center gap-2 font-bold"><FileText size={19} aria-hidden="true" /> Datos del negocio</h3><dl className="mt-4 space-y-3 text-sm"><div><dt className="font-semibold text-[var(--color-text-muted)]">Número RUC</dt><dd className="mt-1 break-words">{solicitud.codigo_ruc}</dd></div><div><dt className="font-semibold text-[var(--color-text-muted)]">Descripción</dt><dd className="mt-1 whitespace-pre-wrap break-words">{solicitud.descripcion || 'No proporcionada'}</dd></div></dl></div>
-                    <div><h3 className="flex items-center gap-2 font-bold"><MapPin size={19} aria-hidden="true" /> Ubicación</h3><dl className="mt-4 space-y-3 text-sm"><div><dt className="font-semibold text-[var(--color-text-muted)]">Departamento o región</dt><dd className="mt-1">{solicitud.nombre_departamento}</dd></div><div><dt className="font-semibold text-[var(--color-text-muted)]">Municipio</dt><dd className="mt-1 break-words">{solicitud.municipio}</dd></div><div><dt className="font-semibold text-[var(--color-text-muted)]">Dirección exacta</dt><dd className="mt-1 whitespace-pre-wrap break-words">{solicitud.direccion_exacta}</dd></div></dl></div>
+                    <section><h3 className="flex items-center gap-2 font-bold"><IdCard size={19} aria-hidden="true" /> Identidad legal y del titular</h3><dl className="mt-4 space-y-3 text-sm"><DetailItem label="Tipo de persona" value={solicitud.tipo_persona} /><DetailItem label="Número de cédula del solicitante" value={solicitud.numero_cedula_solicitante} /><DetailItem label="Número RUC" value={solicitud.codigo_ruc} /><DetailItem label="Razón social" value={solicitud.razon_social} /></dl></section>
+                    <section><h3 className="flex items-center gap-2 font-bold"><Building2 size={19} aria-hidden="true" /> Perfil y contacto del negocio</h3><dl className="mt-4 space-y-3 text-sm"><DetailItem label="Nombre comercial" value={solicitud.nombre_negocio} /><div><dt className="font-semibold text-[var(--color-text-muted)]">Rubros</dt><dd className="mt-2 flex flex-wrap gap-2">{solicitud.categorias?.length ? solicitud.categorias.map(categoria => <span key={categoria.id_categoria} className="inline-flex items-center gap-1 rounded-full bg-[#eaf0e7] px-3 py-1 text-xs font-semibold text-[var(--color-primary-deep)]"><Tags size={13} aria-hidden="true" />{categoria.nombre}</span>) : 'No proporcionados'}</dd></div><DetailItem label="Descripción" value={solicitud.descripcion} /><DetailItem label="Teléfono o WhatsApp" value={solicitud.telefono_contacto} /><DetailItem label="Correo electrónico" value={solicitud.correo_contacto} /><DetailItem label="Sitio web o red social" value={<ExternalValue value={solicitud.sitio_web} />} /></dl></section>
+                    <section className="border-t border-[var(--color-border)] pt-6 sm:col-span-2"><h3 className="flex items-center gap-2 font-bold"><MapPin size={19} aria-hidden="true" /> Ubicación</h3><dl className="mt-4 grid gap-3 text-sm sm:grid-cols-2"><DetailItem label="Modalidad" value={solicitud.es_independiente === true ? 'Local independiente' : solicitud.es_independiente === false ? 'Dentro de un complejo turístico' : null} />{solicitud.es_independiente === false && <DetailItem label="Complejo turístico" value={solicitud.nombre_complejo || (solicitud.id_complejo_padre ? `Complejo #${solicitud.id_complejo_padre}` : null)} />}<DetailItem label="Departamento o región" value={solicitud.nombre_departamento} /><DetailItem label="Municipio" value={solicitud.municipio} /><DetailItem label="Dirección exacta" value={solicitud.direccion_exacta} /><DetailItem label="Enlace de Google Maps" value={<ExternalValue value={solicitud.maps_link} />} /></dl></section>
                     <section className="sm:col-span-2" aria-label="Documentos adjuntos">
                       <h3 className="flex items-center gap-2 font-bold"><FileText size={19} aria-hidden="true" /> Documentos adjuntos</h3>
                       {solicitud.documentos?.length ? (
