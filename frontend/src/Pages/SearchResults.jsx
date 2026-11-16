@@ -118,7 +118,8 @@ function PlaceCard({ place, saved, pending, onToggle }) {
         {place.precio_minimo != null && place.precio_maximo != null && (
           <p className="mt-2 text-sm font-semibold text-[#344e3b]">Comida y bebida: C$ {place.precio_minimo} – C$ {place.precio_maximo} por persona</p>
         )}
-        <div className="mt-auto flex min-h-11 items-center">
+        <div className="mt-auto flex min-h-11 flex-wrap items-center gap-x-5">
+          <Link to={`/perfil-lugar/${place.id_lugar}`} className="inline-flex min-h-11 items-center text-sm font-bold text-[#c45111] hover:text-[#9d3e0b]">Ver perfil</Link>
           {place.maps_link && <a href={place.maps_link} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center gap-2 text-sm font-bold text-[#c45111] hover:text-[#9d3e0b]">Ver en Google Maps <ExternalLink size={15} aria-hidden="true" /></a>}
         </div>
       </div>
