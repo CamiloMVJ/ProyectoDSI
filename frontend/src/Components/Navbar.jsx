@@ -54,22 +54,11 @@ export default function Navbar({
           </li>
 
           <li>
-            {pathname === '/' ? (
-              <a href="#explorar" className={linkClass}>
-                Explorar
-              </a>
-            ) : (
-              <Link to="/" className={linkClass}>
-                Explorar
-              </Link>
-            )}
+            <Link to="/buscar" className={linkClass}>
+              Explorar
+            </Link>
           </li>
 
-          <li>
-            <a href="#contacto" className={linkClass}>
-              Contacto
-            </a>
-          </li>
         </ul>
 
         <div className="flex flex-wrap items-center gap-3">

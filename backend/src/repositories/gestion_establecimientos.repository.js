@@ -11,6 +11,23 @@ const selection = `SELECT c.id_local, c.codigo_ruc, c.razon_social, c.esta_publi
     'precio', s.precio, 'moneda', s.moneda
   ) ORDER BY s.id_servicio) FROM public.servicios s
   WHERE s.id_local = c.id_local AND s.esta_disponible = TRUE), '[]'::json) AS servicios
+  , COALESCE((SELECT json_agg(json_build_object(
+    'id_horario', h.id_horario, 'dia_semana', h.dia_semana,
+    'hora_apertura', to_char(h.hora_apertura, 'HH24:MI'),
+    'hora_cierre', to_char(h.hora_cierre, 'HH24:MI'),
+    'es_feriado', h.es_feriado
+  ) ORDER BY h.id_horario) FROM public.horarios h WHERE h.id_local = c.id_local), '[]'::json) AS horarios
+  , COALESCE((SELECT json_agg(json_build_object(
+    'id_menu', m.id_menu, 'titulo_menu', m.titulo_menu,
+    'descripcion', m.descripcion, 'esta_activo', m.esta_activo,
+    'items', COALESCE((SELECT json_agg(json_build_object(
+      'id_item', i.id_item, 'nombre_platillo', i.nombre_platillo,
+      'descripcion', i.descripcion, 'precio', i.precio, 'moneda', i.moneda,
+      'url_foto', i.url_foto,
+      'id_categoria_menu', i.id_categoria_menu,
+      'es_vegetariano', i.es_vegetariano, 'esta_disponible', i.esta_disponible
+    ) ORDER BY i.id_item) FROM public.items_menu i WHERE i.id_menu = m.id_menu), '[]'::json)
+  ) ORDER BY m.id_menu) FROM public.menus m WHERE m.id_local = c.id_local), '[]'::json) AS menus
   FROM public.locales_comerciales c
   JOIN public.locales l ON l.id_local = c.id_local
   JOIN public.propietarios_negocios p ON p.id_propietario = c.id_dueno
@@ -79,5 +96,70 @@ export async function save(id, data, client) {
     'UPDATE public.servicios SET esta_disponible = FALSE WHERE id_local = $1 AND NOT (id_servicio = ANY($2::integer[]))',
     [id, activeIds]
   )
+  if (data.horarios !== undefined) {
+    const horarioIds = []
+    for (const horario of data.horarios) {
+      if (horario.id_horario) {
+        const { rowCount } = await client.query(
+          `UPDATE public.horarios SET dia_semana = $3, hora_apertura = $4,
+           hora_cierre = $5, es_feriado = $6 WHERE id_local = $1 AND id_horario = $2`,
+          [id, horario.id_horario, horario.dia_semana, horario.hora_apertura, horario.hora_cierre, horario.es_feriado]
+        )
+        if (!rowCount) return null
+        horarioIds.push(horario.id_horario)
+      } else {
+        const { rows } = await client.query(
+          `INSERT INTO public.horarios (id_local, dia_semana, hora_apertura, hora_cierre, es_feriado)
+           VALUES ($1, $2, $3, $4, $5) RETURNING id_horario`,
+          [id, horario.dia_semana, horario.hora_apertura, horario.hora_cierre, horario.es_feriado]
+        )
+        horarioIds.push(rows[0].id_horario)
+      }
+    }
+    await client.query(
+      'DELETE FROM public.horarios WHERE id_local = $1 AND NOT (id_horario = ANY($2::integer[]))',
+      [id, horarioIds]
+    )
+  }
+  if (data.menus !== undefined) {
+    for (const menu of data.menus) {
+      let menuId = menu.id_menu
+      if (menuId) {
+        const { rowCount } = await client.query(
+          `UPDATE public.menus SET titulo_menu = $3, descripcion = $4, esta_activo = $5
+           WHERE id_local = $1 AND id_menu = $2`,
+          [id, menuId, menu.titulo_menu, menu.descripcion, menu.esta_activo]
+        )
+        if (!rowCount) return null
+      } else {
+        const { rows } = await client.query(
+          `INSERT INTO public.menus (id_local, titulo_menu, descripcion, esta_activo)
+           VALUES ($1, $2, $3, $4) RETURNING id_menu`,
+          [id, menu.titulo_menu, menu.descripcion, menu.esta_activo]
+        )
+        menuId = rows[0].id_menu
+      }
+      for (const item of menu.items) {
+        const values = [menuId, item.nombre_platillo, item.descripcion, item.precio,
+          item.moneda, item.url_foto, item.id_categoria_menu, item.es_vegetariano, item.esta_disponible]
+        if (item.id_item) {
+          const { rowCount } = await client.query(
+            `UPDATE public.items_menu SET nombre_platillo = $3, descripcion = $4,
+             precio = $5, moneda = $6, url_foto = $7, id_categoria_menu = $8,
+             es_vegetariano = $9, esta_disponible = $10
+             WHERE id_menu = $1 AND id_item = $2`,
+            [menuId, item.id_item, ...values.slice(1)]
+          )
+          if (!rowCount) return null
+        } else {
+          await client.query(
+            `INSERT INTO public.items_menu (id_menu, nombre_platillo, descripcion,
+             precio, moneda, url_foto, id_categoria_menu, es_vegetariano, esta_disponible)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`, values
+          )
+        }
+      }
+    }
+  }
   return findOne(id, client)
 }

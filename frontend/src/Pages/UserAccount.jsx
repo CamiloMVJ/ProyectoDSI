@@ -32,22 +32,20 @@ export default function UserAccount() {
     const cuenta = useCuentaUsuario()
     const [tieneSolicitudes, setTieneSolicitudes] = useState(false)
     const [tieneEstablecimientos, setTieneEstablecimientos] = useState(false)
+    const [actividadCargada, setActividadCargada] = useState(false)
 
     useEffect(() => {
         if (!cuenta.sesion?.token || !['Usuario', 'Propietario'].includes(cuenta.sesion.usuario.rol)) return
         const controller = new AbortController()
-        getMyBusinessRequests(cuenta.sesion.token, controller.signal)
-            .then(solicitudes => setTieneSolicitudes(solicitudes.length > 0))
-            .catch(() => {})
-        return () => controller.abort()
-    }, [cuenta.sesion])
-
-    useEffect(() => {
-        if (!cuenta.sesion?.token || !['Usuario', 'Propietario'].includes(cuenta.sesion.usuario.rol)) return
-        const controller = new AbortController()
-        getManagedEstablishments(cuenta.sesion.token, controller.signal)
-            .then(locales => { if (!controller.signal.aborted) setTieneEstablecimientos(locales.length > 0) })
-            .catch(() => {})
+        Promise.allSettled([
+            getMyBusinessRequests(cuenta.sesion.token, controller.signal),
+            getManagedEstablishments(cuenta.sesion.token, controller.signal),
+        ]).then(([solicitudes, locales]) => {
+            if (controller.signal.aborted) return
+            if (solicitudes.status === 'fulfilled') setTieneSolicitudes(solicitudes.value.length > 0)
+            if (locales.status === 'fulfilled') setTieneEstablecimientos(locales.value.length > 0)
+            setActividadCargada(solicitudes.status === 'fulfilled' && locales.status === 'fulfilled')
+        })
         return () => controller.abort()
     }, [cuenta.sesion])
 
@@ -167,27 +165,26 @@ export default function UserAccount() {
                             </button>
                         )}
                     </section>
-                    {tieneSolicitudes && (
-                    <section className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-6 shadow-sm sm:p-9">
-                        <div className="flex size-12 items-center justify-center rounded-xl bg-[#eaf0e7] text-[var(--color-primary)]">
-                            <ClipboardList size={25} aria-hidden="true" />
-                        </div>
-                        <h2 className="mt-4 text-lg font-bold">Mis solicitudes de negocio</h2>
-                        <p className="mt-2 text-sm leading-6 text-[var(--color-text-muted)]">
-                            Consulta el estado y los detalles de tus solicitudes de registro.
-                        </p>
-                        <Link to="/mis-solicitudes" className="mt-5 inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-[var(--color-primary)] px-5 py-3 text-sm font-bold text-white hover:bg-[var(--color-primary-deep)]">
-                            Ver mis solicitudes <ArrowRight size={17} aria-hidden="true" />
-                        </Link>
-                    </section>
-                    )}
-                    {tieneEstablecimientos && rol !== 'Administrador' && (
-                    <section className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-6 shadow-sm sm:p-9">
-                        <div className="flex size-12 items-center justify-center rounded-xl bg-[#eaf0e7] text-[var(--color-primary)]"><Compass size={25} aria-hidden="true" /></div>
-                        <h2 className="mt-4 text-lg font-bold">Mis establecimientos</h2>
-                        <p className="mt-2 text-sm leading-6 text-[var(--color-text-muted)]">Actualiza los datos, servicios y publicación de tus locales.</p>
-                        <Link to="/gestion-establecimientos" className="mt-5 inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-[var(--color-primary)] px-5 py-3 text-sm font-bold text-white hover:bg-[var(--color-primary-deep)]">Gestionar mis establecimientos <ArrowRight size={17} aria-hidden="true" /></Link>
-                    </section>
+                    {rol !== 'Administrador' && (tieneSolicitudes || tieneEstablecimientos) && (
+                        <section aria-labelledby="actividad-title" className="min-w-0 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-6 shadow-sm sm:p-9">
+                            <div className="mb-4">
+                                <p className="text-xs font-bold uppercase tracking-widest text-[var(--color-accent)]">Negocios</p>
+                                <h2 id="actividad-title" className="mt-1 text-xl font-bold">Tu actividad</h2>
+                            </div>
+                            <div className="divide-y divide-[var(--color-border)] border-y border-[var(--color-border)]">
+                                {tieneSolicitudes && <Link to="/mis-solicitudes" className="group flex min-h-20 items-center gap-4 py-4 text-[var(--color-text)] hover:text-[var(--color-primary)] focus-visible:rounded-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-accent)]">
+                                    <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-[#eaf0e7] text-[var(--color-primary)]"><ClipboardList size={21} aria-hidden="true" /></span>
+                                    <span className="min-w-0 flex-1"><strong className="block text-sm font-bold sm:text-base">Solicitudes de negocio</strong><span className="mt-1 block text-sm leading-5 text-[var(--color-text-muted)]">Consulta su estado y documentos.</span></span>
+                                    <ArrowRight size={18} className="shrink-0 transition-transform group-hover:translate-x-1" aria-hidden="true" />
+                                </Link>}
+                                {tieneEstablecimientos && <Link to="/gestion-establecimientos" className="group flex min-h-20 items-center gap-4 py-4 text-[var(--color-text)] hover:text-[var(--color-primary)] focus-visible:rounded-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-accent)]">
+                                    <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-[#eaf0e7] text-[var(--color-primary)]"><Compass size={21} aria-hidden="true" /></span>
+                                    <span className="min-w-0 flex-1"><strong className="block text-sm font-bold sm:text-base">Mis establecimientos</strong><span className="mt-1 block text-sm leading-5 text-[var(--color-text-muted)]">Edita información, servicios y publicación.</span></span>
+                                    <ArrowRight size={18} className="shrink-0 transition-transform group-hover:translate-x-1" aria-hidden="true" />
+                                </Link>}
+                            </div>
+                            {tieneEstablecimientos && <Link to="/registro-negocio" className="mt-4 inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-[var(--color-primary)] hover:text-[var(--color-accent)]">Registrar otro establecimiento <ArrowRight size={16} aria-hidden="true" /></Link>}
+                        </section>
                     )}
                     {rol === 'Administrador' && (
                     <section className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-6 shadow-sm sm:p-9">
@@ -198,19 +195,17 @@ export default function UserAccount() {
                         <Link to="/gestion-establecimientos" className="ml-0 mt-3 inline-flex min-h-11 items-center gap-2 px-2 text-sm font-bold text-[var(--color-primary)] hover:text-[var(--color-accent)] sm:ml-3">Gestionar establecimientos <ArrowRight size={17} aria-hidden="true" /></Link>
                     </section>
                     )}
-                    {rol !== 'Administrador' && (
-                    <section className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-6 shadow-sm sm:p-9">
-                        <div className="flex size-12 items-center justify-center rounded-xl bg-[#f6eee5] text-[var(--color-accent)]">
-                            <Compass size={25} aria-hidden="true" />
-                        </div>
-                        <h2 className="mt-4 text-lg font-bold">¿Tienes un establecimiento?</h2>
-                        <p className="mt-2 text-sm leading-6 text-[var(--color-text-muted)]">
-                            Solicita la publicación de tu negocio turístico con tu cuenta actual.
-                        </p>
-                        <Link to="/registro-negocio" className="mt-5 inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-[var(--color-accent)] px-5 py-3 text-sm font-bold text-white hover:bg-[var(--color-accent-hover)]">
-                            Publícate con nosotros <ArrowRight size={17} aria-hidden="true" />
-                        </Link>
-                    </section>
+                    {rol !== 'Administrador' && actividadCargada && !tieneSolicitudes && !tieneEstablecimientos && (
+                        <section className="min-w-0 rounded-2xl border border-[#eadacb] bg-[#fff9f3] p-6 sm:p-9">
+                            <div className="flex items-start gap-4">
+                                <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-[#f6eee5] text-[var(--color-accent)]"><Compass size={21} aria-hidden="true" /></span>
+                                <div className="min-w-0">
+                                    <h2 className="text-lg font-bold">¿Tienes un establecimiento?</h2>
+                                    <p className="mt-1 text-sm leading-6 text-[var(--color-text-muted)]">Solicita el registro de tu negocio turístico con esta cuenta.</p>
+                                    <Link to="/registro-negocio" className="mt-3 inline-flex min-h-11 items-center gap-2 text-sm font-bold text-[var(--color-accent)] hover:text-[var(--color-primary)]">Registrar mi negocio <ArrowRight size={17} aria-hidden="true" /></Link>
+                                </div>
+                            </div>
+                        </section>
                     )}
                     </div>
 

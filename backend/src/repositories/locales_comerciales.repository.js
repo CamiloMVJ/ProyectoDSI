@@ -4,7 +4,13 @@ import { pool } from '../db/db.js'
 const fields = ["codigo_ruc", "id_dueno", "id_complejo_padre", "es_independiente"]
 const baseFields = ["nombre", "descripcion", "id_departamento", "municipio", "direccion_exacta", "maps_link"]
 const selection = `c.*, l.nombre, l.descripcion, l.id_departamento, l.municipio, l.direccion_exacta, l.maps_link,
-  d.nombre AS departamento, imagen.url_imagen`
+  d.nombre AS departamento, imagen.url_imagen,
+  COALESCE((SELECT json_agg(json_build_object(
+    'dia_semana', h.dia_semana,
+    'hora_apertura', to_char(h.hora_apertura, 'HH24:MI'),
+    'hora_cierre', to_char(h.hora_cierre, 'HH24:MI'),
+    'es_feriado', h.es_feriado
+  ) ORDER BY h.id_horario) FROM public.horarios h WHERE h.id_local = c.id_local), '[]'::json) AS horarios`
 const relation = `FROM public.locales_comerciales AS c
   JOIN public.locales AS l ON l.id_local = c.id_local
   JOIN public.departamentos AS d ON d.id_departamento = l.id_departamento

@@ -21,4 +21,28 @@ export const saveEstablishmentSchema = Joi.object({
     precio: Joi.number().min(0).max(99999999.99).precision(2).required(),
     moneda: Joi.string().valid('NIO', 'USD').required(),
   })).required(),
+  horarios: Joi.array().items(Joi.object({
+    id_horario: Joi.number().integer().positive().optional(),
+    dia_semana: Joi.string().trim().max(20).required(),
+    hora_apertura: Joi.string().pattern(/^([01]\d|2[0-3]):[0-5]\d$/).required(),
+    hora_cierre: Joi.string().pattern(/^([01]\d|2[0-3]):[0-5]\d$/).required(),
+    es_feriado: Joi.boolean().required(),
+  })).optional(),
+  menus: Joi.array().items(Joi.object({
+    id_menu: Joi.number().integer().positive().optional(),
+    titulo_menu: Joi.string().trim().min(2).max(150).required(),
+    descripcion: Joi.string().allow('', null),
+    esta_activo: Joi.boolean().required(),
+    items: Joi.array().items(Joi.object({
+      id_item: Joi.number().integer().positive().optional(),
+      nombre_platillo: Joi.string().trim().min(2).max(150).required(),
+      descripcion: Joi.string().allow('', null),
+      precio: Joi.number().min(0).max(99999999.99).precision(2).required(),
+      moneda: Joi.string().valid('NIO', 'USD').required(),
+      url_foto: Joi.string().uri().max(255).allow('', null),
+      id_categoria_menu: Joi.number().integer().positive().allow(null).required(),
+      es_vegetariano: Joi.boolean().required(),
+      esta_disponible: Joi.boolean().required(),
+    })).required(),
+  })).optional(),
 }).unknown(false)

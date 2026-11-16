@@ -327,16 +327,27 @@
 }
 
 .ge-dialog {
-    width: min(850px, 100%);
+    width: min(980px, 100%);
     background: #fffefa;
     border-radius: 24px;
-    padding: 25px 30px;
+    padding: 30px clamp(20px, 3vw, 38px);
     max-height: calc(100vh - 32px);
-    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
     box-shadow: 0 25px 70px #09231870
 }
 
+.ge-form,
+.ge-confirm {
+    min-height: 0;
+    overflow-y: auto;
+    padding-right: 12px;
+    scrollbar-gutter: stable
+}
+
 .ge-dialog-header {
+    flex-shrink: 0;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -373,8 +384,33 @@
 .ge-form-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 15px 20px
+    gap: 20px 24px
 }
+
+.ge-form-intro { color: #526554; line-height: 1.6; margin: 0 0 24px }
+.ge-form-section { border: 1px solid #e1eadf; background: #fff; border-radius: 18px; padding: clamp(18px, 2.6vw, 28px); margin-bottom: 20px }
+.ge-section-heading { display: flex; align-items: center; gap: 14px; margin-bottom: 24px }
+.ge-section-icon { width: 42px; height: 42px; display: grid; place-items: center; flex-shrink: 0; border-radius: 12px; color: #28543a; background: #eaf3e6 }
+.ge-section-heading h3 { margin: 0; color: #263f32; font-size: 18px; line-height: 1.25 }
+.ge-section-heading p { margin: 4px 0 0; color: #627264; font-size: 13px; font-weight: 400; line-height: 1.45 }
+.ge-plain-input { width: 100%; height: 42px; border: 1px solid #d8e1d5; border-radius: 9px; padding: 0 12px; background: white; color: #25382e }
+.ge-plain-input:disabled { background: #f4f7f1 }
+.ge-menu-list, .ge-item-list { display: grid; gap: 16px }
+.ge-menu-card { border: 1px solid #d8e1d5; border-radius: 15px; background: #fbfcf9; padding: 20px }
+.ge-item-card { border: 1px solid #e4eae2; border-radius: 12px; background: white; padding: 18px }
+.ge-menu-top, .ge-menu-items-heading { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 16px }
+.ge-menu-number { font-weight: 800; color: #28543a; font-size: 14px }
+.ge-menu-items-heading { border-top: 1px solid #e1eadf; padding-top: 18px; margin-top: 20px }
+.ge-menu-items-heading h4 { margin: 0; font-size: 15px }
+.ge-item-options { display: flex; gap: 22px; flex-wrap: wrap; margin-top: 18px }
+.ge-item-options label { display: inline-flex; align-items: center; gap: 8px; color: #344e3b; font-size: 13px; font-weight: 600; cursor: pointer }
+.ge-item-options input { accent-color: #28543a; width: 17px; height: 17px }
+.ge-empty-section { background: #f4f7f1; border-radius: 10px; color: #526554; padding: 16px; line-height: 1.5; margin: 0 }
+.ge-hours-list { display: grid; gap: 12px }
+.ge-hours-row { display: grid; grid-template-columns: minmax(130px, 1.3fr) repeat(2, minmax(110px, 1fr)) auto auto; align-items: end; gap: 14px; padding: 16px; border: 1px solid #d8e1d5; border-radius: 12px; background: #fbfcf9 }
+.ge-hours-holiday { display: inline-flex; align-items: center; gap: 7px; min-height: 42px; font-size: 13px; font-weight: 700; color: #344e3b; white-space: nowrap }
+.ge-hours-holiday input { width: 17px; height: 17px; accent-color: #28543a }
+.ge-hours-remove { min-height: 42px; padding: 0 4px; font-weight: 700 }
 
 .ge-field {
     display: flex;
@@ -406,7 +442,7 @@
 .ge-input-shell input {
     width: 100%;
     min-width: 0;
-    height: 39px;
+    height: 43px;
     outline: 0;
     border: 0;
     background: transparent;
@@ -419,7 +455,7 @@
 }
 
 .ge-field select {
-    height: 41px;
+    height: 44px;
     background: white;
     border: 1px solid #d8e1d5;
     border-radius: 9px;
@@ -439,8 +475,9 @@
     justify-content: space-between;
     align-items: center;
     gap: 12px;
-    margin: 22px 0 10px
+    margin: 0 0 16px
 }
+.ge-services-header .ge-section-heading { margin-bottom: 0 }
 
 .ge-services-header h3 {
     font-weight: 750;
@@ -506,8 +543,12 @@
     border: 0;
     background: transparent;
     color: #c45111;
-    cursor: pointer
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px
 }
+.ge-form :is(input, select, textarea, button):focus-visible, .ge-dialog-actions button:focus-visible { outline: 3px solid #c45111; outline-offset: 2px }
 
 .ge-no-services {
     padding: 15px;
@@ -529,7 +570,13 @@
     justify-content: flex-end;
     flex-wrap: wrap;
     gap: 10px;
-    margin-top: 24px
+    margin-top: 24px;
+    padding: 20px 0 12px;
+    border-top: 1px solid #d8e1d5;
+    background: #fffefa;
+    position: sticky;
+    bottom: 0;
+    z-index: 1
 }
 
 .ge-confirm p {
@@ -543,6 +590,8 @@
 }
 
 @media(max-width:700px) {
+    .ge-hours-row { grid-template-columns: repeat(2, minmax(0, 1fr)) }
+    .ge-hours-row .ge-field:first-child { grid-column: 1 / -1 }
     .ge-main {
         padding: 26px 12px
     }
@@ -577,6 +626,13 @@
     .ge-dialog {
         padding: 18px 15px
     }
+
+    .ge-form, .ge-confirm { padding-right: 8px }
+
+    .ge-form-section { padding: 18px 15px }
+    .ge-services-header { align-items: flex-start; flex-direction: column }
+    .ge-services-header .ge-section-heading { margin-bottom: 2px }
+    .ge-menu-card, .ge-item-card { padding: 15px }
 
     .ge-form-grid {
         grid-template-columns: 1fr

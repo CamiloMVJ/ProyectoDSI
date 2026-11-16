@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
-import { ArrowLeft, ArrowRight, Compass, ExternalLink, Filter, Heart, LoaderCircle, MapPin, Search, SlidersHorizontal, Store } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Clock3, Compass, ExternalLink, Filter, Heart, LoaderCircle, MapPin, Search, SlidersHorizontal, Store } from 'lucide-react'
 import Navbar from '../Components/Navbar.jsx'
 import Footer from '../Components/Footer.jsx'
 import DepartmentDropdown from '../Components/DepartmentDropdown.jsx'
@@ -126,6 +126,7 @@ function PlaceCard({ place, saved, pending, onToggle }) {
         <div className="mt-3 min-h-15 border-t border-[#d8e1d5] pt-3">
           {place.direccion_exacta && <p className="line-clamp-2 text-xs leading-5 text-[#526554]">{place.direccion_exacta}</p>}
         </div>
+        {place.tipo === 'local' && place.horarios?.length > 0 && <details className="mt-3 rounded-xl border border-[#d8e1d5] bg-[#f8faf6] px-3 py-2 text-xs text-[#344e3b]"><summary className="flex cursor-pointer items-center gap-2 font-bold"><Clock3 size={16} aria-hidden="true" /> Ver horario de atención</summary><ul className="mt-3 space-y-1 border-t border-[#d8e1d5] pt-2">{place.horarios.map((horario, index) => <li key={index} className="flex justify-between gap-3"><span>{horario.dia_semana}{horario.es_feriado ? ' · feriado' : ''}</span><span className="whitespace-nowrap">{horario.hora_apertura}–{horario.hora_cierre}</span></li>)}</ul></details>}
         {place.precio_minimo != null && place.precio_maximo != null && (
           <p className="mt-2 text-sm font-semibold text-[#344e3b]">Comida y bebida: C$ {place.precio_minimo} – C$ {place.precio_maximo} por persona</p>
         )}

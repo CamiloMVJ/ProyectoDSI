@@ -2,17 +2,18 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link, Navigate } from 'react-router-dom'
 import {
   Store, Search, Eye, Pencil, EyeOff, X, ChevronLeft, ChevronRight,
-  MapPin, Mail, Phone, UserRound, FileText, Tag, Save, ArrowLeft, AlertTriangle, LoaderCircle, ClipboardList
+  MapPin, Mail, Phone, UserRound, FileText, Tag, Save, ArrowLeft, AlertTriangle, LoaderCircle, ClipboardList, UtensilsCrossed, Plus, Trash2, Clock3
 } from 'lucide-react'
 import Navbar from '../Components/Navbar.jsx'
 import Footer from '../Components/Footer.jsx'
 import { useAuth } from '../hooks/useAuth.js'
 import { getDepartments, getTouristComplexes } from '../services/businessRequests.api.js'
-import { getManagedEstablishments, saveManagedEstablishment } from '../services/establishments.api.js'
+import { getManagedEstablishments, getMenuCategories, saveManagedEstablishment } from '../services/establishments.api.js'
 import '../css/gestion-establecimientos.css'
 
 const moneda = (valor, codigo = 'NIO') => new Intl.NumberFormat('es-NI', { style: 'currency', currency: codigo }).format(Number(valor || 0))
 const texto = valor => valor ?? ''
+const diasSemana = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
 
 function toForm(negocio) {
   return {
@@ -29,6 +30,23 @@ function toForm(negocio) {
       nombre_servicio: servicio.nombre_servicio,
       precio: String(servicio.precio),
       moneda: servicio.moneda || 'NIO',
+    })),
+    horarios: (negocio.horarios || []).map(horario => ({
+      id_horario: horario.id_horario,
+      dia_semana: horario.dia_semana,
+      hora_apertura: horario.hora_apertura?.slice(0, 5) || '',
+      hora_cierre: horario.hora_cierre?.slice(0, 5) || '',
+      es_feriado: Boolean(horario.es_feriado),
+    })),
+    menus: (negocio.menus || []).map(menu => ({
+      id_menu: menu.id_menu, titulo_menu: menu.titulo_menu || '',
+      descripcion: menu.descripcion || '', esta_activo: menu.esta_activo !== false,
+      items: (menu.items || []).map(item => ({
+        id_item: item.id_item, nombre_platillo: item.nombre_platillo || '',
+        descripcion: item.descripcion || '', precio: String(item.precio),
+        moneda: item.moneda || 'NIO', url_foto: item.url_foto || '', id_categoria_menu: String(item.id_categoria_menu || ''),
+        es_vegetariano: Boolean(item.es_vegetariano), esta_disponible: item.esta_disponible !== false,
+      })),
     })),
   }
 }
@@ -50,6 +68,25 @@ function toPayload(form) {
       precio: Number(servicio.precio),
       moneda: servicio.moneda,
     })),
+    horarios: form.horarios.map(horario => ({
+      ...(horario.id_horario ? { id_horario: horario.id_horario } : {}),
+      dia_semana: horario.dia_semana,
+      hora_apertura: horario.hora_apertura,
+      hora_cierre: horario.hora_cierre,
+      es_feriado: horario.es_feriado,
+    })),
+    menus: form.menus.map(menu => ({
+      ...(menu.id_menu ? { id_menu: menu.id_menu } : {}),
+      titulo_menu: menu.titulo_menu.trim(), descripcion: menu.descripcion.trim() || null,
+      esta_activo: menu.esta_activo,
+      items: menu.items.map(item => ({
+        ...(item.id_item ? { id_item: item.id_item } : {}),
+        nombre_platillo: item.nombre_platillo.trim(), descripcion: item.descripcion.trim() || null,
+        precio: Number(item.precio), moneda: item.moneda, url_foto: item.url_foto.trim() || null,
+        id_categoria_menu: item.id_categoria_menu ? Number(item.id_categoria_menu) : null,
+        es_vegetariano: item.es_vegetariano, esta_disponible: item.esta_disponible,
+      })),
+    })),
   }
 }
 
@@ -63,6 +100,7 @@ export default function GestionEstablecimientosVista() {
   const [negocios, setNegocios] = useState([])
   const [departamentos, setDepartamentos] = useState([])
   const [complejos, setComplejos] = useState([])
+  const [categoriasMenu, setCategoriasMenu] = useState([])
   const [cargando, setCargando] = useState(true)
   const [guardando, setGuardando] = useState(false)
   const [buscar, setBuscar] = useState('')
@@ -82,13 +120,15 @@ export default function GestionEstablecimientosVista() {
       getManagedEstablishments(sesion.token, controller.signal),
       getDepartments(controller.signal),
       getTouristComplexes(controller.signal),
-    ]).then(([locales, regiones, lugares]) => {
+      getMenuCategories(controller.signal),
+    ]).then(([locales, regiones, lugares, categorias]) => {
       if (controller.signal.aborted) return
       if (locales.status === 'fulfilled') { setNegocios(locales.value); setPageError('') }
       else setPageError('No se pudieron cargar los establecimientos. Actualiza la página para reintentar.')
       if (regiones.status === 'fulfilled') setDepartamentos(regiones.value)
       if (lugares.status === 'fulfilled') setComplejos(lugares.value)
-      if (regiones.status === 'rejected' || lugares.status === 'rejected') setCatalogNotice('Algunas opciones de ubicación no están disponibles. Actualiza la página antes de editar un local.')
+      if (categorias.status === 'fulfilled') setCategoriasMenu(categorias.value)
+      if (regiones.status === 'rejected' || lugares.status === 'rejected' || categorias.status === 'rejected') setCatalogNotice('Algunas opciones del catálogo no están disponibles. Actualiza la página antes de editar un local.')
     }).finally(() => {
       if (!controller.signal.aborted) setCargando(false)
     })
@@ -129,6 +169,17 @@ export default function GestionEstablecimientosVista() {
   function actualizarServicio(index, campo, valor) {
     setForm(actual => ({ ...actual, servicios: actual.servicios.map((servicio, i) => i === index ? { ...servicio, [campo]: valor } : servicio) }))
   }
+  function actualizarHorario(index, campo, valor) {
+    setForm(actual => ({ ...actual, horarios: actual.horarios.map((horario, i) => i === index ? { ...horario, [campo]: valor } : horario) }))
+  }
+  function actualizarMenu(index, campo, valor) {
+    setForm(actual => ({ ...actual, menus: actual.menus.map((menu, i) => i === index ? { ...menu, [campo]: valor } : menu) }))
+  }
+  function actualizarPlatillo(menuIndex, itemIndex, campo, valor) {
+    setForm(actual => ({ ...actual, menus: actual.menus.map((menu, i) => i === menuIndex
+      ? { ...menu, items: menu.items.map((item, j) => j === itemIndex ? { ...item, [campo]: valor } : item) }
+      : menu) }))
+  }
 
   async function guardar(event, retirar = false) {
     event?.preventDefault()
@@ -139,6 +190,15 @@ export default function GestionEstablecimientosVista() {
     }
     if (form.servicios.some(servicio => !servicio.nombre_servicio.trim() || servicio.precio === '' || Number(servicio.precio) < 0)) {
       setModalError('Revisa el nombre y el precio de los servicios.')
+      return
+    }
+    if (form.horarios.some(horario => !horario.dia_semana || !horario.hora_apertura || !horario.hora_cierre)) {
+      setModalError('Completa el día y las horas de cada horario, o quita la fila incompleta.')
+      return
+    }
+    if (form.menus.some(menu => menu.titulo_menu.trim().length < 2 || menu.items.some(item =>
+      item.nombre_platillo.trim().length < 2 || item.precio === '' || Number(item.precio) < 0))) {
+      setModalError('Revisa los nombres y precios de los menús y platillos.')
       return
     }
     setGuardando(true)
@@ -184,7 +244,10 @@ export default function GestionEstablecimientosVista() {
     {modal && form && <div className="ge-overlay" onMouseDown={event => { if (event.target === event.currentTarget) cerrar() }}><section className="ge-dialog" role="dialog" aria-modal="true" aria-labelledby="ge-dialog-title"><div className="ge-dialog-header"><h2 id="ge-dialog-title">{modal.tipo === 'retirar' ? <AlertTriangle size={25} aria-hidden="true" /> : <Store size={25} aria-hidden="true" />} {etiqueta}</h2><button type="button" className="ge-close" onClick={cerrar} disabled={guardando} aria-label="Cerrar"><X size={21} /></button></div>
       {modal.tipo === 'retirar' ? <div className="ge-confirm"><p>¿Deseas retirar <strong>{modal.negocio.nombre}</strong> de la búsqueda pública?</p><p>El registro y sus servicios se conservan. Podrás volver a publicarlo desde «Editar».</p>{modalError && <div className="ge-error" role="alert">{modalError}</div>}<div className="ge-dialog-actions"><button type="button" className="ge-button ge-outline" onClick={cerrar} disabled={guardando}>Cancelar</button><button type="button" className="ge-button ge-danger" onClick={() => guardar(null, true)} disabled={guardando}>{guardando ? <LoaderCircle className="ge-spinner" size={18} /> : <EyeOff size={18} />} Retirar de publicación</button></div></div> :
         <form onSubmit={guardar} className="ge-form">
-          <div className="ge-form-grid">
+          <p className="ge-form-intro">{soloLectura ? 'Consulta la información de este establecimiento.' : 'Organiza la información que verán tus clientes. Los cambios se aplican al guardar.'}</p>
+          <section className="ge-form-section" aria-labelledby="ge-identity-heading">
+            <div className="ge-section-heading"><span className="ge-section-icon"><Store size={20} aria-hidden="true" /></span><div><h3 id="ge-identity-heading">Datos del negocio</h3><p>Identidad, responsable y formas de contacto</p></div></div>
+            <div className="ge-form-grid">
             <TextField label="Propietario" icon={UserRound} value={texto(modal.negocio.propietario)} disabled />
             <TextField label="Correo de la cuenta" icon={Mail} value={texto(modal.negocio.correo_propietario)} disabled />
             <TextField label="Nombre comercial" icon={Store} value={form.nombre} onChange={valor => actualizar('nombre', valor)} disabled={soloLectura} required maxLength={150} />
@@ -193,6 +256,12 @@ export default function GestionEstablecimientosVista() {
             <TextField label="Teléfono o WhatsApp" icon={Phone} value={form.telefono_contacto} onChange={valor => actualizar('telefono_contacto', valor)} disabled={soloLectura} maxLength={30} />
             <TextField label="Correo del local" icon={Mail} value={form.correo_contacto} onChange={valor => actualizar('correo_contacto', valor)} disabled={soloLectura} type="email" maxLength={150} />
             <TextField label="Sitio web o red social" icon={Store} value={form.sitio_web} onChange={valor => actualizar('sitio_web', valor)} disabled={soloLectura} maxLength={255} />
+            <label className="ge-field ge-field-wide"><span>Descripción</span><textarea className="ge-textarea" rows={3} value={form.descripcion} onChange={event => actualizar('descripcion', event.target.value)} disabled={soloLectura} placeholder="Cuéntales a los visitantes qué hace especial a tu negocio" /></label>
+            </div>
+          </section>
+          <section className="ge-form-section" aria-labelledby="ge-location-heading">
+            <div className="ge-section-heading"><span className="ge-section-icon"><MapPin size={20} aria-hidden="true" /></span><div><h3 id="ge-location-heading">Ubicación y visibilidad</h3><p>Indica dónde está el local y si aparece en la búsqueda pública</p></div></div>
+            <div className="ge-form-grid">
             <label className="ge-field"><span>Departamento o región <b>*</b></span><select value={form.id_departamento} onChange={event => actualizar('id_departamento', event.target.value)} disabled={soloLectura} required><option value="">Selecciona una opción</option>{departamentos.map(departamento => <option key={departamento.id_departamento} value={departamento.id_departamento}>{departamento.nombre}</option>)}</select></label>
             <TextField label="Municipio" icon={MapPin} value={form.municipio} onChange={valor => actualizar('municipio', valor)} disabled={soloLectura} required maxLength={100} />
             <TextField label="Dirección exacta" icon={MapPin} value={form.direccion_exacta} onChange={valor => actualizar('direccion_exacta', valor)} disabled={soloLectura} required />
@@ -200,10 +269,45 @@ export default function GestionEstablecimientosVista() {
             <label className="ge-field"><span>Ubicación</span><select value={String(form.es_independiente)} onChange={event => setForm(actual => ({ ...actual, es_independiente: event.target.value === 'true', id_complejo_padre: '' }))} disabled={soloLectura}><option value="true">Local independiente</option><option value="false">Dentro de un complejo turístico</option></select></label>
             {!form.es_independiente && <label className="ge-field"><span>Complejo turístico <b>*</b></span><select value={form.id_complejo_padre} onChange={event => actualizar('id_complejo_padre', event.target.value)} disabled={soloLectura} required><option value="">Selecciona un complejo</option>{complejos.map(complejo => <option key={complejo.id_lugar} value={complejo.id_lugar}>{complejo.nombre}</option>)}</select></label>}
             <label className="ge-field"><span>Publicación</span><select value={String(form.esta_publicado)} onChange={event => actualizar('esta_publicado', event.target.value === 'true')} disabled={soloLectura}><option value="false">Sin publicar</option><option value="true">Publicado</option></select></label>
-            <label className="ge-field ge-field-wide"><span>Descripción</span><textarea className="ge-textarea" rows={3} value={form.descripcion} onChange={event => actualizar('descripcion', event.target.value)} disabled={soloLectura} /></label>
-          </div>
-          <div className="ge-services-header"><h3>Servicios y precios</h3>{!soloLectura && <button type="button" className="ge-button ge-add-service" onClick={() => actualizar('servicios', [...form.servicios, { nombre_servicio: '', precio: '', moneda: 'NIO' }])}>Agregar servicio</button>}</div>
+            </div>
+          </section>
+          <section className="ge-form-section" aria-labelledby="ge-hours-heading">
+            <div className="ge-services-header"><div className="ge-section-heading"><span className="ge-section-icon"><Clock3 size={20} aria-hidden="true" /></span><div><h3 id="ge-hours-heading">Horario de atención</h3><p>Define los días y las horas que se mostrarán para este establecimiento. Puedes agregar varios turnos por día.</p></div></div>{!soloLectura && <button type="button" className="ge-button ge-add-service" onClick={() => actualizar('horarios', [...form.horarios, { dia_semana: 'Lunes', hora_apertura: '08:00', hora_cierre: '17:00', es_feriado: false }])}><Plus size={17} /> Agregar horario</button>}</div>
+            {!form.horarios.length && <p className="ge-empty-section">No hay horarios configurados. Agrega uno para indicar cuándo atiende el local.</p>}
+            <div className="ge-hours-list">{form.horarios.map((horario, index) => <div className="ge-hours-row" key={horario.id_horario || `nuevo-${index}`}>
+              <label className="ge-field"><span>Día</span><select aria-label={`Día del horario ${index + 1}`} value={horario.dia_semana} onChange={event => actualizarHorario(index, 'dia_semana', event.target.value)} disabled={soloLectura}>{!diasSemana.includes(horario.dia_semana) && <option value={horario.dia_semana}>{horario.dia_semana}</option>}{diasSemana.map(dia => <option key={dia} value={dia}>{dia}</option>)}</select></label>
+              <label className="ge-field"><span>Abre</span><input className="ge-plain-input" aria-label={`Hora de apertura ${index + 1}`} type="time" value={horario.hora_apertura} onChange={event => actualizarHorario(index, 'hora_apertura', event.target.value)} disabled={soloLectura} required /></label>
+              <label className="ge-field"><span>Cierra</span><input className="ge-plain-input" aria-label={`Hora de cierre ${index + 1}`} type="time" value={horario.hora_cierre} onChange={event => actualizarHorario(index, 'hora_cierre', event.target.value)} disabled={soloLectura} required /></label>
+              <label className="ge-hours-holiday"><input type="checkbox" checked={horario.es_feriado} onChange={event => actualizarHorario(index, 'es_feriado', event.target.checked)} disabled={soloLectura} /> Horario de feriado</label>
+              {!soloLectura && <button type="button" className="ge-remove-service ge-hours-remove" aria-label={`Quitar horario ${index + 1}`} onClick={() => actualizar('horarios', form.horarios.filter((_, i) => i !== index))}><Trash2 size={17} /> Quitar</button>}
+            </div>)}</div>
+          </section>
+          <section className="ge-form-section" aria-labelledby="ge-services-heading">
+          <div className="ge-services-header"><div className="ge-section-heading"><span className="ge-section-icon"><Tag size={20} aria-hidden="true" /></span><div><h3 id="ge-services-heading">Servicios y precios</h3><p>Actividades o prestaciones adicionales del local</p></div></div>{!soloLectura && <button type="button" className="ge-button ge-add-service" onClick={() => actualizar('servicios', [...form.servicios, { nombre_servicio: '', precio: '', moneda: 'NIO' }])}><Plus size={17} /> Agregar servicio</button>}</div>
           <div className="ge-services">{form.servicios.length === 0 && <p className="ge-no-services">No hay servicios registrados.</p>}{form.servicios.map((servicio, index) => <div className="ge-service-row" key={servicio.id_servicio || `nuevo-${index}`}><Tag size={18} aria-hidden="true" />{soloLectura ? <><span>{servicio.nombre_servicio}</span><strong>{moneda(servicio.precio, servicio.moneda)}</strong></> : <><input aria-label={`Nombre del servicio ${index + 1}`} placeholder="Nombre del servicio" value={servicio.nombre_servicio} onChange={event => actualizarServicio(index, 'nombre_servicio', event.target.value)} minLength={2} maxLength={150} required /><input aria-label={`Precio del servicio ${index + 1}`} type="number" min="0" step="0.01" placeholder="Precio" value={servicio.precio} onChange={event => actualizarServicio(index, 'precio', event.target.value)} required /><select aria-label={`Moneda del servicio ${index + 1}`} value={servicio.moneda} onChange={event => actualizarServicio(index, 'moneda', event.target.value)}><option value="NIO">C$</option><option value="USD">US$</option></select><button type="button" className="ge-remove-service" aria-label={`Quitar servicio ${index + 1}`} onClick={() => actualizar('servicios', form.servicios.filter((_, i) => i !== index))}><EyeOff size={18} /></button></>}</div>)}</div>
+          </section>
+          <section className="ge-form-section" aria-labelledby="ge-menu-heading">
+            <div className="ge-services-header"><div className="ge-section-heading"><span className="ge-section-icon"><UtensilsCrossed size={20} aria-hidden="true" /></span><div><h3 id="ge-menu-heading">Menús y platillos</h3><p>Opcional. Añade cartas, comidas y bebidas con sus precios.</p></div></div>{!soloLectura && <button type="button" className="ge-button ge-add-service" onClick={() => actualizar('menus', [...form.menus, { titulo_menu: '', descripcion: '', esta_activo: true, items: [] }])}><Plus size={17} /> Agregar menú</button>}</div>
+            {!form.menus.length && <p className="ge-empty-section">Todavía no hay menús. Puedes agregar uno si este local ofrece comidas o bebidas.</p>}
+            <div className="ge-menu-list">{form.menus.map((menu, menuIndex) => <div className="ge-menu-card" key={menu.id_menu || `nuevo-${menuIndex}`}>
+              <div className="ge-menu-top"><span className="ge-menu-number">Menú {menuIndex + 1}</span>{!soloLectura && !menu.id_menu && <button type="button" className="ge-remove-service" onClick={() => actualizar('menus', form.menus.filter((_, i) => i !== menuIndex))}><Trash2 size={16} /> Quitar menú</button>}</div>
+              <div className="ge-form-grid"><TextField label="Título del menú" icon={UtensilsCrossed} value={menu.titulo_menu} onChange={valor => actualizarMenu(menuIndex, 'titulo_menu', valor)} disabled={soloLectura} required maxLength={150} /><label className="ge-field"><span>Estado del menú</span><select value={String(menu.esta_activo)} onChange={event => actualizarMenu(menuIndex, 'esta_activo', event.target.value === 'true')} disabled={soloLectura}><option value="true">Activo</option><option value="false">Oculto</option></select></label><label className="ge-field ge-field-wide"><span>Descripción del menú</span><textarea className="ge-textarea" rows={2} value={menu.descripcion} onChange={event => actualizarMenu(menuIndex, 'descripcion', event.target.value)} disabled={soloLectura} placeholder="Por ejemplo: almuerzos, cafetería o bebidas" /></label></div>
+              <div className="ge-menu-items-heading"><h4>Platillos y bebidas</h4>{!soloLectura && <button type="button" className="ge-button ge-add-service" onClick={() => actualizarMenu(menuIndex, 'items', [...menu.items, { nombre_platillo: '', descripcion: '', precio: '', moneda: 'NIO', url_foto: '', id_categoria_menu: '', es_vegetariano: false, esta_disponible: true }])}><Plus size={16} /> Agregar platillo</button>}</div>
+              {!menu.items.length && <p className="ge-empty-section">Este menú todavía no tiene platillos.</p>}
+              <div className="ge-item-list">{menu.items.map((item, itemIndex) => <div className="ge-item-card" key={item.id_item || `nuevo-${menuIndex}-${itemIndex}`}>
+                <div className="ge-menu-top"><span className="ge-menu-number">Platillo {itemIndex + 1}</span>{!soloLectura && !item.id_item && <button type="button" className="ge-remove-service" onClick={() => actualizarMenu(menuIndex, 'items', menu.items.filter((_, i) => i !== itemIndex))}><Trash2 size={16} /> Quitar</button>}</div>
+                <div className="ge-form-grid">
+                  <TextField label="Nombre" icon={Tag} value={item.nombre_platillo} onChange={valor => actualizarPlatillo(menuIndex, itemIndex, 'nombre_platillo', valor)} disabled={soloLectura} required maxLength={150} />
+                  <label className="ge-field"><span>Categoría</span><select value={item.id_categoria_menu} onChange={event => actualizarPlatillo(menuIndex, itemIndex, 'id_categoria_menu', event.target.value)} disabled={soloLectura}><option value="">Sin categoría</option>{categoriasMenu.map(categoria => <option key={categoria.id_categoria_menu} value={categoria.id_categoria_menu}>{categoria.nombre}</option>)}</select></label>
+                  <label className="ge-field ge-field-wide"><span>Descripción</span><textarea className="ge-textarea" rows={2} value={item.descripcion} onChange={event => actualizarPlatillo(menuIndex, itemIndex, 'descripcion', event.target.value)} disabled={soloLectura} /></label>
+                  <label className="ge-field"><span>Precio <b>*</b></span><input className="ge-plain-input" type="number" min="0" step="0.01" value={item.precio} onChange={event => actualizarPlatillo(menuIndex, itemIndex, 'precio', event.target.value)} disabled={soloLectura} required /></label>
+                  <label className="ge-field"><span>Moneda</span><select value={item.moneda} onChange={event => actualizarPlatillo(menuIndex, itemIndex, 'moneda', event.target.value)} disabled={soloLectura}><option value="NIO">Córdobas (C$)</option><option value="USD">Dólares (US$)</option></select></label>
+                  <label className="ge-field ge-field-wide"><span>Foto del platillo (URL opcional)</span><input className="ge-plain-input" type="url" maxLength={255} placeholder="https://" value={item.url_foto} onChange={event => actualizarPlatillo(menuIndex, itemIndex, 'url_foto', event.target.value)} disabled={soloLectura} /></label>
+                </div>
+                <div className="ge-item-options"><label><input type="checkbox" checked={item.es_vegetariano} onChange={event => actualizarPlatillo(menuIndex, itemIndex, 'es_vegetariano', event.target.checked)} disabled={soloLectura} /> Vegetariano</label><label><input type="checkbox" checked={item.esta_disponible} onChange={event => actualizarPlatillo(menuIndex, itemIndex, 'esta_disponible', event.target.checked)} disabled={soloLectura} /> Disponible</label></div>
+              </div>)}</div>
+            </div>)}</div>
+          </section>
           {modalError && <div className="ge-error" role="alert">{modalError}</div>}
           <div className="ge-dialog-actions"><button type="button" className="ge-button ge-outline" onClick={cerrar} disabled={guardando}><ArrowLeft size={17} /> Volver al listado</button>{soloLectura ? <>{form.esta_publicado && <Link className="ge-button ge-outline" to={`/buscar?tipo=local&q=${encodeURIComponent(form.nombre)}`}>Ver en búsqueda</Link>}<button type="button" className="ge-button ge-primary" onClick={() => { setModal(actual => ({ ...actual, tipo: 'editar' })); setModalError('') }}><Pencil size={17} /> Editar datos</button></> : <button type="submit" className="ge-button ge-orange" disabled={guardando}>{guardando ? <LoaderCircle className="ge-spinner" size={17} /> : <Save size={17} />} Guardar cambios</button>}</div>
         </form>}

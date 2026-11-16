@@ -1,6 +1,6 @@
 const Footer = () => {
   return (
-    <footer id="contacto" className="w-full bg-[#2F362C] text-white mt-24">
+    <footer className="mt-24 w-full bg-[#2F362C] text-white">
       <div className="max-w-7xl mx-auto px-6 sm:px-10 py-12 flex flex-col sm:flex-row items-center justify-between gap-6">
         <div className="flex flex-col items-center sm:items-start">
           <span className="text-xl font-bold tracking-wider font-serif">
@@ -12,14 +12,11 @@ const Footer = () => {
         </div>
 
         <div className="flex items-center gap-6 text-xs text-white/80">
-          <a href="#inicio" className="hover:text-[#C45111] transition-colors">
+          <a href="/" className="hover:text-[#C45111] transition-colors">
             Inicio
           </a>
-          <a href="#explorar" className="hover:text-[#C45111] transition-colors">
+          <a href="/buscar" className="hover:text-[#C45111] transition-colors">
             Explorar
-          </a>
-          <a href="#contacto" className="hover:text-[#C45111] transition-colors">
-            Publicidad
           </a>
         </div>
 
@@ -31,4 +28,4 @@ const Footer = () => {
   );
 };
 
-export default Footer;  
+export default Footer;

@@ -159,6 +159,18 @@ CREATE TABLE horarios (
     es_feriado BOOLEAN DEFAULT FALSE
 );
 
+CREATE TABLE dias_cerrados_locales (
+    id_cierre SERIAL PRIMARY KEY,
+    id_local INTEGER NOT NULL 
+        REFERENCES locales(id_local) ON DELETE CASCADE,
+    fecha DATE NOT NULL,
+    motivo VARCHAR(150),
+    fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT unique_local_fecha_cierre UNIQUE (id_local, fecha)
+);
+CREATE INDEX dias_cerrados_locales_local_fecha_idx 
+    ON dias_cerrados_locales (id_local, fecha);
+
 CREATE TABLE resenas (
     id_resena SERIAL PRIMARY KEY,
     id_usuario INTEGER NOT NULL 
@@ -355,8 +367,29 @@ CREATE TABLE pagos_publicidad (
 );
 
 -- ==========================================
--- 8. TRIGGERS Y FUNCIONES (CÁLCULO DEL TICKET)
+-- 8. TRIGGERS Y FUNCIONES
 -- ==========================================
+
+CREATE OR REPLACE FUNCTION public.validar_fecha_cierre_local()
+RETURNS TRIGGER LANGUAGE plpgsql AS $$
+DECLARE
+    v_hoy DATE := (CURRENT_TIMESTAMP AT TIME ZONE 'America/Managua')::DATE;
+BEGIN
+    IF NEW.fecha < (v_hoy + INTERVAL '1 day')::DATE 
+       OR NEW.fecha > (v_hoy + INTERVAL '2 months')::DATE THEN
+        RAISE EXCEPTION 'La fecha de cierre (%) debe estar entre mañana (%) y 2 meses en adelante (%).',
+            NEW.fecha,
+            (v_hoy + INTERVAL '1 day')::DATE,
+            (v_hoy + INTERVAL '2 months')::DATE;
+    END IF;
+
+    RETURN NEW;
+END;
+$$;
+
+CREATE TRIGGER trg_validar_fecha_cierre_local
+BEFORE INSERT OR UPDATE OF fecha ON public.dias_cerrados_locales
+FOR EACH ROW EXECUTE FUNCTION public.validar_fecha_cierre_local();
 
 CREATE OR REPLACE FUNCTION public.recalculate_local_price_range(p_local_id INTEGER)
 RETURNS VOID LANGUAGE plpgsql AS $$
