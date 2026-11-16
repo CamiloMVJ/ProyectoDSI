@@ -31,7 +31,7 @@ function getEntries(data) {
 }
 
 export async function findAll(maxBudget = null, idCategoria = null, client = pool) {
-  const filters = []
+  const filters = ['c.esta_publicado = TRUE']
   const values = []
   if (maxBudget != null && maxBudget !== '') {
     values.push(maxBudget)
@@ -46,7 +46,7 @@ export async function findAll(maxBudget = null, idCategoria = null, client = poo
   }
   const { rows } = await client.query(
     `SELECT ${selection} ${relation}
-     ${filters.length ? `WHERE ${filters.join('\n       AND ')}` : ''}
+     WHERE ${filters.join('\n       AND ')}
      ORDER BY c.id_local`,
     values
   )

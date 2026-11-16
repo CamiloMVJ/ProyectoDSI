@@ -41,7 +41,7 @@ export async function search({ q, departamento, municipio, tipo, orden, max_budg
     LEFT JOIN LATERAL (
       SELECT MIN(precio_minimo) AS precio_minimo, MAX(precio_maximo) AS precio_maximo
       FROM public.locales_comerciales
-      WHERE id_complejo_padre = l.id_lugar AND precio_minimo IS NOT NULL
+      WHERE id_complejo_padre = l.id_lugar AND esta_publicado = TRUE AND precio_minimo IS NOT NULL
     ) AS budget ON TRUE
     WHERE ($1::text = '' OR strpos(lower(base.nombre), lower($1)) > 0
            OR strpos(lower(coalesce(base.descripcion, '')), lower($1)) > 0

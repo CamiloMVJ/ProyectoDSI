@@ -21,6 +21,7 @@ export async function findByUser(idUsuario, client = pool) {
       WHERE id_local = l.id_local ORDER BY id_imagen LIMIT 1
     ) AS imagen ON TRUE
     WHERE f.id_usuario = $1
+      AND (lc.id_local IS NULL OR lc.esta_publicado = TRUE)
     ORDER BY f.fecha_guardado DESC, f.id_favorito DESC`, [idUsuario])
   return rows
 }

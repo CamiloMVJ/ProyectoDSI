@@ -29,7 +29,7 @@ export async function findOne(id) {
   id = parseId(id)
   return execute(async () => {
     const record = await repository.findOne(id)
-    if (!record) throw new AppError('El local no existe', 404)
+    if (!record || !record.esta_publicado) throw new AppError('El local no existe', 404)
     return record
   })
 }
