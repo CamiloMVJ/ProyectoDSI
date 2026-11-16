@@ -1,7 +1,7 @@
 import { pool } from '../db/db.js'
 
 // Columnas permitidas del script SQL. Los valores se pasan como parámetros.
-const fields = ["id_usuario", "nombre_negocio", "codigo_ruc", "descripcion", "municipio", "direccion_exacta", "id_departamento", "estado"]
+const fields = ["id_usuario", "nombre_negocio", "razon_social", "codigo_ruc", "numero_cedula_solicitante", "tipo_persona", "descripcion", "es_independiente", "id_complejo_padre", "municipio", "direccion_exacta", "maps_link", "telefono_contacto", "correo_contacto", "sitio_web", "id_departamento", "estado"]
 
 function getEntries(data) {
   if (!data || typeof data !== 'object' || Array.isArray(data)) {
@@ -21,18 +21,32 @@ function getEntries(data) {
 }
 
 export async function findAll(client = pool) {
-  const { rows } = await client.query(
-    'SELECT * FROM public.solicitudes_registros ORDER BY id_solicitud'
-  )
-
-  return rows
+  return findDetailed(null, client)
 }
 
 export async function findByUser(idUsuario, client = pool) {
+  return findDetailed(idUsuario, client)
+}
+
+async function findDetailed(idUsuario, client) {
   const { rows } = await client.query(
-    `SELECT s.id_solicitud, s.nombre_negocio, s.codigo_ruc, s.descripcion,
-            s.municipio, s.direccion_exacta, s.id_departamento,
-            d.nombre AS nombre_departamento, s.fecha_solicitud, s.estado,
+    `SELECT s.id_solicitud, s.id_usuario, u.nombre_completo AS nombre_solicitante,
+            u.email AS correo_solicitante, s.nombre_negocio, s.razon_social, s.codigo_ruc,
+            s.numero_cedula_solicitante, s.tipo_persona, s.descripcion,
+            s.es_independiente, s.id_complejo_padre, complejo.nombre AS nombre_complejo,
+            s.municipio, s.direccion_exacta, s.maps_link,
+            s.telefono_contacto, s.correo_contacto, s.sitio_web,
+            s.id_departamento, d.nombre AS nombre_departamento,
+            s.fecha_solicitud, s.estado,
+            COALESCE((
+              SELECT json_agg(json_build_object(
+                'id_categoria', c.id_categoria,
+                'nombre', c.nombre
+              ) ORDER BY c.nombre)
+              FROM public.solicitudes_categorias sc
+              JOIN public.categorias c ON c.id_categoria = sc.id_categoria
+              WHERE sc.id_solicitud = s.id_solicitud
+            ), '[]'::json) AS categorias,
             COALESCE((
               SELECT json_agg(json_build_object(
                 'id_documento', doc.id_documento,
@@ -43,10 +57,12 @@ export async function findByUser(idUsuario, client = pool) {
               WHERE doc.id_solicitud = s.id_solicitud
             ), '[]'::json) AS documentos
      FROM public.solicitudes_registros s
+     JOIN public.usuarios u ON u.id_usuario = s.id_usuario
      JOIN public.departamentos d ON d.id_departamento = s.id_departamento
-     WHERE s.id_usuario = $1
+     LEFT JOIN public.locales complejo ON complejo.id_local = s.id_complejo_padre
+     ${idUsuario == null ? '' : 'WHERE s.id_usuario = $1'}
      ORDER BY s.fecha_solicitud DESC, s.id_solicitud DESC`,
-    [idUsuario]
+    idUsuario == null ? [] : [idUsuario]
   )
   return rows
 }
@@ -99,6 +115,15 @@ export async function create(data, client = pool) {
   return rows[0]
 }
 
+export async function addCategories(idSolicitud, categorias, client = pool) {
+  if (!categorias.length) return
+  await client.query(
+    `INSERT INTO public.solicitudes_categorias (id_solicitud, id_categoria)
+     SELECT $1, categoria.id_categoria FROM unnest($2::integer[]) AS categoria(id_categoria)`,
+    [idSolicitud, categorias]
+  )
+}
+
 export async function update(id, data, client = pool) {
   const entries = getEntries(data)
 
@@ -118,6 +143,17 @@ export async function update(id, data, client = pool) {
     values
   )
 
+  return rows[0] ?? null
+}
+
+export async function decide(id, estado, client = pool) {
+  const { rows } = await client.query(
+    `UPDATE public.solicitudes_registros
+     SET estado = $2
+     WHERE id_solicitud = $1 AND estado = 'Pendiente'
+     RETURNING *`,
+    [id, estado]
+  )
   return rows[0] ?? null
 }
 

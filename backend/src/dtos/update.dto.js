@@ -342,7 +342,7 @@ export const updateItemMenuSchema = itemMenuSchema
 
 
 export const updateSolicitudRegistroSchema = Joi.object({
-    estado: Joi.string().valid('Pendiente', 'Aprobada', 'Rechazada').required()
+    estado: Joi.string().valid('Aprobada', 'Rechazada').required()
 });
 
 

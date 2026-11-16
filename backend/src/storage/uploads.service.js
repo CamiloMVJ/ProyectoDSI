@@ -38,7 +38,7 @@ function checkedReference(token, expectedStage, user, config) {
         !Number.isSafeInteger(ref.requestId) ||
         ref.requestId <= 0 ||
         ref.requestId > 2147483647 ||
-        !["RUC", "Permiso"].includes(ref.documentType) ||
+        !["RUC", "Permiso", "Cédula de Identidad", "Constancia RUC", "Permiso o Constancia"].includes(ref.documentType) ||
         typeof ref.fileName !== "string" ||
         !ref.fileName ||
         ref.fileName.length > 255)) ||
@@ -89,7 +89,7 @@ export async function authorizeUpload(user, input, deps) {
       !Number.isSafeInteger(context.requestId) ||
       context.requestId <= 0 ||
       context.requestId > 2147483647 ||
-      !["RUC", "Permiso"].includes(context.documentType) ||
+      !["RUC", "Permiso", "Cédula de Identidad", "Constancia RUC", "Permiso o Constancia"].includes(context.documentType) ||
       typeof context.fileName !== "string" ||
       !context.fileName.trim() ||
       context.fileName.length > 255
@@ -291,7 +291,20 @@ export async function signedRequestDocument(user, requestId, documentId, deps) {
     user.id,
   )
   if (!document) throw new AppError("Documento no encontrado", 404)
-  const escapedPath = `final/solicitudes/${requestId}/${user.id}/`
+  return signRequestDocument(document, requestId, user.id, config, client)
+}
+
+export async function signedAdminRequestDocument(user, requestId, documentId, deps) {
+  const { config, client, business } = dependencies(deps)
+  if (user?.rol !== "Administrador")
+    throw new AppError("No tenés permiso para ver este documento", 403)
+  const document = await business.findRequestDocumentForAdmin(requestId, documentId)
+  if (!document) throw new AppError("Documento no encontrado", 404)
+  return signRequestDocument(document, requestId, document.id_usuario, config, client)
+}
+
+async function signRequestDocument(document, requestId, userId, config, client) {
+  const escapedPath = `final/solicitudes/${requestId}/${userId}/`
   if (
     typeof document.url_archivo !== "string" ||
     !document.url_archivo.startsWith(escapedPath) ||
