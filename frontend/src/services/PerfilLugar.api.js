@@ -27,12 +27,13 @@ export async function getPerfilLugar(id, signal) {
     throw new Error('No se encontró el lugar solicitado.')
   }
 
-  const [atractivo, complejo, imagenes, horarios, servicios] = await Promise.all([
+  const [atractivo, complejo, imagenes, horarios, servicios, menus] = await Promise.all([
     turistico ? optionalRecord(`/atractivos_independientes/${id}`, signal) : null,
     turistico ? optionalRecord(`/complejos_turisticos/${id}`, signal) : null,
     request('/imagenes_lugares', { signal }),
     request('/horarios', { signal }),
     request('/servicios', { signal }),
+    comercial ? request(`/locales_comerciales/${id}/menus`, { signal }) : null,
   ])
 
   const base = comercial ?? turistico
@@ -59,6 +60,8 @@ export async function getPerfilLugar(id, signal) {
     ...base,
     categoria: comercial ? 'Local comercial' : atractivo ? 'Atractivo independiente' : complejo ? 'Complejo turístico' : 'Lugar turístico',
     galeria,
+    es_comercial: Boolean(comercial),
+    menus: menus || [],
     horarios: horarios
       .filter(horario => Number(horario.id_local) === Number(id))
       .sort((a, b) => Number(a.id_horario) - Number(b.id_horario))

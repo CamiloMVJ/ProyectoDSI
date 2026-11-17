@@ -7,11 +7,13 @@ import { updateLocalComercialSchema } from '../dtos/update.dto.js';
 import { localCategoriaSchema } from '../dtos/local_categoria.dto.js';
 import { controllerFor } from '../controllers/locales_categorias.controller.js';
 import { verifyToken, checkRole } from "../middlewares/auth.middleware.js";
+import { listarPublicosDelLocal } from '../controllers/menus.controller.js';
 
 const router = Router();
 const categorias = controllerFor('comercial');
 router.get('/', listar);
 router.get('/:id/categorias', categorias.listar);
+router.get('/:id/menus', listarPublicosDelLocal);
 router.post('/:id/categorias', verifyToken, checkRole(['Administrador', 'Propietario']), validate(localCategoriaSchema), categorias.crear);
 router.delete('/:id/categorias/:idCategoria', verifyToken, checkRole(['Administrador', 'Propietario']), categorias.eliminar);
 router.get('/:id', obtener);

@@ -16,7 +16,7 @@ test('el propietario consulta, crea y elimina únicamente cierres de su local', 
   pool.query = async (sql, values = []) => {
     calls.push({ sql, values })
     if (sql === 'BEGIN' || sql === 'COMMIT' || sql === 'ROLLBACK') return { rows: [] }
-    if (sql.includes('FOR UPDATE OF c') || sql.includes('SELECT c.id_local FROM public.locales_comerciales c')) {
+    if (sql.startsWith('SELECT l.id_local FROM public.locales l')) {
       const own = values[0] === 5 && (values[1] === true || values[2] === 2)
       return { rows: own ? [{ id_local: 5 }] : [] }
     }
@@ -34,10 +34,10 @@ test('el propietario consulta, crea y elimina únicamente cierres de su local', 
       return { rows: [dia] }
     }
     if (sql.includes('DELETE FROM public.dias_cerrados_locales')) {
-      const allowed = values[0] === 5 && (values[2] === true || values[3] === 2)
-      const existing = allowed ? dias.get(values[1]) : null
-      if (existing) dias.delete(values[1])
-      return { rows: existing ? [{ id_cierre: values[1] }] : [] }
+      const allowed = values[0] === 5 && (values[1] === true || values[2] === 2)
+      const existing = allowed ? dias.get(values[3]) : null
+      if (existing) dias.delete(values[3])
+      return { rows: existing ? [{ id_cierre: values[3] }] : [] }
     }
     throw new Error(`Consulta inesperada: ${sql}`)
   }

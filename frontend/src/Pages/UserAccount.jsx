@@ -193,6 +193,7 @@ export default function UserAccount() {
                         <p className="mt-2 text-sm leading-6 text-[var(--color-text-muted)]">Consulta los datos y documentos de los negocios que esperan aprobación.</p>
                         <Link to="/admin/solicitudes" className="mt-5 inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-[var(--color-primary)] px-5 py-3 text-sm font-bold text-white hover:bg-[var(--color-primary-deep)]">Revisar solicitudes <ArrowRight size={17} aria-hidden="true" /></Link>
                         <Link to="/gestion-establecimientos" className="ml-0 mt-3 inline-flex min-h-11 items-center gap-2 px-2 text-sm font-bold text-[var(--color-primary)] hover:text-[var(--color-accent)] sm:ml-3">Gestionar establecimientos <ArrowRight size={17} aria-hidden="true" /></Link>
+                        <Link to="/gestion-lugares" className="ml-0 mt-3 inline-flex min-h-11 items-center gap-2 px-2 text-sm font-bold text-[var(--color-primary)] hover:text-[var(--color-accent)] sm:ml-3">Gestionar lugares turísticos <ArrowRight size={17} aria-hidden="true" /></Link>
                     </section>
                     )}
                     {rol !== 'Administrador' && actividadCargada && !tieneSolicitudes && !tieneEstablecimientos && (

@@ -12,7 +12,7 @@ const statusText = {
   complete: 'Lista',
 }
 
-export default function LocalImagesGallery({ idLocal, token, readOnly = false }) {
+export default function LocalImagesGallery({ idLocal, token, readOnly = false, basePath = '/gestion-establecimientos' }) {
   const [images, setImages] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -23,12 +23,12 @@ export default function LocalImagesGallery({ idLocal, token, readOnly = false })
 
   useEffect(() => {
     const controller = new AbortController()
-    getLocalImages(token, idLocal, controller.signal)
+    getLocalImages(token, idLocal, controller.signal, basePath)
       .then(data => { if (!controller.signal.aborted) setImages(data) })
       .catch(() => { if (!controller.signal.aborted) setError('No se pudieron cargar las imágenes. Actualiza para reintentar.') })
       .finally(() => { if (!controller.signal.aborted) setLoading(false) })
     return () => controller.abort()
-  }, [idLocal, token])
+  }, [idLocal, token, basePath])
 
   async function selectFiles(event) {
     const files = Array.from(event.target.files || [])
@@ -44,9 +44,10 @@ export default function LocalImagesGallery({ idLocal, token, readOnly = false })
     const queue = files.map(file => ({ id: crypto.randomUUID(), file }))
     setTasks(queue.map(({ id, file }) => ({ id, name: file.name, status: 'En espera' })))
     let next = 0
+    let rateLimited = false
     const update = (id, change) => setTasks(current => current.map(task => task.id === id ? { ...task, ...change } : task))
     const worker = async () => {
-      while (next < queue.length) {
+      while (!rateLimited && next < queue.length) {
         const { id, file } = queue[next++]
         try {
           if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type))
@@ -58,11 +59,21 @@ export default function LocalImagesGallery({ idLocal, token, readOnly = false })
           setImages(current => [result.image, ...current])
         } catch (uploadError) {
           update(id, { status: 'Error', error: uploadError.message || 'No se pudo subir esta imagen.' })
+          if (uploadError.status === 429) {
+            rateLimited = true
+            setError('Se alcanzó el límite de subidas. Vuelve a intentarlo más tarde con las imágenes pendientes.')
+          }
         }
       }
     }
     try {
       await Promise.all(Array.from({ length: Math.min(3, queue.length) }, worker))
+      if (rateLimited) {
+        const pendingIds = new Set(queue.slice(next).map(({ id }) => id))
+        setTasks(current => current.map(task => pendingIds.has(task.id)
+          ? { ...task, status: 'Pendiente', error: 'No se intentó subir; vuelve a seleccionar esta imagen más tarde.' }
+          : task))
+      }
     } finally {
       busy.current = false
       setUploading(false)
@@ -74,7 +85,7 @@ export default function LocalImagesGallery({ idLocal, token, readOnly = false })
     setRemoving(image.id_imagen)
     setError('')
     try {
-      await deleteLocalImage(token, idLocal, image.id_imagen)
+      await deleteLocalImage(token, idLocal, image.id_imagen, basePath)
       setImages(current => current.filter(item => item.id_imagen !== image.id_imagen))
     } catch (removeError) {
       setError(removeError.message || 'No se pudo eliminar la imagen.')

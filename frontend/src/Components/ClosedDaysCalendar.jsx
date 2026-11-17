@@ -9,7 +9,7 @@ const dateFromIso = value => new Date(`${value}T00:00:00Z`)
 const pad = value => String(value).padStart(2, '0')
 const monthOf = value => value.slice(0, 7)
 
-export default function ClosedDaysCalendar({ idLocal, token, readOnly, compact = false }) {
+export default function ClosedDaysCalendar({ idLocal, token, readOnly, compact = false, basePath = '/gestion-establecimientos' }) {
   const [window, setWindow] = useState(null)
   const [days, setDays] = useState([])
   const [month, setMonth] = useState('')
@@ -23,7 +23,7 @@ export default function ClosedDaysCalendar({ idLocal, token, readOnly, compact =
 
   useEffect(() => {
     const controller = new AbortController()
-    getClosedDays(token, idLocal, controller.signal).then(data => {
+    getClosedDays(token, idLocal, controller.signal, basePath).then(data => {
       if (controller.signal.aborted) return
       setWindow({ min: data.fecha_minima, max: data.fecha_maxima })
       setDays(data.dias_cerrados)
@@ -39,7 +39,7 @@ export default function ClosedDaysCalendar({ idLocal, token, readOnly, compact =
       if (!controller.signal.aborted) setLoading(false)
     })
     return () => controller.abort()
-  }, [idLocal, token, reload])
+  }, [idLocal, token, reload, basePath])
 
   const selectedDay = days.find(day => day.fecha === selected)
   const [year, monthNumber] = month ? month.split('-').map(Number) : [0, 0]
@@ -70,7 +70,7 @@ export default function ClosedDaysCalendar({ idLocal, token, readOnly, compact =
     setError('')
     setNotice('')
     try {
-      const created = await createClosedDay(token, idLocal, { fecha: selected, motivo: reason.trim() || null })
+      const created = await createClosedDay(token, idLocal, { fecha: selected, motivo: reason.trim() || null }, basePath)
       setDays(current => [...current, created].sort((a, b) => a.fecha.localeCompare(b.fecha)))
       setReason('')
       setNotice('Día marcado como cerrado. El cambio ya está guardado.')
@@ -88,7 +88,7 @@ export default function ClosedDaysCalendar({ idLocal, token, readOnly, compact =
     setError('')
     setNotice('')
     try {
-      await deleteClosedDay(token, idLocal, selectedDay.id_cierre)
+      await deleteClosedDay(token, idLocal, selectedDay.id_cierre, basePath)
       setDays(current => current.filter(day => day.id_cierre !== selectedDay.id_cierre))
       setNotice('El cierre se quitó. El cambio ya está guardado.')
     } catch (removeError) {

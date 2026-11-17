@@ -24,6 +24,7 @@ import imagesRoutes from "./images.routes.js"
 import uploadsRoutes from "./uploads.routes.js"
 import gestionEstablecimientosRoutes from './gestion_establecimientos.routes.js'
 import menuCategoriesRoutes from "./menu-categories.routes.js"
+import gestionLugaresRoutes from './gestion_lugares.routes.js'
 
 const router = Router()
 router.get("/health", (req, res) => res.json({ success: true, status: "ok" }))
@@ -38,6 +39,7 @@ router.use("/imagenes_lugares", imagenes_lugaresRoutes)
 router.use("/imagenes", imagesRoutes)
 router.use("/uploads", uploadsRoutes)
 router.use('/gestion-establecimientos', gestionEstablecimientosRoutes)
+router.use('/gestion-lugares', gestionLugaresRoutes)
 router.use("/horarios", horariosRoutes)
 router.use("/resenas", resenasRoutes)
 router.use("/favoritos", favoritosRoutes)

@@ -130,7 +130,7 @@ export async function authorizeUpload(user, input, deps) {
   }
   if (kind === "image" && !config.staging)
     throw new AppError("Falta un bucket privado de staging para imágenes", 503)
-  limitAuthorizations(user.id)
+  limitAuthorizations(user.id, user.rol)
   const id = randomUUID()
   const bucket = kind === "image" ? config.staging : config.documents
   const path = ownPath(

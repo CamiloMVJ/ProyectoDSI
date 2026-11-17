@@ -1,5 +1,4 @@
 import * as repository from "../repositories/dias_cerrados_locales.repository.js"
-import * as establecimientos from "../repositories/gestion_establecimientos.repository.js"
 import { AppError } from "../errors/app-error.js"
 import { execute, parseId, withTransaction } from "./service-utils.js"
 
@@ -38,7 +37,7 @@ export function create(idLocal, data, user) {
   return execute(() =>
     withTransaction(async (client) => {
       if (
-        !(await establecimientos.lock(
+        !(await repository.lockManagedLocal(
           idLocal,
           user.id,
           user.rol === "Administrador",

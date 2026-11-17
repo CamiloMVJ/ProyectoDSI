@@ -9,6 +9,6 @@ import { verifyToken, checkRole } from "../middlewares/auth.middleware.js";
 const router = Router();
 router.get('/', listar);
 router.get('/:id', obtener);
-router.post('/', verifyToken, checkRole(['Administrador', 'Propietario']), validate(complejoTuristicoSchema), crear);
-router.patch('/:id', verifyToken, checkRole(['Administrador', 'Propietario']), validate(updateComplejoTuristicoSchema), actualizar);
+router.post('/', verifyToken, checkRole(['Administrador']), validate(complejoTuristicoSchema), crear);
+router.patch('/:id', verifyToken, checkRole(['Administrador']), validate(updateComplejoTuristicoSchema), actualizar);
 export default router;

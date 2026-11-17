@@ -1,15 +1,11 @@
 import { pool } from "../db/db.js"
+import { managedLocalSelection } from "./managed-locals.repository.js"
+export { findManagedLocal } from "./managed-locals.repository.js"
 
-export async function findManagedLocal(
-  idLocal,
-  userId,
-  isAdmin,
-  client = pool,
-) {
+export async function lockManagedLocal(idLocal, userId, isAdmin, client) {
   const { rows } = await client.query(
-    `SELECT c.id_local FROM public.locales_comerciales c
-     JOIN public.propietarios_negocios p ON p.id_propietario = c.id_dueno
-     WHERE c.id_local = $1 AND ($2::boolean OR p.id_usuario = $3)`,
+    `SELECT l.id_local FROM public.locales l
+     WHERE l.id_local IN (${managedLocalSelection}) FOR UPDATE OF l`,
     [idLocal, isAdmin, userId],
   )
   return rows[0] ?? null
@@ -53,11 +49,9 @@ export async function remove(
 ) {
   const { rows } = await client.query(
     `DELETE FROM public.dias_cerrados_locales d
-     USING public.locales_comerciales c, public.propietarios_negocios p
-     WHERE d.id_cierre = $2 AND d.id_local = $1 AND c.id_local = d.id_local
-       AND p.id_propietario = c.id_dueno AND ($3::boolean OR p.id_usuario = $4)
+     WHERE d.id_cierre = $4 AND d.id_local IN (${managedLocalSelection})
      RETURNING d.id_cierre`,
-    [idLocal, idCierre, isAdmin, userId],
+    [idLocal, isAdmin, userId, idCierre],
   )
   return rows[0] ?? null
 }
