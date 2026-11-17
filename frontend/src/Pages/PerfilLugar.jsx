@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { MapPin, Clock, DollarSign, CheckCircle2, Image as ImageIcon, Loader2 } from 'lucide-react';
+import { MapPin, Clock, DollarSign, CheckCircle2, Image as ImageIcon, Loader2, UtensilsCrossed } from 'lucide-react';
 
 import Navbar from '../Components/Navbar';
 import Footer from '../Components/Footer';
+import ReadOnlyMenus from '../Components/ReadOnlyMenus.jsx';
 import { getPerfilLugar } from '../services/PerfilLugar.api.js';
+import '../css/gestion-establecimientos.css';
 
 const PerfilLugar = () => {
   const { id } = useParams();
@@ -141,6 +143,11 @@ const PerfilLugar = () => {
                 </div>
               </section>
             )}
+
+            {lugar.es_comercial && <section aria-labelledby="perfil-menu-title">
+              <h2 id="perfil-menu-title" className="flex items-center gap-2 text-2xl font-bold text-[#3A3A3A] mb-4 border-b border-gray-200/60 pb-2"><UtensilsCrossed size={24} className="text-[#C45111]" aria-hidden="true" /> Menú</h2>
+              {lugar.menus.length ? <ReadOnlyMenus menus={lugar.menus} grouped /> : <div className="rounded-2xl border border-[#d8e1d5] bg-white p-6 text-[#526554]">Este local aún no tiene un menú disponible.</div>}
+            </section>}
           </div>
 
           {/* Columna Derecha (Tarjetas de Información) */}
