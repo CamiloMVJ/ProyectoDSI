@@ -69,9 +69,11 @@ export default function RegistroNegocioSINATUR() {
   }
 
   function toggleCategory(id) {
-    setValues(current => ({ ...current, categorias: current.categorias.includes(id)
-      ? current.categorias.filter(value => value !== id)
-      : [...current.categorias, id] }))
+    setValues(current => ({
+      ...current, categorias: current.categorias.includes(id)
+        ? current.categorias.filter(value => value !== id)
+        : [...current.categorias, id]
+    }))
   }
 
   function removeDocument(key) {
