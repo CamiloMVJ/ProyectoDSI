@@ -241,7 +241,7 @@
     gap: 8px
 }
 
-.ge-actions button {
+.ge-actions button, .ge-actions a {
     height: 34px;
     width: 35px;
     display: grid;
@@ -253,7 +253,7 @@
     cursor: pointer
 }
 
-.ge-actions button:hover {
+.ge-actions button:hover, .ge-actions a:hover {
     background: #dcebd9
 }
 
@@ -337,6 +337,17 @@
     overflow: hidden;
     box-shadow: 0 25px 70px #09231870
 }
+
+.ge-editor-surface { padding-bottom: 36px }
+.ge-editor-card { width: 100%; background: #fffefa; border: 1px solid #e1eadf; border-radius: 24px; padding: clamp(22px, 3vw, 42px); box-shadow: 0 14px 35px #18362416 }
+.ge-editor-card .ge-form { overflow: visible; padding-right: 0; scrollbar-gutter: auto }
+.ge-editor-card .ge-dialog-header { align-items: flex-start; margin-bottom: 24px; padding-bottom: 23px }
+.ge-editor-card .ge-dialog-header h2 { flex-wrap: wrap; row-gap: 5px; font: 700 clamp(22px, 2.3vw, 30px)/1.25 Georgia, serif }
+.ge-editor-name { flex-basis: 100%; margin-left: 35px; font: 600 14px/1.4 system-ui, sans-serif; color: #627264 }
+.ge-editor-card .ge-form-intro { max-width: 68ch }
+.ge-editor-card .ge-form-section { padding: clamp(22px, 3vw, 36px); margin-bottom: 26px }
+.ge-editor-card .ge-form-grid { gap: 24px 30px }
+.ge-editor-card .ge-dialog-actions { padding: 18px 0; margin-top: 28px }
 
 .ge-form,
 .ge-confirm {
@@ -628,6 +639,12 @@
 }
 
 @media(max-width:700px) {
+    .ge-editor-card { padding: 18px 15px; border-radius: 18px }
+    .ge-editor-card .ge-form-section { padding: 18px 15px }
+    .ge-editor-card .ge-dialog-header { flex-wrap: wrap }
+    .ge-editor-name { margin-left: 0 }
+    .ge-closed-layout { grid-template-columns: 1fr }
+    .ge-closed-detail { min-height: 185px }
     .ge-hours-row { grid-template-columns: repeat(2, minmax(0, 1fr)) }
     .ge-hours-row .ge-field:first-child { grid-column: 1 / -1 }
     .ge-main {

@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Link, Navigate } from 'react-router-dom'
+import { Link, Navigate, useLocation, useNavigate, useParams } from 'react-router-dom'
 import {
   Store, Search, Eye, Pencil, EyeOff, X, ChevronLeft, ChevronRight,
   MapPin, Mail, Phone, UserRound, FileText, Tag, Save, ArrowLeft, AlertTriangle, LoaderCircle, ClipboardList, UtensilsCrossed, Plus, Trash2, Clock3
 } from 'lucide-react'
 import Navbar from '../Components/Navbar.jsx'
 import Footer from '../Components/Footer.jsx'
+import ClosedDaysCalendar from '../Components/ClosedDaysCalendar.jsx'
 import { useAuth } from '../hooks/useAuth.js'
 import { getDepartments, getTouristComplexes } from '../services/businessRequests.api.js'
 import { getManagedEstablishments, getMenuCategories, saveManagedEstablishment } from '../services/establishments.api.js'
@@ -96,6 +97,9 @@ function TextField({ label, icon: Icon, value, onChange, disabled, required = fa
 
 export default function GestionEstablecimientosVista() {
   const { sesion } = useAuth()
+  const { id: editId } = useParams()
+  const navigate = useNavigate()
+  const location = useLocation()
   const esAdministrador = sesion?.usuario.rol === 'Administrador'
   const [negocios, setNegocios] = useState([])
   const [departamentos, setDepartamentos] = useState([])
@@ -123,7 +127,14 @@ export default function GestionEstablecimientosVista() {
       getMenuCategories(controller.signal),
     ]).then(([locales, regiones, lugares, categorias]) => {
       if (controller.signal.aborted) return
-      if (locales.status === 'fulfilled') { setNegocios(locales.value); setPageError('') }
+      if (locales.status === 'fulfilled') {
+        setNegocios(locales.value)
+        if (editId) {
+          const negocio = locales.value.find(item => String(item.id_local) === editId)
+          setForm(negocio ? toForm(negocio) : null)
+        }
+        setPageError('')
+      }
       else setPageError('No se pudieron cargar los establecimientos. Actualiza la página para reintentar.')
       if (regiones.status === 'fulfilled') setDepartamentos(regiones.value)
       if (lugares.status === 'fulfilled') setComplejos(lugares.value)
@@ -133,7 +144,7 @@ export default function GestionEstablecimientosVista() {
       if (!controller.signal.aborted) setCargando(false)
     })
     return () => controller.abort()
-  }, [sesion])
+  }, [sesion, editId])
 
   useEffect(() => {
     if (!modal) return
@@ -148,6 +159,8 @@ export default function GestionEstablecimientosVista() {
   const totalPaginas = Math.max(1, Math.ceil(filtrados.length / tamPagina))
   const paginaActual = Math.min(pagina, totalPaginas)
   const visibles = filtrados.slice((paginaActual - 1) * tamPagina, paginaActual * tamPagina)
+  const editBusiness = editId ? negocios.find(negocio => String(negocio.id_local) === editId) : null
+  const activeBusiness = editBusiness || modal?.negocio
 
   if (!sesion) return <Navigate to="/ingresar" replace state={{ from: '/gestion-establecimientos' }} />
   if (!['Administrador', 'Propietario', 'Usuario'].includes(sesion.usuario.rol)) return <Navigate to="/account" replace />
@@ -183,7 +196,7 @@ export default function GestionEstablecimientosVista() {
 
   async function guardar(event, retirar = false) {
     event?.preventDefault()
-    if (guardando || !modal) return
+    if (guardando || !activeBusiness) return
     if (!form.es_independiente && !form.id_complejo_padre) {
       setModalError('Selecciona el complejo turístico.')
       return
@@ -213,10 +226,11 @@ export default function GestionEstablecimientosVista() {
     setGuardando(true)
     setModalError('')
     try {
-      const actualizado = await saveManagedEstablishment(sesion.token, modal.negocio.id_local, toPayload(retirar ? { ...form, esta_publicado: false } : form))
+      const actualizado = await saveManagedEstablishment(sesion.token, activeBusiness.id_local, toPayload(retirar ? { ...form, esta_publicado: false } : form))
       setNegocios(actuales => actuales.map(negocio => negocio.id_local === actualizado.id_local ? actualizado : negocio))
       setMensaje(retirar ? 'El establecimiento se retiró de la publicación. Sus datos siguen disponibles para editarlo.' : 'Los cambios se guardaron en la base de datos.')
-      setModal(null)
+      if (editId) navigate('/gestion-establecimientos', { state: { saved: true } })
+      else setModal(null)
     } catch (saveError) {
       setModalError(saveError.message || 'No se pudieron guardar los cambios.')
     } finally {
@@ -224,41 +238,40 @@ export default function GestionEstablecimientosVista() {
     }
   }
 
-  const soloLectura = modal?.tipo === 'ver'
-  const etiqueta = modal?.tipo === 'editar' ? 'Editar establecimiento' : soloLectura ? 'Detalles del establecimiento' : 'Retirar de publicación'
+  const soloLectura = !editId && modal?.tipo === 'ver'
+  const etiqueta = editId ? 'Editar establecimiento' : soloLectura ? 'Detalles del establecimiento' : 'Retirar de publicación'
 
   return <div id="inicio" className="ge-page">
     <Navbar />
     <main className="ge-main">
-      <header className="ge-intro"><p className="ge-kicker">GESTIÓN DE ESTABLECIMIENTOS</p><h1>{esAdministrador ? 'Administra los negocios registrados' : 'Administra tus establecimientos'}</h1></header>
-      <section className="ge-panel" aria-label="Gestión de establecimientos">
+      <header className="ge-intro"><p className="ge-kicker">GESTIÓN DE ESTABLECIMIENTOS</p><h1>{editId ? 'Edita tu establecimiento' : esAdministrador ? 'Administra los negocios registrados' : 'Administra tus establecimientos'}</h1></header>
+      {!editId ? <section className="ge-panel" aria-label="Gestión de establecimientos">
         <div className="ge-panel-heading"><span className="ge-main-icon"><Store size={30} aria-hidden="true" /></span><div><h2>Gestión de establecimientos</h2><p>{esAdministrador ? 'Revisa los locales, actualiza su información y decide cuáles se muestran al público.' : 'Consulta y actualiza la información de tus locales y decide cuáles se muestran al público.'}</p></div></div>
         <div className="ge-table-card">
           <div className="ge-list-head"><h3><Store size={24} aria-hidden="true" /> {esAdministrador ? 'Listado de establecimientos' : 'Mis establecimientos'}</h3>{esAdministrador && <Link className="ge-button ge-primary" to="/admin/solicitudes"><ClipboardList size={18} aria-hidden="true" /> Revisar solicitudes</Link>}</div>
           <label className="ge-search"><Search size={20} aria-hidden="true" /><input value={buscar} onChange={event => { setBuscar(event.target.value); setPagina(1) }} placeholder="Buscar establecimiento, RUC o propietario..." aria-label="Buscar establecimiento" /></label>
           {mensaje && <div className="ge-notice" role="status">{mensaje}</div>}
+          {location.state?.saved && <div className="ge-notice" role="status">Los cambios se guardaron en la base de datos.</div>}
           {pageError && <div className="ge-error" role="alert">{pageError}</div>}
           {catalogNotice && <div className="ge-error" role="status">{catalogNotice}</div>}
           {cargando ? <p className="ge-loading" role="status"><LoaderCircle className="ge-spinner" size={20} aria-hidden="true" /> Cargando establecimientos…</p> : !pageError && <>
             <div className="ge-table-wrap"><table className="ge-table"><thead><tr><th>Nombre del negocio</th><th>Propietario</th><th>RUC</th><th>Publicación</th><th>Acciones</th></tr></thead><tbody>
-              {visibles.map(negocio => <tr key={negocio.id_local}><td><span className="ge-business"><Store size={18} aria-hidden="true" /><strong>{negocio.nombre}</strong></span></td><td>{negocio.propietario}</td><td>{negocio.codigo_ruc}</td><td><span className={`ge-status ${negocio.esta_publicado ? 'ge-active' : 'ge-inactive'}`}>{negocio.esta_publicado ? 'Publicado' : 'Sin publicar'}</span></td><td><div className="ge-actions"><button type="button" title="Consultar" aria-label={`Consultar ${negocio.nombre}`} onClick={() => abrir('ver', negocio)}><Eye size={18} /></button><button type="button" title="Editar" aria-label={`Editar ${negocio.nombre}`} onClick={() => abrir('editar', negocio)}><Pencil size={18} /></button>{negocio.esta_publicado && <button type="button" className="ge-delete-icon" title="Retirar de publicación" aria-label={`Retirar ${negocio.nombre} de publicación`} onClick={() => abrir('retirar', negocio)}><EyeOff size={18} /></button>}</div></td></tr>)}
+              {visibles.map(negocio => <tr key={negocio.id_local}><td><span className="ge-business"><Store size={18} aria-hidden="true" /><strong>{negocio.nombre}</strong></span></td><td>{negocio.propietario}</td><td>{negocio.codigo_ruc}</td><td><span className={`ge-status ${negocio.esta_publicado ? 'ge-active' : 'ge-inactive'}`}>{negocio.esta_publicado ? 'Publicado' : 'Sin publicar'}</span></td><td><div className="ge-actions"><button type="button" title="Consultar" aria-label={`Consultar ${negocio.nombre}`} onClick={() => abrir('ver', negocio)}><Eye size={18} /></button><Link to={`/gestion-establecimientos/${negocio.id_local}/editar`} title="Editar" aria-label={`Editar ${negocio.nombre}`} onClick={() => setForm(toForm(negocio))}><Pencil size={18} /></Link>{negocio.esta_publicado && <button type="button" className="ge-delete-icon" title="Retirar de publicación" aria-label={`Retirar ${negocio.nombre} de publicación`} onClick={() => abrir('retirar', negocio)}><EyeOff size={18} /></button>}</div></td></tr>)}
               {!visibles.length && <tr><td colSpan="5" className="ge-empty">{buscar.trim() ? 'No hay establecimientos que coincidan con tu búsqueda.' : esAdministrador ? 'Todavía no hay establecimientos registrados. Aprueba una solicitud para crear el primero.' : 'Todavía no tienes establecimientos registrados. Consulta el estado de tus solicitudes en Mi cuenta.'}</td></tr>}
             </tbody></table></div>
             <div className="ge-table-bottom"><span>Mostrando {filtrados.length ? (paginaActual - 1) * tamPagina + 1 : 0}–{Math.min(paginaActual * tamPagina, filtrados.length)} de {filtrados.length} establecimientos</span><nav className="ge-pages" aria-label="Paginación"><button type="button" disabled={paginaActual === 1} onClick={() => setPagina(p => p - 1)} aria-label="Página anterior"><ChevronLeft size={18} /></button>{Array.from({ length: totalPaginas }, (_, i) => <button type="button" key={i} aria-current={paginaActual === i + 1 ? 'page' : undefined} className={paginaActual === i + 1 ? 'ge-page-current' : ''} onClick={() => setPagina(i + 1)}>{i + 1}</button>)}<button type="button" disabled={paginaActual === totalPaginas} onClick={() => setPagina(p => p + 1)} aria-label="Página siguiente"><ChevronRight size={18} /></button></nav></div>
           </>}
         </div>
-      </section>
-    </main>
-    <Footer />
-    {modal && form && <div className="ge-overlay" onMouseDown={event => { if (event.target === event.currentTarget) cerrar() }}><section className="ge-dialog" role="dialog" aria-modal="true" aria-labelledby="ge-dialog-title"><div className="ge-dialog-header"><h2 id="ge-dialog-title">{modal.tipo === 'retirar' ? <AlertTriangle size={25} aria-hidden="true" /> : <Store size={25} aria-hidden="true" />} {etiqueta}</h2><button type="button" className="ge-close" onClick={cerrar} disabled={guardando} aria-label="Cerrar"><X size={21} /></button></div>
-      {modal.tipo === 'retirar' ? <div className="ge-confirm"><p>¿Deseas retirar <strong>{modal.negocio.nombre}</strong> de la búsqueda pública?</p><p>El registro y sus servicios se conservan. Podrás volver a publicarlo desde «Editar».</p>{modalError && <div className="ge-error" role="alert">{modalError}</div>}<div className="ge-dialog-actions"><button type="button" className="ge-button ge-outline" onClick={cerrar} disabled={guardando}>Cancelar</button><button type="button" className="ge-button ge-danger" onClick={() => guardar(null, true)} disabled={guardando}>{guardando ? <LoaderCircle className="ge-spinner" size={18} /> : <EyeOff size={18} />} Retirar de publicación</button></div></div> :
+      </section> : cargando ? <p className="ge-loading" role="status"><LoaderCircle className="ge-spinner" size={20} /> Cargando establecimiento…</p> : pageError ? <div className="ge-error" role="alert">{pageError}</div> : !editBusiness ? <div className="ge-table-card"><p>No se encontró este establecimiento entre los locales que puedes administrar.</p><Link className="ge-button ge-outline" to="/gestion-establecimientos"><ArrowLeft size={17} /> Volver al listado</Link></div> : null}
+    {(modal || editBusiness) && form && <div className={editId ? 'ge-editor-surface' : 'ge-overlay'} onMouseDown={event => { if (!editId && event.target === event.currentTarget) cerrar() }}><section className={editId ? 'ge-editor-card' : 'ge-dialog'} role={editId ? undefined : 'dialog'} aria-modal={editId ? undefined : 'true'} aria-labelledby="ge-dialog-title"><div className="ge-dialog-header"><h2 id="ge-dialog-title">{modal?.tipo === 'retirar' ? <AlertTriangle size={25} aria-hidden="true" /> : <Store size={25} aria-hidden="true" />} {etiqueta}{editId && <span className="ge-editor-name">{editBusiness.nombre}</span>}</h2>{editId ? <Link className="ge-button ge-outline" to="/gestion-establecimientos"><ArrowLeft size={17} /> Volver</Link> : <button type="button" className="ge-close" onClick={cerrar} disabled={guardando} aria-label="Cerrar"><X size={21} /></button>}</div>
+      {modal?.tipo === 'retirar' ? <div className="ge-confirm"><p>¿Deseas retirar <strong>{modal.negocio.nombre}</strong> de la búsqueda pública?</p><p>El registro y sus servicios se conservan. Podrás volver a publicarlo desde «Editar».</p>{modalError && <div className="ge-error" role="alert">{modalError}</div>}<div className="ge-dialog-actions"><button type="button" className="ge-button ge-outline" onClick={cerrar} disabled={guardando}>Cancelar</button><button type="button" className="ge-button ge-danger" onClick={() => guardar(null, true)} disabled={guardando}>{guardando ? <LoaderCircle className="ge-spinner" size={18} /> : <EyeOff size={18} />} Retirar de publicación</button></div></div> :
         <form onSubmit={guardar} className="ge-form">
           <p className="ge-form-intro">{soloLectura ? 'Consulta la información de este establecimiento.' : 'Organiza la información que verán tus clientes. Los cambios se aplican al guardar.'}</p>
           <section className="ge-form-section" aria-labelledby="ge-identity-heading">
             <div className="ge-section-heading"><span className="ge-section-icon"><Store size={20} aria-hidden="true" /></span><div><h3 id="ge-identity-heading">Datos del negocio</h3><p>Identidad, responsable y formas de contacto</p></div></div>
             <div className="ge-form-grid">
-            <TextField label="Propietario" icon={UserRound} value={texto(modal.negocio.propietario)} disabled />
-            <TextField label="Correo de la cuenta" icon={Mail} value={texto(modal.negocio.correo_propietario)} disabled />
+            <TextField label="Propietario" icon={UserRound} value={texto(activeBusiness.propietario)} disabled />
+            <TextField label="Correo de la cuenta" icon={Mail} value={texto(activeBusiness.correo_propietario)} disabled />
             <TextField label="Nombre comercial" icon={Store} value={form.nombre} onChange={valor => actualizar('nombre', valor)} disabled={soloLectura} required maxLength={150} />
             <TextField label="Número RUC" icon={FileText} value={form.codigo_ruc} onChange={valor => actualizar('codigo_ruc', valor)} disabled={soloLectura} required maxLength={50} />
             <TextField label="Razón social" icon={FileText} value={form.razon_social} onChange={valor => actualizar('razon_social', valor)} disabled={soloLectura} maxLength={150} />
@@ -291,6 +304,7 @@ export default function GestionEstablecimientosVista() {
               {!soloLectura && <button type="button" className="ge-remove-service ge-hours-remove" aria-label={`Quitar horario ${index + 1}`} onClick={() => actualizar('horarios', form.horarios.filter((_, i) => i !== index))}><Trash2 size={17} /> Quitar</button>}
             </div>)}</div>
           </section>
+          <ClosedDaysCalendar key={activeBusiness.id_local} idLocal={activeBusiness.id_local} token={sesion.token} readOnly={soloLectura} />
           <section className="ge-form-section" aria-labelledby="ge-services-heading">
           <div className="ge-services-header"><div className="ge-section-heading"><span className="ge-section-icon"><Tag size={20} aria-hidden="true" /></span><div><h3 id="ge-services-heading">Servicios y precios</h3><p>Actividades o prestaciones adicionales del local</p></div></div>{!soloLectura && <button type="button" className="ge-button ge-add-service" onClick={() => actualizar('servicios', [...form.servicios, { nombre_servicio: '', precio: '', moneda: 'NIO' }])}><Plus size={17} /> Agregar servicio</button>}</div>
           <div className="ge-services">{form.servicios.length === 0 && <p className="ge-no-services">No hay servicios registrados.</p>}{form.servicios.map((servicio, index) => <div className="ge-service-row" key={servicio.id_servicio || `nuevo-${index}`}><Tag size={18} aria-hidden="true" />{soloLectura ? <><span>{servicio.nombre_servicio}</span><strong>{moneda(servicio.precio, servicio.moneda)}</strong></> : <><input aria-label={`Nombre del servicio ${index + 1}`} placeholder="Nombre del servicio" value={servicio.nombre_servicio} onChange={event => actualizarServicio(index, 'nombre_servicio', event.target.value)} minLength={2} maxLength={150} required /><input aria-label={`Precio del servicio ${index + 1}`} type="number" min="0" step="0.01" placeholder="Precio" value={servicio.precio} onChange={event => actualizarServicio(index, 'precio', event.target.value)} required /><select aria-label={`Moneda del servicio ${index + 1}`} value={servicio.moneda} onChange={event => actualizarServicio(index, 'moneda', event.target.value)}><option value="NIO">C$</option><option value="USD">US$</option></select><button type="button" className="ge-remove-service" aria-label={`Quitar servicio ${index + 1}`} onClick={() => actualizar('servicios', form.servicios.filter((_, i) => i !== index))}><EyeOff size={18} /></button></>}</div>)}</div>
@@ -319,8 +333,10 @@ export default function GestionEstablecimientosVista() {
             </div>)}</div>
           </section>
           {modalError && <div className="ge-error" role="alert">{modalError}</div>}
-          <div className="ge-dialog-actions"><button type="button" className="ge-button ge-outline" onClick={cerrar} disabled={guardando}><ArrowLeft size={17} /> Volver al listado</button>{soloLectura ? <>{form.esta_publicado && <Link className="ge-button ge-outline" to={`/buscar?tipo=local&q=${encodeURIComponent(form.nombre)}`}>Ver en búsqueda</Link>}<button type="button" className="ge-button ge-primary" onClick={() => { setModal(actual => ({ ...actual, tipo: 'editar' })); setModalError('') }}><Pencil size={17} /> Editar datos</button></> : <button type="submit" className="ge-button ge-orange" disabled={guardando}>{guardando ? <LoaderCircle className="ge-spinner" size={17} /> : <Save size={17} />} Guardar cambios</button>}</div>
+          <div className="ge-dialog-actions">{editId ? <Link className="ge-button ge-outline" to="/gestion-establecimientos"><ArrowLeft size={17} /> Cancelar</Link> : <button type="button" className="ge-button ge-outline" onClick={cerrar} disabled={guardando}><ArrowLeft size={17} /> Volver al listado</button>}{soloLectura ? <>{form.esta_publicado && <Link className="ge-button ge-outline" to={`/buscar?tipo=local&q=${encodeURIComponent(form.nombre)}`}>Ver en búsqueda</Link>}<Link className="ge-button ge-primary" to={`/gestion-establecimientos/${activeBusiness.id_local}/editar`} onClick={cerrar}><Pencil size={17} /> Editar datos</Link></> : <button type="submit" className="ge-button ge-orange" disabled={guardando}>{guardando ? <LoaderCircle className="ge-spinner" size={17} /> : <Save size={17} />} Guardar cambios</button>}</div>
         </form>}
     </section></div>}
+    </main>
+    <Footer />
   </div>
 }

@@ -29,6 +29,7 @@ const router = createBrowserRouter([
   { path: '/admin/solicitudes', element: <AdminBusinessRequests /> },
   { path: '/probar-subidas', element: <StorageUploadTest /> },
   { path: '/gestion-establecimientos', element: <GestionEstablecimientosVista /> },
+  { path: '/gestion-establecimientos/:id/editar', element: <GestionEstablecimientosVista /> },
 ])
 
 createRoot(document.getElementById('root')).render(
