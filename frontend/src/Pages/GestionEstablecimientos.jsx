@@ -1,8 +1,8 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, Navigate, useLocation, useNavigate, useParams } from 'react-router-dom'
 import {
   Store, Search, Eye, Pencil, EyeOff, X, ChevronLeft, ChevronRight,
-  MapPin, Mail, Phone, UserRound, FileText, Tag, Save, ArrowLeft, AlertTriangle, LoaderCircle, ClipboardList, UtensilsCrossed, Plus, Trash2, Clock3
+  MapPin, Mail, Phone, UserRound, FileText, Tag, Save, ArrowLeft, AlertTriangle, LoaderCircle, ClipboardList, UtensilsCrossed, Plus, Trash2, Clock3, CalendarDays
 } from 'lucide-react'
 import Navbar from '../Components/Navbar.jsx'
 import Footer from '../Components/Footer.jsx'
@@ -115,6 +115,10 @@ export default function GestionEstablecimientosVista() {
   const [pageError, setPageError] = useState('')
   const [catalogNotice, setCatalogNotice] = useState('')
   const [modalError, setModalError] = useState('')
+  const [closedDaysDialog, setClosedDaysDialog] = useState(null)
+  const closedDaysCloseRef = useRef(null)
+  const closedDaysDialogRef = useRef(null)
+  const closedDaysReturnFocusRef = useRef(null)
   const tamPagina = 5
 
   useEffect(() => {
@@ -147,11 +151,21 @@ export default function GestionEstablecimientosVista() {
   }, [sesion, editId])
 
   useEffect(() => {
-    if (!modal) return
+    if (!modal && !closedDaysDialog) return
     const previous = document.body.style.overflow
     document.body.style.overflow = 'hidden'
     return () => { document.body.style.overflow = previous }
-  }, [modal])
+  }, [modal, closedDaysDialog])
+
+  useEffect(() => {
+    if (!closedDaysDialog) return
+    closedDaysCloseRef.current?.focus()
+    const handleEscape = event => {
+      if (event.key === 'Escape') cerrarDiasCerrados()
+    }
+    document.addEventListener('keydown', handleEscape)
+    return () => document.removeEventListener('keydown', handleEscape)
+  }, [closedDaysDialog])
 
   const filtrados = useMemo(() => negocios.filter(negocio =>
     [negocio.nombre, negocio.propietario, negocio.codigo_ruc].join(' ').toLocaleLowerCase('es').includes(buscar.trim().toLocaleLowerCase('es'))
@@ -176,6 +190,35 @@ export default function GestionEstablecimientosVista() {
     if (guardando) return
     setModal(null)
     setModalError('')
+  }
+
+  function abrirDiasCerrados() {
+    closedDaysReturnFocusRef.current = document.activeElement
+    setClosedDaysDialog({ idLocal: activeBusiness.id_local, nombre: activeBusiness.nombre, readOnly: soloLectura })
+    if (modal) setModal(null)
+  }
+
+  function cerrarDiasCerrados() {
+    setClosedDaysDialog(null)
+    const previousFocus = closedDaysReturnFocusRef.current
+    requestAnimationFrame(() => {
+      if (previousFocus?.isConnected) previousFocus.focus()
+    })
+  }
+
+  function controlarFocoDiasCerrados(event) {
+    if (event.key !== 'Tab') return
+    const focusable = [...closedDaysDialogRef.current.querySelectorAll('button:not(:disabled), input:not(:disabled), a[href]')]
+    if (!focusable.length) return
+    const first = focusable[0]
+    const last = focusable.at(-1)
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault()
+      last.focus()
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault()
+      first.focus()
+    }
   }
 
   function actualizar(campo, valor) { setForm(actual => ({ ...actual, [campo]: valor })) }
@@ -268,7 +311,7 @@ export default function GestionEstablecimientosVista() {
         <form onSubmit={guardar} className="ge-form">
           <p className="ge-form-intro">{soloLectura ? 'Consulta la información de este establecimiento.' : 'Organiza la información que verán tus clientes. Los cambios se aplican al guardar.'}</p>
           <section className="ge-form-section" aria-labelledby="ge-identity-heading">
-            <div className="ge-section-heading"><span className="ge-section-icon"><Store size={20} aria-hidden="true" /></span><div><h3 id="ge-identity-heading">Datos del negocio</h3><p>Identidad, responsable y formas de contacto</p></div></div>
+            <div className="ge-identity-header"><div className="ge-section-heading"><span className="ge-section-icon"><Store size={20} aria-hidden="true" /></span><div><h3 id="ge-identity-heading">Datos del negocio</h3><p>Identidad, responsable y formas de contacto</p></div></div><button type="button" className="ge-button ge-primary" onClick={abrirDiasCerrados}><CalendarDays size={17} aria-hidden="true" /> {soloLectura ? 'Ver días de cierre' : 'Configurar días de cierre'}</button></div>
             <div className="ge-form-grid">
             <TextField label="Propietario" icon={UserRound} value={texto(activeBusiness.propietario)} disabled />
             <TextField label="Correo de la cuenta" icon={Mail} value={texto(activeBusiness.correo_propietario)} disabled />
@@ -304,7 +347,6 @@ export default function GestionEstablecimientosVista() {
               {!soloLectura && <button type="button" className="ge-remove-service ge-hours-remove" aria-label={`Quitar horario ${index + 1}`} onClick={() => actualizar('horarios', form.horarios.filter((_, i) => i !== index))}><Trash2 size={17} /> Quitar</button>}
             </div>)}</div>
           </section>
-          <ClosedDaysCalendar key={activeBusiness.id_local} idLocal={activeBusiness.id_local} token={sesion.token} readOnly={soloLectura} />
           <section className="ge-form-section" aria-labelledby="ge-services-heading">
           <div className="ge-services-header"><div className="ge-section-heading"><span className="ge-section-icon"><Tag size={20} aria-hidden="true" /></span><div><h3 id="ge-services-heading">Servicios y precios</h3><p>Actividades o prestaciones adicionales del local</p></div></div>{!soloLectura && <button type="button" className="ge-button ge-add-service" onClick={() => actualizar('servicios', [...form.servicios, { nombre_servicio: '', precio: '', moneda: 'NIO' }])}><Plus size={17} /> Agregar servicio</button>}</div>
           <div className="ge-services">{form.servicios.length === 0 && <p className="ge-no-services">No hay servicios registrados.</p>}{form.servicios.map((servicio, index) => <div className="ge-service-row" key={servicio.id_servicio || `nuevo-${index}`}><Tag size={18} aria-hidden="true" />{soloLectura ? <><span>{servicio.nombre_servicio}</span><strong>{moneda(servicio.precio, servicio.moneda)}</strong></> : <><input aria-label={`Nombre del servicio ${index + 1}`} placeholder="Nombre del servicio" value={servicio.nombre_servicio} onChange={event => actualizarServicio(index, 'nombre_servicio', event.target.value)} minLength={2} maxLength={150} required /><input aria-label={`Precio del servicio ${index + 1}`} type="number" min="0" step="0.01" placeholder="Precio" value={servicio.precio} onChange={event => actualizarServicio(index, 'precio', event.target.value)} required /><select aria-label={`Moneda del servicio ${index + 1}`} value={servicio.moneda} onChange={event => actualizarServicio(index, 'moneda', event.target.value)}><option value="NIO">C$</option><option value="USD">US$</option></select><button type="button" className="ge-remove-service" aria-label={`Quitar servicio ${index + 1}`} onClick={() => actualizar('servicios', form.servicios.filter((_, i) => i !== index))}><EyeOff size={18} /></button></>}</div>)}</div>
@@ -336,6 +378,7 @@ export default function GestionEstablecimientosVista() {
           <div className="ge-dialog-actions">{editId ? <Link className="ge-button ge-outline" to="/gestion-establecimientos"><ArrowLeft size={17} /> Cancelar</Link> : <button type="button" className="ge-button ge-outline" onClick={cerrar} disabled={guardando}><ArrowLeft size={17} /> Volver al listado</button>}{soloLectura ? <>{form.esta_publicado && <Link className="ge-button ge-outline" to={`/buscar?tipo=local&q=${encodeURIComponent(form.nombre)}`}>Ver en búsqueda</Link>}<Link className="ge-button ge-primary" to={`/gestion-establecimientos/${activeBusiness.id_local}/editar`} onClick={cerrar}><Pencil size={17} /> Editar datos</Link></> : <button type="submit" className="ge-button ge-orange" disabled={guardando}>{guardando ? <LoaderCircle className="ge-spinner" size={17} /> : <Save size={17} />} Guardar cambios</button>}</div>
         </form>}
     </section></div>}
+    {closedDaysDialog && <div className="ge-overlay ge-closed-overlay" onMouseDown={event => { if (event.target === event.currentTarget) cerrarDiasCerrados() }}><section ref={closedDaysDialogRef} className="ge-dialog ge-closed-popup" role="dialog" aria-modal="true" aria-labelledby="ge-closed-popup-title" onKeyDown={controlarFocoDiasCerrados}><div className="ge-dialog-header"><h2 id="ge-closed-popup-title"><CalendarDays size={25} aria-hidden="true" /> Días de cierre</h2><button ref={closedDaysCloseRef} type="button" className="ge-close" onClick={cerrarDiasCerrados} aria-label="Cerrar calendario"><X size={21} /></button></div><p className="ge-closed-popup-business">{closedDaysDialog.nombre}</p><div className="ge-closed-popup-body"><ClosedDaysCalendar key={closedDaysDialog.idLocal} idLocal={closedDaysDialog.idLocal} token={sesion.token} readOnly={closedDaysDialog.readOnly} compact /></div></section></div>}
     </main>
     <Footer />
   </div>

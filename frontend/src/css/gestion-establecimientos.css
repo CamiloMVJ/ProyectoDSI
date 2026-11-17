@@ -423,6 +423,16 @@
 .ge-hours-holiday input { width: 17px; height: 17px; accent-color: #28543a }
 .ge-hours-remove { min-height: 42px; padding: 0 4px; font-weight: 700 }
 
+.ge-identity-header { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px 20px; margin-bottom: 24px }
+.ge-identity-header .ge-section-heading { margin-bottom: 0 }
+.ge-identity-header .ge-button { flex-shrink: 0 }
+.ge-closed-popup { width: min(920px, 100%) }
+.ge-closed-popup .ge-dialog-header { margin-bottom: 10px }
+.ge-closed-popup-business { margin: 0 0 16px; color: #526554; font-size: 14px; font-weight: 700 }
+.ge-closed-popup-body { min-height: 0; overflow-y: auto; padding-right: 10px; scrollbar-gutter: stable }
+.ge-closed-popup .ge-closed-section { border: 0; padding: 0; margin: 0; background: transparent }
+.ge-closed-popup .ge-closed-range { margin: 0 0 18px }
+
 .ge-closed-section { background: linear-gradient(145deg, #fffefa, #f5f8f1) }
 .ge-closed-range { margin: -6px 0 20px; color: #526554; line-height: 1.6; font-size: 13px }
 .ge-closed-range strong { color: #28543a }
@@ -639,6 +649,9 @@
 }
 
 @media(max-width:700px) {
+    .ge-identity-header { align-items: flex-start }
+    .ge-identity-header .ge-button { width: 100% }
+    .ge-closed-popup-body { padding-right: 4px }
     .ge-editor-card { padding: 18px 15px; border-radius: 18px }
     .ge-editor-card .ge-form-section { padding: 18px 15px }
     .ge-editor-card .ge-dialog-header { flex-wrap: wrap }

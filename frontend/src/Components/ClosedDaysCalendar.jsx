@@ -9,7 +9,7 @@ const dateFromIso = value => new Date(`${value}T00:00:00Z`)
 const pad = value => String(value).padStart(2, '0')
 const monthOf = value => value.slice(0, 7)
 
-export default function ClosedDaysCalendar({ idLocal, token, readOnly }) {
+export default function ClosedDaysCalendar({ idLocal, token, readOnly, compact = false }) {
   const [window, setWindow] = useState(null)
   const [days, setDays] = useState([])
   const [month, setMonth] = useState('')
@@ -98,8 +98,8 @@ export default function ClosedDaysCalendar({ idLocal, token, readOnly }) {
     }
   }
 
-  return <section className="ge-form-section ge-closed-section" aria-labelledby="ge-closed-heading">
-    <div className="ge-section-heading"><span className="ge-section-icon"><CalendarDays size={20} aria-hidden="true" /></span><div><h3 id="ge-closed-heading">Días de cierre excepcional</h3><p>Marca los días en que no atenderás aunque tu horario regular indique lo contrario.</p></div></div>
+  return <section className="ge-form-section ge-closed-section" aria-labelledby={compact ? 'ge-closed-popup-title' : 'ge-closed-heading'}>
+    {!compact && <div className="ge-section-heading"><span className="ge-section-icon"><CalendarDays size={20} aria-hidden="true" /></span><div><h3 id="ge-closed-heading">Días de cierre excepcional</h3><p>Marca los días en que no atenderás aunque tu horario regular indique lo contrario.</p></div></div>}
     {loading && <p className="ge-loading" role="status"><LoaderCircle className="ge-spinner" size={18} aria-hidden="true" /> Cargando calendario…</p>}
     {!loading && !window && <div className="ge-closed-retry"><p className="ge-error" role="alert">{error}</p><button type="button" className="ge-button ge-outline" onClick={() => { setLoading(true); setReload(current => current + 1) }}>Reintentar</button></div>}
     {!loading && window && <>
