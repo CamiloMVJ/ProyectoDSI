@@ -169,16 +169,38 @@
     box-shadow: 0 0 0 3px #c4511126
 }
 
+.ge-place-filters { display: flex; align-items: stretch; gap: 12px; margin-bottom: 17px }
+.ge-place-filters .ge-search { flex: 1; min-width: 0; margin-bottom: 0 }
+.ge-place-type-filter { display: flex; align-items: center; gap: 10px; width: 270px; min-width: 0; padding: 0 12px; border: 1px solid #d8e1d5; border-radius: 10px; background: white; color: #526554; font-size: 13px; font-weight: 700 }
+.ge-place-type-filter select { flex: 1; min-width: 0; height: 44px; border: 0; background: transparent; color: #25382e; font-size: 14px; outline: 0; cursor: pointer }
+.ge-place-type-filter:focus-within { border-color: #c45111; box-shadow: 0 0 0 3px #c4511126 }
+
 .ge-table-wrap {
-    overflow: auto
+    overflow: auto;
+    min-height: 380px
 }
 
 .ge-table {
     border-collapse: collapse;
     width: 100%;
     min-width: 780px;
+    table-layout: fixed;
     font-size: 13px
 }
+
+.ge-table-business th:nth-child(1) { width: 26% }
+.ge-table-business th:nth-child(2) { width: 22% }
+.ge-table-business th:nth-child(3) { width: 20% }
+.ge-table-business th:nth-child(4) { width: 18% }
+.ge-table-business th:nth-child(5) { width: 14% }
+.ge-table-places th:nth-child(1) { width: 28% }
+.ge-table-places th:nth-child(2) { width: 22% }
+.ge-table-places th:nth-child(3) { width: 26% }
+.ge-table-places th:nth-child(4) { width: 12% }
+.ge-table-places th:nth-child(5) { width: 12% }
+
+.ge-table thead tr { height: 46px }
+.ge-table tbody tr { height: 64px }
 
 .ge-table th {
     background: #edf3e9;
@@ -198,14 +220,23 @@
 
 .ge-table td {
     border-bottom: 1px solid #e6ebe4;
-    padding: 14px 16px
+    padding: 14px 16px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap
 }
+
+.ge-table td.ge-empty { white-space: normal }
 
 .ge-business {
     display: inline-flex;
     align-items: center;
-    gap: 11px
+    gap: 11px;
+    max-width: 100%;
+    min-width: 0
 }
+
+.ge-business strong { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap }
 
 .ge-business svg {
     color: #28543a;
@@ -261,6 +292,8 @@
 .ge-actions button:hover, .ge-actions a:hover {
     background: #dcebd9
 }
+
+.ge-list-head > .ge-actions a { display: inline-flex; width: auto; height: auto; min-height: 40px }
 
 .ge-actions .ge-delete-icon {
     background: #fff0e4;
@@ -472,6 +505,9 @@
 .ge-read-menu[open] .ge-read-menu-chevron { transform: rotate(180deg) }
 .ge-read-menu-body { padding: 0 18px 18px; border-top: 1px solid #e1eadf }
 .ge-read-menu-description { margin: 15px 0 0; color: #627264; font-size: 13px; line-height: 1.5; white-space: pre-wrap }
+.ge-read-menu-group { padding-top: 16px }
+.ge-read-menu-group h4 { margin: 0; color: #263f32; font: 700 16px/1.4 Georgia, serif }
+.ge-read-menu-group .ge-read-items { padding-top: 10px }
 .ge-read-menu-search { display: flex; align-items: center; gap: 9px; margin: 16px 0; padding: 0 12px; min-height: 42px; border: 1px solid #d8e1d5; border-radius: 10px; background: white; color: #627264 }
 .ge-read-menu-search:focus-within { border-color: #c45111; box-shadow: 0 0 0 3px #c4511126 }
 .ge-read-menu-search input { flex: 1; min-width: 0; border: 0; outline: 0; background: transparent; color: #25382e; font: inherit; font-size: 13px }
@@ -742,6 +778,8 @@
 }
 
 @media(max-width:700px) {
+    .ge-place-filters { flex-direction: column }
+    .ge-place-type-filter { width: 100% }
     .ge-identity-header { align-items: flex-start }
     .ge-identity-header .ge-button { width: 100% }
     .ge-closed-popup-body { padding-right: 4px }

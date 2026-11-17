@@ -12,7 +12,7 @@ const statusText = {
   complete: 'Lista',
 }
 
-export default function LocalImagesGallery({ idLocal, token, readOnly = false }) {
+export default function LocalImagesGallery({ idLocal, token, readOnly = false, basePath = '/gestion-establecimientos' }) {
   const [images, setImages] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -23,12 +23,12 @@ export default function LocalImagesGallery({ idLocal, token, readOnly = false })
 
   useEffect(() => {
     const controller = new AbortController()
-    getLocalImages(token, idLocal, controller.signal)
+    getLocalImages(token, idLocal, controller.signal, basePath)
       .then(data => { if (!controller.signal.aborted) setImages(data) })
       .catch(() => { if (!controller.signal.aborted) setError('No se pudieron cargar las imágenes. Actualiza para reintentar.') })
       .finally(() => { if (!controller.signal.aborted) setLoading(false) })
     return () => controller.abort()
-  }, [idLocal, token])
+  }, [idLocal, token, basePath])
 
   async function selectFiles(event) {
     const files = Array.from(event.target.files || [])
@@ -85,7 +85,7 @@ export default function LocalImagesGallery({ idLocal, token, readOnly = false })
     setRemoving(image.id_imagen)
     setError('')
     try {
-      await deleteLocalImage(token, idLocal, image.id_imagen)
+      await deleteLocalImage(token, idLocal, image.id_imagen, basePath)
       setImages(current => current.filter(item => item.id_imagen !== image.id_imagen))
     } catch (removeError) {
       setError(removeError.message || 'No se pudo eliminar la imagen.')

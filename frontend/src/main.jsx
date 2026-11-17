@@ -13,6 +13,7 @@ import SearchResults from './Pages/SearchResults.jsx'
 import Favorites from './Pages/Favorites.jsx'
 import StorageUploadTest from './Pages/StorageUploadTest.jsx'
 import PerfilLugar from './Pages/PerfilLugar.jsx'
+import GestionLugares from './Pages/GestionLugares.jsx'
 import GuestOnly from './Components/GuestOnly.jsx'
 import AuthProvider from './context/AuthProvider.jsx'
 
@@ -31,6 +32,8 @@ const router = createBrowserRouter([
   { path: '/probar-subidas', element: <StorageUploadTest /> },
   { path: '/gestion-establecimientos', element: <GestionEstablecimientosVista /> },
   { path: '/gestion-establecimientos/:id/editar', element: <GestionEstablecimientosVista /> },
+  { path: '/gestion-lugares', element: <GestionLugares /> },
+  { path: '/gestion-lugares/:id/editar', element: <GestionLugares /> },
   { path: '/perfil-lugar/:id', element: <PerfilLugar /> },
 ])
 
