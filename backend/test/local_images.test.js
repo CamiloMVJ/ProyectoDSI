@@ -13,12 +13,12 @@ test('las imágenes del local se listan y eliminan solo para su dueño', async (
   const images = [{ id_imagen: 7, id_local: 5, url_imagen: 'https://legacy.example/photo.jpg' }]
   pool.query = async (sql, values = []) => {
     if (['BEGIN', 'COMMIT', 'ROLLBACK'].includes(sql)) return { rows: [] }
-    if (sql.includes('SELECT c.id_local FROM public.locales_comerciales'))
+    if (sql.startsWith('SELECT l.id_local FROM public.locales l'))
       return { rows: values[0] === 5 && (values[1] || values[2] === 2) ? [{ id_local: 5 }] : [] }
     if (sql.includes('FROM public.imagenes_locales i') && sql.includes('ORDER BY'))
       return { rows: values[0] === 5 && (values[1] || values[2] === 2) ? [...images] : [] }
     if (sql.includes('FOR UPDATE OF i'))
-      return { rows: values[0] === 5 && values[1] === 7 && (values[2] || values[3] === 2) ? [images[0]] : [] }
+      return { rows: values[0] === 5 && values[3] === 7 && (values[1] || values[2] === 2) ? [images[0]] : [] }
     if (sql.includes('DELETE FROM public.imagenes_locales')) {
       images.splice(0, 1)
       return { rows: [] }
