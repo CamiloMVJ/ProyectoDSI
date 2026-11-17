@@ -13,3 +13,19 @@ export function saveManagedEstablishment(token, id, data) {
     method: 'PUT', token, body: JSON.stringify(data),
   })
 }
+
+export function getClosedDays(token, id, signal) {
+  return request(`/gestion-establecimientos/${id}/dias-cerrados`, { token, signal })
+}
+
+export function createClosedDay(token, id, data) {
+  return request(`/gestion-establecimientos/${id}/dias-cerrados`, {
+    method: 'POST', token, body: JSON.stringify(data),
+  })
+}
+
+export function deleteClosedDay(token, id, closureId) {
+  return request(`/gestion-establecimientos/${id}/dias-cerrados/${closureId}`, {
+    method: 'DELETE', token,
+  })
+}

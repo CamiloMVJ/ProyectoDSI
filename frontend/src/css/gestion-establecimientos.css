@@ -412,6 +412,42 @@
 .ge-hours-holiday input { width: 17px; height: 17px; accent-color: #28543a }
 .ge-hours-remove { min-height: 42px; padding: 0 4px; font-weight: 700 }
 
+.ge-closed-section { background: linear-gradient(145deg, #fffefa, #f5f8f1) }
+.ge-closed-range { margin: -6px 0 20px; color: #526554; line-height: 1.6; font-size: 13px }
+.ge-closed-range strong { color: #28543a }
+.ge-closed-layout { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, .95fr); gap: 20px; align-items: stretch }
+.ge-calendar, .ge-closed-detail { min-width: 0; border: 1px solid #dce7d9; border-radius: 16px; background: white; padding: clamp(14px, 2vw, 22px) }
+.ge-calendar-nav { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 16px }
+.ge-calendar-nav h4 { margin: 0; text-transform: capitalize; font-size: 16px; color: #263f32; text-align: center }
+.ge-calendar-nav button { display: grid; place-items: center; width: 36px; height: 36px; flex-shrink: 0; border: 1px solid #dce7d9; border-radius: 9px; color: #28543a; background: #f6f9f3; cursor: pointer }
+.ge-calendar-nav button:disabled { opacity: .35; cursor: not-allowed }
+.ge-calendar-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 5px }
+.ge-calendar-weekday { text-align: center; color: #627264; font-size: 12px; font-weight: 800; padding: 6px 0 }
+.ge-calendar-day { position: relative; aspect-ratio: 1; min-width: 0; border: 1px solid transparent; border-radius: 10px; background: #f1f7ed; color: #28543a; font: inherit; font-size: 13px; font-weight: 750; cursor: pointer }
+.ge-calendar-day:hover:not(:disabled) { background: #e1eddb; border-color: #b8d2b3 }
+.ge-calendar-day:disabled { background: transparent; color: #a9b3a8; cursor: not-allowed }
+.ge-calendar-day.ge-calendar-closed { background: #fff0e5; color: #ad4915 }
+.ge-calendar-day.ge-calendar-closed:hover:not(:disabled) { background: #ffe6d4; border-color: #e9ad8b }
+.ge-calendar-day.ge-calendar-selected { border: 2px solid #28543a; box-shadow: 0 0 0 2px #d4e7cd }
+.ge-calendar-dot { position: absolute; left: 50%; bottom: 4px; transform: translateX(-50%); width: 4px; height: 4px; border-radius: 50%; background: currentColor }
+.ge-calendar-legend { display: flex; flex-wrap: wrap; gap: 8px 15px; margin-top: 18px; color: #627264; font-size: 11px }
+.ge-calendar-legend span { display: inline-flex; align-items: center; gap: 6px }
+.ge-calendar-legend i { width: 10px; height: 10px; border-radius: 3px; border: 1px solid #dce7d9 }
+.ge-legend-available { background: #f1f7ed }
+.ge-legend-closed { background: #fff0e5 }
+.ge-legend-disabled { background: #f5f6f4 }
+.ge-closed-detail { display: flex; flex-direction: column; align-items: flex-start; justify-content: center; background: #f8faf5 }
+.ge-closed-eyebrow { color: #aa4b19; font-size: 11px; font-weight: 800; letter-spacing: .1em }
+.ge-closed-detail h4 { margin: 9px 0 8px; color: #263f32; font: 700 clamp(18px, 2vw, 23px)/1.3 Georgia, serif; text-transform: capitalize }
+.ge-closed-detail p { color: #526554; font-size: 13px; line-height: 1.55; margin: 6px 0 15px }
+.ge-closed-detail .ge-closed-status { color: #a34515; font-weight: 750 }
+.ge-closed-reason { overflow-wrap: anywhere }
+.ge-closed-reason-input { width: 100%; margin: 6px 0 15px }
+.ge-closed-detail small { display: block; color: #627264; line-height: 1.45; margin-top: 16px }
+.ge-closed-detail .ge-error, .ge-closed-detail .ge-notice { width: 100%; margin: 14px 0 0 }
+.ge-closed-delete { color: #a34515; border-color: #e9cbb9; background: #fff8f3 }
+.ge-closed-retry .ge-error { margin: 0 0 12px }
+
 .ge-field {
     display: flex;
     flex-direction: column;
