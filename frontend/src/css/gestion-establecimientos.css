@@ -423,6 +423,8 @@
 .ge-field b {
     color: #c45111
 }
+.ge-field-hint { color: #627264; font-size: 12px; font-weight: 400; line-height: 1.4 }
+.ge-add-service:disabled { opacity: .5; cursor: not-allowed }
 
 .ge-input-shell {
     display: flex;

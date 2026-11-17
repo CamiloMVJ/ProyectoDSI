@@ -63,8 +63,8 @@ esta_disponible: Joi.boolean()
 id_categoria_menu: Joi.number()
     .integer()
     .positive().max(2147483647)
-    .allow(null)
-    .optional()
+    .required()
+    .messages({ 'any.required': 'Selecciona una categoría para el ítem del menú.' })
 
 
 });

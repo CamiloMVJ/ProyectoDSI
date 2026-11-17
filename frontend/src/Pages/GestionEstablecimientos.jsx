@@ -196,6 +196,15 @@ export default function GestionEstablecimientosVista() {
       setModalError('Completa el día y las horas de cada horario, o quita la fila incompleta.')
       return
     }
+    if (form.menus.some(menu => menu.items.some(item => !item.id_categoria_menu))) {
+      setModalError('Selecciona una categoría para cada platillo o bebida. Es necesaria para calcular el presupuesto.')
+      return
+    }
+    if (categoriasMenu.length && form.menus.some(menu => menu.items.some(item =>
+      !categoriasMenu.some(categoria => String(categoria.id_categoria_menu) === item.id_categoria_menu)))) {
+      setModalError('Hay categorías que ya no están disponibles. Selecciona una categoría vigente para esos ítems.')
+      return
+    }
     if (form.menus.some(menu => menu.titulo_menu.trim().length < 2 || menu.items.some(item =>
       item.nombre_platillo.trim().length < 2 || item.precio === '' || Number(item.precio) < 0))) {
       setModalError('Revisa los nombres y precios de los menús y platillos.')
@@ -292,13 +301,14 @@ export default function GestionEstablecimientosVista() {
             <div className="ge-menu-list">{form.menus.map((menu, menuIndex) => <div className="ge-menu-card" key={menu.id_menu || `nuevo-${menuIndex}`}>
               <div className="ge-menu-top"><span className="ge-menu-number">Menú {menuIndex + 1}</span>{!soloLectura && !menu.id_menu && <button type="button" className="ge-remove-service" onClick={() => actualizar('menus', form.menus.filter((_, i) => i !== menuIndex))}><Trash2 size={16} /> Quitar menú</button>}</div>
               <div className="ge-form-grid"><TextField label="Título del menú" icon={UtensilsCrossed} value={menu.titulo_menu} onChange={valor => actualizarMenu(menuIndex, 'titulo_menu', valor)} disabled={soloLectura} required maxLength={150} /><label className="ge-field"><span>Estado del menú</span><select value={String(menu.esta_activo)} onChange={event => actualizarMenu(menuIndex, 'esta_activo', event.target.value === 'true')} disabled={soloLectura}><option value="true">Activo</option><option value="false">Oculto</option></select></label><label className="ge-field ge-field-wide"><span>Descripción del menú</span><textarea className="ge-textarea" rows={2} value={menu.descripcion} onChange={event => actualizarMenu(menuIndex, 'descripcion', event.target.value)} disabled={soloLectura} placeholder="Por ejemplo: almuerzos, cafetería o bebidas" /></label></div>
-              <div className="ge-menu-items-heading"><h4>Platillos y bebidas</h4>{!soloLectura && <button type="button" className="ge-button ge-add-service" onClick={() => actualizarMenu(menuIndex, 'items', [...menu.items, { nombre_platillo: '', descripcion: '', precio: '', moneda: 'NIO', url_foto: '', id_categoria_menu: '', es_vegetariano: false, esta_disponible: true }])}><Plus size={16} /> Agregar platillo</button>}</div>
+              <div className="ge-menu-items-heading"><h4>Platillos y bebidas</h4>{!soloLectura && <button type="button" className="ge-button ge-add-service" disabled={!categoriasMenu.length} onClick={() => actualizarMenu(menuIndex, 'items', [...menu.items, { nombre_platillo: '', descripcion: '', precio: '', moneda: 'NIO', url_foto: '', id_categoria_menu: '', es_vegetariano: false, esta_disponible: true }])}><Plus size={16} /> Agregar platillo</button>}</div>
+              {!categoriasMenu.length && !soloLectura && <p className="ge-empty-section" role="status">No se pudieron cargar categorías de menú. Actualiza la página antes de agregar platillos.</p>}
               {!menu.items.length && <p className="ge-empty-section">Este menú todavía no tiene platillos.</p>}
               <div className="ge-item-list">{menu.items.map((item, itemIndex) => <div className="ge-item-card" key={item.id_item || `nuevo-${menuIndex}-${itemIndex}`}>
                 <div className="ge-menu-top"><span className="ge-menu-number">Platillo {itemIndex + 1}</span>{!soloLectura && !item.id_item && <button type="button" className="ge-remove-service" onClick={() => actualizarMenu(menuIndex, 'items', menu.items.filter((_, i) => i !== itemIndex))}><Trash2 size={16} /> Quitar</button>}</div>
                 <div className="ge-form-grid">
                   <TextField label="Nombre" icon={Tag} value={item.nombre_platillo} onChange={valor => actualizarPlatillo(menuIndex, itemIndex, 'nombre_platillo', valor)} disabled={soloLectura} required maxLength={150} />
-                  <label className="ge-field"><span>Categoría</span><select value={item.id_categoria_menu} onChange={event => actualizarPlatillo(menuIndex, itemIndex, 'id_categoria_menu', event.target.value)} disabled={soloLectura}><option value="">Sin categoría</option>{categoriasMenu.map(categoria => <option key={categoria.id_categoria_menu} value={categoria.id_categoria_menu}>{categoria.nombre}</option>)}</select></label>
+                  <label className="ge-field"><span>Categoría del ítem <b>*</b></span><select value={item.id_categoria_menu} onChange={event => actualizarPlatillo(menuIndex, itemIndex, 'id_categoria_menu', event.target.value)} disabled={soloLectura} required><option value="">Selecciona una categoría</option>{item.id_categoria_menu && !categoriasMenu.some(categoria => String(categoria.id_categoria_menu) === item.id_categoria_menu) && <option value={item.id_categoria_menu}>Categoría actual (#{item.id_categoria_menu})</option>}{categoriasMenu.map(categoria => <option key={categoria.id_categoria_menu} value={categoria.id_categoria_menu}>{categoria.nombre}</option>)}</select><small className="ge-field-hint">El presupuesto usa «Plato Fuerte» y «Bebida No Alcohólica» en córdobas, de menús activos e ítems disponibles.</small></label>
                   <label className="ge-field ge-field-wide"><span>Descripción</span><textarea className="ge-textarea" rows={2} value={item.descripcion} onChange={event => actualizarPlatillo(menuIndex, itemIndex, 'descripcion', event.target.value)} disabled={soloLectura} /></label>
                   <label className="ge-field"><span>Precio <b>*</b></span><input className="ge-plain-input" type="number" min="0" step="0.01" value={item.precio} onChange={event => actualizarPlatillo(menuIndex, itemIndex, 'precio', event.target.value)} disabled={soloLectura} required /></label>
                   <label className="ge-field"><span>Moneda</span><select value={item.moneda} onChange={event => actualizarPlatillo(menuIndex, itemIndex, 'moneda', event.target.value)} disabled={soloLectura}><option value="NIO">Córdobas (C$)</option><option value="USD">Dólares (US$)</option></select></label>

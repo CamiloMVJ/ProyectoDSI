@@ -21,6 +21,7 @@ test('administradores ven todo y cada dueño solo gestiona sus locales', async (
     }
     if (sql.includes('FOR UPDATE OF c')) return { rows: values[1] || (values[0] === 5 ? values[2] === 2 : values[2] === 3) ? [{ id_local: values[0] }] : [] }
     if (sql.includes('FROM public.departamentos')) return { rows: [{ id_departamento: 1 }] }
+    if (sql.includes('FROM public.categorias_menu WHERE')) return { rows: values[0] === 2 ? [{ id_categoria_menu: 2 }] : [] }
     if (sql.includes('INSERT INTO public.menus')) return { rows: [{ id_menu: 12 }], rowCount: 1 }
     if (sql.includes('INSERT INTO public.horarios')) return { rows: [{ id_horario: 25 }], rowCount: 1 }
     if (sql.includes('UPDATE public.horarios') && values[1] === 999) return { rows: [], rowCount: 0 }
@@ -40,7 +41,7 @@ test('administradores ven todo y cada dueño solo gestiona sus locales', async (
     horarios: [{ dia_semana: 'Lunes', hora_apertura: '08:00', hora_cierre: '17:00', es_feriado: false }],
     menus: [{ titulo_menu: 'Almuerzos', descripcion: 'Platos del día', esta_activo: true,
       items: [{ nombre_platillo: 'Gallo pinto', descripcion: null, precio: 120,
-        moneda: 'NIO', id_categoria_menu: null, es_vegetariano: true, esta_disponible: true }] }],
+        moneda: 'NIO', id_categoria_menu: 2, es_vegetariano: true, esta_disponible: true }] }],
   }
   try {
     assert.equal((await fetch(base)).status, 401)
@@ -67,10 +68,16 @@ test('administradores ven todo y cada dueño solo gestiona sus locales', async (
     assert.ok(calls.some(call => call.sql.includes('DELETE FROM public.horarios') && call.values[1][0] === 25))
     assert.ok(calls.some(call => call.sql.includes('INSERT INTO public.menus')))
     assert.ok(calls.some(call => call.sql.includes('INSERT INTO public.items_menu') && call.values[0] === 12))
+    assert.ok(calls.some(call => call.sql.includes('INSERT INTO public.items_menu') && call.values[6] === 2))
     assert.ok(calls.some(call => call.sql === 'COMMIT'))
     const foreignMenu = { ...body, menus: [{ ...body.menus[0], id_menu: 999 }] }
     const deniedMenu = await fetch(`${base}/5`, { method: 'PUT', headers: { ...auth('Usuario', 2), 'Content-Type': 'application/json' }, body: JSON.stringify(foreignMenu) })
     assert.equal(deniedMenu.status, 409)
+    assert.equal(calls.at(-1).sql, 'ROLLBACK')
+    const uncategorized = { ...body, menus: [{ ...body.menus[0], items: [{ ...body.menus[0].items[0], id_categoria_menu: null }] }] }
+    assert.equal((await fetch(`${base}/5`, { method: 'PUT', headers: { ...auth('Usuario', 2), 'Content-Type': 'application/json' }, body: JSON.stringify(uncategorized) })).status, 400)
+    const unknownCategory = { ...body, menus: [{ ...body.menus[0], items: [{ ...body.menus[0].items[0], id_categoria_menu: 999 }] }] }
+    assert.equal((await fetch(`${base}/5`, { method: 'PUT', headers: { ...auth('Usuario', 2), 'Content-Type': 'application/json' }, body: JSON.stringify(unknownCategory) })).status, 400)
     assert.equal(calls.at(-1).sql, 'ROLLBACK')
     const foreignHorario = { ...body, horarios: [{ ...body.horarios[0], id_horario: 999 }] }
     const deniedHorario = await fetch(`${base}/5`, { method: 'PUT', headers: { ...auth('Usuario', 2), 'Content-Type': 'application/json' }, body: JSON.stringify(foreignHorario) })

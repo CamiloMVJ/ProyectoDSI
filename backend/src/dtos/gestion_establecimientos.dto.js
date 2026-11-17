@@ -40,7 +40,7 @@ export const saveEstablishmentSchema = Joi.object({
       precio: Joi.number().min(0).max(99999999.99).precision(2).required(),
       moneda: Joi.string().valid('NIO', 'USD').required(),
       url_foto: Joi.string().uri().max(255).allow('', null),
-      id_categoria_menu: Joi.number().integer().positive().allow(null).required(),
+      id_categoria_menu: Joi.number().integer().positive().max(2147483647).required(),
       es_vegetariano: Joi.boolean().required(),
       esta_disponible: Joi.boolean().required(),
     })).required(),
