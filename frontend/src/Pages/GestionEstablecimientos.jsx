@@ -7,6 +7,7 @@ import {
 import Navbar from '../Components/Navbar.jsx'
 import Footer from '../Components/Footer.jsx'
 import ClosedDaysCalendar from '../Components/ClosedDaysCalendar.jsx'
+import LocalImagesGallery from '../Components/LocalImagesGallery.jsx'
 import { useAuth } from '../hooks/useAuth.js'
 import { getDepartments, getTouristComplexes } from '../services/businessRequests.api.js'
 import { getManagedEstablishments, getMenuCategories, saveManagedEstablishment } from '../services/establishments.api.js'
@@ -310,6 +311,7 @@ export default function GestionEstablecimientosVista() {
       {modal?.tipo === 'retirar' ? <div className="ge-confirm"><p>¿Deseas retirar <strong>{modal.negocio.nombre}</strong> de la búsqueda pública?</p><p>El registro y sus servicios se conservan. Podrás volver a publicarlo desde «Editar».</p>{modalError && <div className="ge-error" role="alert">{modalError}</div>}<div className="ge-dialog-actions"><button type="button" className="ge-button ge-outline" onClick={cerrar} disabled={guardando}>Cancelar</button><button type="button" className="ge-button ge-danger" onClick={() => guardar(null, true)} disabled={guardando}>{guardando ? <LoaderCircle className="ge-spinner" size={18} /> : <EyeOff size={18} />} Retirar de publicación</button></div></div> :
         <form onSubmit={guardar} className="ge-form">
           <p className="ge-form-intro">{soloLectura ? 'Consulta la información de este establecimiento.' : 'Organiza la información que verán tus clientes. Los cambios se aplican al guardar.'}</p>
+          <LocalImagesGallery key={activeBusiness.id_local} idLocal={activeBusiness.id_local} token={sesion.token} readOnly={soloLectura} />
           <section className="ge-form-section" aria-labelledby="ge-identity-heading">
             <div className="ge-identity-header"><div className="ge-section-heading"><span className="ge-section-icon"><Store size={20} aria-hidden="true" /></span><div><h3 id="ge-identity-heading">Datos del negocio</h3><p>Identidad, responsable y formas de contacto</p></div></div><button type="button" className="ge-button ge-primary" onClick={abrirDiasCerrados}><CalendarDays size={17} aria-hidden="true" /> {soloLectura ? 'Ver días de cierre' : 'Configurar días de cierre'}</button></div>
             <div className="ge-form-grid">

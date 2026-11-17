@@ -61,3 +61,29 @@ test('rechaza un PDF con cabecera falsa antes de pedir autorización', async () 
     getClient: () => { throw new Error('No debe abrirse Storage') },
   }), /no es un PDF válido/)
 })
+
+test('permite dos imágenes del mismo local en paralelo con autorizaciones independientes', async () => {
+  let sequence = 0
+  const uploaded = []
+  const contexts = []
+  const client = { storage: { from: () => ({ uploadToSignedUrl: async path => {
+    uploaded.push(path)
+    return { error: null }
+  } }) } }
+  const request = async (path, options) => {
+    const body = JSON.parse(options.body)
+    if (path.endsWith('/authorize')) {
+      contexts.push(body.context)
+      const id = ++sequence
+      return { bucket: 'staging', path: `pending/locales/5/2/${id}.webp`, token: `signed-${id}`, receipt: `receipt-${id}` }
+    }
+    return { image: { id_imagen: body.receipt, url_imagen: 'https://example.com/image.webp' } }
+  }
+  const files = [new File(['one'], 'one.png', { type: 'image/png' }), new File(['two'], 'two.png', { type: 'image/png' })]
+  const results = await Promise.all(files.map(file => uploadStorageFile(file, 'jwt', {
+    context: { type: 'local-image', localId: 5 },
+  }, { getClient: () => client, request, prepareWebp: async () => new File(['webp'], 'image.webp', { type: 'image/webp' }) })))
+  assert.equal(results.length, 2)
+  assert.equal(new Set(uploaded).size, 2)
+  assert.deepEqual(contexts, [{ type: 'local-image', localId: 5 }, { type: 'local-image', localId: 5 }])
+})

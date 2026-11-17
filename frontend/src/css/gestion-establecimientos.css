@@ -399,6 +399,23 @@
 }
 
 .ge-form-intro { color: #526554; line-height: 1.6; margin: 0 0 24px }
+.ge-images-header { display: flex; align-items: center; justify-content: space-between; gap: 18px; flex-wrap: wrap }
+.ge-images-header .ge-section-heading { margin-bottom: 0 }
+.ge-images-upload { position: relative; overflow: hidden; cursor: pointer; flex-shrink: 0 }
+.ge-images-upload input { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none }
+.ge-images-upload:focus-within { outline: 3px solid #e58f34; outline-offset: 3px }
+.ge-images-hint { margin: 18px 0 20px; color: #627264; font-size: 13px; line-height: 1.5 }
+.ge-images-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(175px, 1fr)); gap: 16px; margin-top: 22px }
+.ge-image-card { position: relative; min-width: 0; margin: 0; border: 1px solid #e1eadf; border-radius: 14px; overflow: hidden; background: #f7faf6 }
+.ge-image-card img { display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: cover }
+.ge-image-card figcaption { padding: 10px 12px; font-size: 12px; color: #526554; white-space: nowrap; overflow: hidden; text-overflow: ellipsis }
+.ge-image-remove { position: absolute; top: 8px; right: 8px; display: grid; place-items: center; width: 34px; height: 34px; border: 0; border-radius: 50%; background: #fff; color: #9a382e; box-shadow: 0 2px 10px #16332333; cursor: pointer }
+.ge-image-remove:disabled { cursor: wait; opacity: .6 }
+.ge-upload-results { margin-top: 20px; padding: 14px 16px; border-radius: 12px; background: #f5f8f3; color: #314a39; font-size: 13px }
+.ge-upload-results ul { list-style: none; padding: 0; margin: 10px 0 0 }
+.ge-upload-results li { display: flex; justify-content: space-between; gap: 12px; padding: 6px 0; border-top: 1px solid #e1eadf }
+.ge-upload-name { overflow-wrap: anywhere }
+.ge-upload-error { color: #a7372d }
 .ge-form-section { border: 1px solid #e1eadf; background: #fff; border-radius: 18px; padding: clamp(18px, 2.6vw, 28px); margin-bottom: 20px }
 .ge-section-heading { display: flex; align-items: center; gap: 14px; margin-bottom: 24px }
 .ge-section-icon { width: 42px; height: 42px; display: grid; place-items: center; flex-shrink: 0; border-radius: 12px; color: #28543a; background: #eaf3e6 }
