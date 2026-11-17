@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Link, Navigate, useLocation, useNavigate, useParams } from 'react-router-dom'
+import { Link, Navigate, useParams } from 'react-router-dom'
 import {
   Store, Search, Eye, Pencil, EyeOff, X, ChevronLeft, ChevronRight,
   MapPin, Mail, Phone, UserRound, FileText, Tag, Save, ArrowLeft, AlertTriangle, LoaderCircle, ClipboardList, UtensilsCrossed, Plus, Trash2, Clock3, CalendarDays
@@ -149,8 +149,6 @@ function MenuItemsEditor({ menu, menuIndex, categoriasMenu, onChange, onAdd, onR
 export default function GestionEstablecimientosVista() {
   const { sesion } = useAuth()
   const { id: editId } = useParams()
-  const navigate = useNavigate()
-  const location = useLocation()
   const esAdministrador = sesion?.usuario.rol === 'Administrador'
   const [negocios, setNegocios] = useState([])
   const [departamentos, setDepartamentos] = useState([])
@@ -291,6 +289,8 @@ export default function GestionEstablecimientosVista() {
   async function guardar(event, retirar = false) {
     event?.preventDefault()
     if (guardando || !activeBusiness) return
+    setMensaje('')
+    setModalError('')
     if (!form.es_independiente && !form.id_complejo_padre) {
       setModalError('Selecciona el complejo turístico.')
       return
@@ -318,13 +318,12 @@ export default function GestionEstablecimientosVista() {
       return
     }
     setGuardando(true)
-    setModalError('')
     try {
       const actualizado = await saveManagedEstablishment(sesion.token, activeBusiness.id_local, toPayload(retirar ? { ...form, esta_publicado: false } : form))
       setNegocios(actuales => actuales.map(negocio => negocio.id_local === actualizado.id_local ? actualizado : negocio))
+      if (editId) setForm(toForm(actualizado))
       setMensaje(retirar ? 'El establecimiento se retiró de la publicación. Sus datos siguen disponibles para editarlo.' : 'Los cambios se guardaron en la base de datos.')
-      if (editId) navigate('/gestion-establecimientos', { state: { saved: true } })
-      else setModal(null)
+      if (!editId) setModal(null)
     } catch (saveError) {
       setModalError(saveError.message || 'No se pudieron guardar los cambios.')
     } finally {
@@ -345,7 +344,6 @@ export default function GestionEstablecimientosVista() {
           <div className="ge-list-head"><h3><Store size={24} aria-hidden="true" /> {esAdministrador ? 'Listado de establecimientos' : 'Mis establecimientos'}</h3>{esAdministrador && <Link className="ge-button ge-primary" to="/admin/solicitudes"><ClipboardList size={18} aria-hidden="true" /> Revisar solicitudes</Link>}</div>
           <label className="ge-search"><Search size={20} aria-hidden="true" /><input value={buscar} onChange={event => { setBuscar(event.target.value); setPagina(1) }} placeholder="Buscar establecimiento, RUC o propietario..." aria-label="Buscar establecimiento" /></label>
           {mensaje && <div className="ge-notice" role="status">{mensaje}</div>}
-          {location.state?.saved && <div className="ge-notice" role="status">Los cambios se guardaron en la base de datos.</div>}
           {pageError && <div className="ge-error" role="alert">{pageError}</div>}
           {catalogNotice && <div className="ge-error" role="status">{catalogNotice}</div>}
           {cargando ? <p className="ge-loading" role="status"><LoaderCircle className="ge-spinner" size={20} aria-hidden="true" /> Cargando establecimientos…</p> : !pageError && <>
@@ -412,6 +410,7 @@ export default function GestionEstablecimientosVista() {
               <MenuItemsEditor menu={menu} menuIndex={menuIndex} categoriasMenu={categoriasMenu} onChange={(itemIndex, field, value) => actualizarPlatillo(menuIndex, itemIndex, field, value)} onAdd={() => actualizarMenu(menuIndex, 'items', [...menu.items, { nombre_platillo: '', descripcion: '', precio: '', moneda: 'NIO', url_foto: '', id_categoria_menu: '', es_vegetariano: false, esta_disponible: true }])} onRemove={itemIndex => actualizarMenu(menuIndex, 'items', menu.items.filter((_, index) => index !== itemIndex))} />
             </div>)}</div>}
           </section>
+          {editId && mensaje && <div className="ge-notice" role="status">{mensaje}</div>}
           {modalError && <div className="ge-error" role="alert">{modalError}</div>}
           <div className="ge-dialog-actions">{editId ? <Link className="ge-button ge-outline" to="/gestion-establecimientos"><ArrowLeft size={17} /> Cancelar</Link> : <button type="button" className="ge-button ge-outline" onClick={cerrar} disabled={guardando}><ArrowLeft size={17} /> Volver al listado</button>}{soloLectura ? <>{form.esta_publicado && <Link className="ge-button ge-outline" to={`/buscar?tipo=local&q=${encodeURIComponent(form.nombre)}`}>Ver en búsqueda</Link>}<Link className="ge-button ge-primary" to={`/gestion-establecimientos/${activeBusiness.id_local}/editar`} onClick={cerrar}><Pencil size={17} /> Editar datos</Link></> : <button type="submit" className="ge-button ge-orange" disabled={guardando}>{guardando ? <LoaderCircle className="ge-spinner" size={17} /> : <Save size={17} />} Guardar cambios</button>}</div>
         </form>}
