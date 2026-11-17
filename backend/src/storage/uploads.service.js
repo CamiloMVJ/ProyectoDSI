@@ -7,13 +7,16 @@ import { signReceipt, verifyReceipt } from "./receipt.js"
 import { limitAuthorizations } from "./rate-limit.js"
 import { readStorageFile, validateFileContent } from "./validate-content.js"
 import * as businessDocuments from "./business-documents.repository.js"
+import * as localImages from "./local-images.repository.js"
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 const mimeFor = { image: "image/webp", document: "application/pdf" }
 const extensionFor = { image: "webp", document: "pdf" }
-const ownPath = (stage, userId, id, kind, scope = "sandbox", requestId) =>
+const ownPath = (stage, userId, id, kind, scope = "sandbox", requestId, localId) =>
   scope === "business-request"
     ? `${stage}/solicitudes/${requestId}/${userId}/${id}.pdf`
+    : scope === "local-image"
+      ? `${stage}/locales/${localId}/${userId}/${id}.webp`
     : `${stage}/sandbox/${userId}/${id}.${extensionFor[kind]}`
 
 function dependencies(deps = {}) {
@@ -23,6 +26,7 @@ function dependencies(deps = {}) {
     client: deps.client || getStorageClient(config),
     fetcher: deps.fetcher || fetch,
     business: deps.business || businessDocuments,
+    localImages: deps.localImages || localImages,
   }
 }
 
@@ -30,7 +34,7 @@ function checkedReference(token, expectedStage, user, config) {
   const ref = verifyReceipt(token, config.receiptSecret)
   if (
     ref.stage !== expectedStage ||
-    !["sandbox", "business-request"].includes(ref.scope) ||
+    !["sandbox", "business-request", "local-image"].includes(ref.scope) ||
     !UUID.test(ref.id || "") ||
     !mimeFor[ref.kind] ||
     (ref.scope === "business-request" &&
@@ -42,6 +46,11 @@ function checkedReference(token, expectedStage, user, config) {
         typeof ref.fileName !== "string" ||
         !ref.fileName ||
         ref.fileName.length > 255)) ||
+    (ref.scope === "local-image" &&
+      (ref.kind !== "image" ||
+        !Number.isSafeInteger(ref.localId) ||
+        ref.localId <= 0 ||
+        ref.localId > 2147483647)) ||
     !Number.isSafeInteger(ref.userId) ||
     ref.userId <= 0 ||
     ref.path !==
@@ -52,6 +61,7 @@ function checkedReference(token, expectedStage, user, config) {
         ref.kind,
         ref.scope,
         ref.requestId,
+        ref.localId,
       ) ||
     ref.bucket !==
       (ref.kind === "image"
@@ -72,9 +82,9 @@ function checkedReference(token, expectedStage, user, config) {
 }
 
 export async function authorizeUpload(user, input, deps) {
-  const { config, client, business } = dependencies(deps)
+  const { config, client, business, localImages } = dependencies(deps)
   const context = input?.context
-  if (!["sandbox", "business-request"].includes(context?.type))
+  if (!["sandbox", "business-request", "local-image"].includes(context?.type))
     throw new AppError("Contexto de archivo no permitido", 400)
   authorizeStorage(
     user,
@@ -102,6 +112,12 @@ export async function authorizeUpload(user, input, deps) {
         403,
       )
   }
+  if (context.type === "local-image") {
+    if (kind !== "image" || !Number.isSafeInteger(context.localId) || context.localId <= 0 || context.localId > 2147483647)
+      throw new AppError("Datos de la imagen inválidos", 400)
+    if (!(await localImages.findManagedLocal(context.localId, user.id, user.rol === "Administrador")))
+      throw new AppError("El establecimiento no existe o no te pertenece", 403)
+  }
   const max = kind === "image" ? config.imageMax : config.documentMax
   if (
     !mimeFor[kind] ||
@@ -124,6 +140,7 @@ export async function authorizeUpload(user, input, deps) {
     kind,
     context.type,
     context.requestId,
+    context.localId,
   )
   const { data, error } = await client.storage
     .from(bucket)
@@ -141,6 +158,7 @@ export async function authorizeUpload(user, input, deps) {
             fileName: context.fileName.trim(),
           }
         : {}),
+      ...(context.type === "local-image" ? { localId: context.localId } : {}),
       userId: user.id,
       kind,
       id,
@@ -156,7 +174,7 @@ export async function authorizeUpload(user, input, deps) {
 }
 
 export async function confirmUpload(user, receipt, deps) {
-  const { config, client, fetcher, business } = dependencies(deps)
+  const { config, client, fetcher, business, localImages } = dependencies(deps)
   const ref = checkedReference(receipt, "pending", user, config)
   if (
     ref.scope === "business-request" &&
@@ -166,6 +184,9 @@ export async function confirmUpload(user, receipt, deps) {
       "La solicitud pendiente no existe o no te pertenece",
       403,
     )
+  if (ref.scope === "local-image" &&
+    !(await localImages.findManagedLocal(ref.localId, user.id, user.rol === "Administrador")))
+    throw new AppError("El establecimiento no existe o no te pertenece", 403)
   const max = ref.kind === "image" ? config.imageMax : config.documentMax
   if (
     !Number.isSafeInteger(ref.size) ||
@@ -200,8 +221,10 @@ export async function confirmUpload(user, receipt, deps) {
     ref.kind,
     ref.scope,
     ref.requestId,
+    ref.localId,
   )
   const finalBucket = ref.kind === "image" ? config.images : config.documents
+  let savedImage
   if (ref.kind === "image") {
     const { error } = await client.storage
       .from(finalBucket)
@@ -211,6 +234,16 @@ export async function confirmUpload(user, receipt, deps) {
         upsert: false,
       })
     if (error) throw new AppError("No se pudo publicar la imagen validada", 502)
+    if (ref.scope === "local-image") {
+      const url = client.storage.from(finalBucket).getPublicUrl(finalPath).data.publicUrl
+      try {
+        savedImage = await localImages.saveImage(ref.localId, user.id, user.rol === "Administrador", url)
+        if (!savedImage) throw new AppError("El establecimiento ya no está disponible", 409)
+      } catch (saveError) {
+        await client.storage.from(finalBucket).remove([finalPath])
+        throw saveError
+      }
+    }
     // Un fallo de limpieza deja solo una copia privada pendiente, nunca una publicación sin validar.
     await source.remove([ref.path])
   } else {
@@ -244,6 +277,7 @@ export async function confirmUpload(user, receipt, deps) {
             fileName: ref.fileName,
           }
         : {}),
+      ...(ref.scope === "local-image" ? { localId: ref.localId } : {}),
       userId: ref.userId,
       kind: ref.kind,
       id: ref.id,
@@ -257,6 +291,7 @@ export async function confirmUpload(user, receipt, deps) {
     result.publicUrl = client.storage
       .from(finalBucket)
       .getPublicUrl(finalPath).data.publicUrl
+  if (savedImage) result.image = savedImage
   return result
 }
 
@@ -323,6 +358,7 @@ async function signRequestDocument(document, requestId, userId, config, client) 
 export async function deleteUpload(user, fileId, deps) {
   const { config, client } = dependencies(deps)
   const ref = checkedReference(fileId, "final", user, config)
+  if (ref.scope === "local-image") throw new AppError("Elimina la imagen desde el establecimiento", 400)
   authorizeStorage(user, "delete", ref, config)
   const store = client.storage.from(ref.bucket)
   const { error: infoError } = await store.info(ref.path)
