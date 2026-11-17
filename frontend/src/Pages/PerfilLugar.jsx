@@ -33,6 +33,18 @@ const PerfilLugar = () => {
       }
     };
 
+    const renderEstrellas = (calificacion) => {
+    return [...Array(5)].map((_, index) => (
+      <Star
+        key={index}
+        className={`w-4 h-4 ${
+          index < Math.round(calificacion)
+            ? 'text-[#FF7A2F] fill-[#FF7A2F]'
+            : 'text-gray-300'
+        }`}
+      />
+    ));
+  };
     cargarDatosLugar();
     return () => controller.abort();
   }, [id]);
@@ -141,6 +153,74 @@ const PerfilLugar = () => {
                 </div>
               </section>
             )}
+             {/* NUEVA SECCIÓN: Reseñas y Valoraciones */}
+            <section className="pt-4">
+              <div className="flex flex-wrap items-center justify-between gap-4 border-b border-gray-200/60 pb-3 mb-6">
+                <h2 className="text-2xl font-bold text-[#3A3A3A]">Reseñas y Valoraciones</h2>
+                
+                {/* Resumen numérico de calificación */}
+                {lugar.resenas && lugar.resenas.length > 0 && (
+                  <div className="flex items-center gap-2 bg-white px-3.5 py-1.5 rounded-full border border-gray-100 shadow-sm">
+                    <Star className="w-5 h-5 text-[#FF7A2F] fill-[#FF7A2F]" />
+                    <span className="font-bold text-[#3A3A3A] text-sm">
+                      {lugar.promedio_calificacion || '5.0'}
+                    </span>
+                    <span className="text-xs text-[#6A6A6A]">
+                      ({lugar.resenas.length} {lugar.resenas.length === 1 ? 'opinión' : 'opiniones'})
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              {/* Lista de Reseñas */}
+              {lugar.resenas && lugar.resenas.length > 0 ? (
+                <div className="space-y-4">
+                  {lugar.resenas.map((resena, idx) => (
+                    <article
+                      key={resena.id_resena || idx}
+                      className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100"
+                    >
+                      <div className="flex items-center justify-between gap-2 mb-2">
+                        <div className="flex items-center gap-3">
+                          <div className="w-9 h-9 rounded-full bg-[#526554]/10 text-[#526554] font-bold flex items-center justify-center text-sm uppercase">
+                            {(resena.usuario || resena.nombre_completo || 'U').charAt(0)}
+                          </div>
+                          <div>
+                            <h3 className="font-bold text-[#3A3A3A] text-sm">
+                              {resena.usuario || resena.nombre_completo || 'Visitante'}
+                            </h3>
+                            <div className="flex items-center gap-1 mt-0.5">
+                              {renderEstrellas(resena.calificacion)}
+                            </div>
+                          </div>
+                        </div>
+                        {resena.fecha_publicacion && (
+                          <span className="text-xs text-[#6A6A6A]">
+                            {new Date(resena.fecha_publicacion).toLocaleDateString('es-NI', {
+                              year: 'numeric',
+                              month: 'short',
+                              day: 'numeric'
+                            })}
+                          </span>
+                        )}
+                      </div>
+
+                      {resena.comentario && (
+                        <p className="text-[#6A6A6A] text-sm leading-relaxed mt-3">
+                          {resena.comentario}
+                        </p>
+                      )}
+                    </article>
+                  ))}
+                </div>
+              ) : (
+                <div className="bg-white rounded-2xl p-8 text-center border border-gray-100 shadow-sm">
+                  <p className="text-[#6A6A6A] text-sm">
+                    Este lugar aún no cuenta con reseñas ni valoraciones publicadas.
+                  </p>
+                </div>
+              )}
+            </section>
           </div>
 
           {/* Columna Derecha (Tarjetas de Información) */}

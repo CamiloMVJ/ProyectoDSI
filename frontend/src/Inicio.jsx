@@ -7,8 +7,12 @@ import RecommendationSection from './Components/RecommendationSection';
 import HospedajeIcon from './Components/Icons';
 import Footer from './Components/Footer';
 import { useNavigate } from 'react-router-dom';
-import { Utensils, Martini, Disc, Coffee, Bus } from 'lucide-react';
+import { Utensils, Martini, Disc, Coffee} from 'lucide-react';
 import { getDepartments } from './services/places.api.js';
+import {
+  getEventosNacionales,
+  getRecomendacionesInicio,
+} from './services/Inicio.api.js';
 
 
 /* ============================================================================
@@ -21,7 +25,7 @@ const DEFAULT_CATEGORIES = [
   { id: 'bares', label: 'Bares', Icon: Martini },
   { id: 'discotecas', label: 'Discotecas', Icon: Disc },
   { id: 'cafeterias', label: 'Cafeterías', Icon: Coffee },
-  { id: 'transporte', label: 'Transporte', Icon: Bus }
+
 ];
 
 export const CategorySelector = ({
@@ -36,7 +40,7 @@ export const CategorySelector = ({
         {title}
       </h1>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-5 sm:gap-6 max-w-4xl mx-auto justify-items-center">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-5 sm:gap-6 max-w-3xl mx-auto justify-items-center">
         {categories.map(({ id, label, Icon }) => {
           const isSelected = selectedCategory === id;
           return (
