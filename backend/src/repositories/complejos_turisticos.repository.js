@@ -1,7 +1,7 @@
 import { pool } from '../db/db.js';
 
 export async function findAll(client = pool) {
-  const { rows } = await client.query('SELECT * FROM complejos_turisticos');
+  const { rows } = await client.query('SELECT c.*, l.nombre FROM public.complejos_turisticos c JOIN public.locales l ON l.id_local = c.id_lugar ORDER BY l.nombre');
   return rows;
 }
 

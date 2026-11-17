@@ -37,6 +37,11 @@ export async function findOne(id, client = pool) {
   return rows[0] ?? null
 }
 
+export async function findByUserId (id , client = pool) {
+  const { rows } = await client.query('SELECT id_propietario, id_usuario FROM public.propietarios_negocios WHERE id_usuario = $1', [id])
+  return rows[0] ?? null
+}
+
 export async function create(data, client = pool) {
   const entries = getEntries(data)
   const columns = entries.map(([field]) => field).join(', ')

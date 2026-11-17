@@ -4,17 +4,41 @@ import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import Inicio from './Inicio.jsx'
 import LoginSINATUR from './login.jsx'
 import RegistroNegocioSINATUR from './Registro_Negocio.jsx'
+import RegistroUsuarioSINATUR from './Registro_Usuario.jsx'
+import UserAccount from './Pages/UserAccount.jsx'
+import MyBusinessRequests from './Pages/MyBusinessRequests.jsx'
+import AdminBusinessRequests from './Pages/AdminBusinessRequests.jsx'
+import GestionEstablecimientosVista from "./Pages/GestionEstablecimientos.jsx";
+import SearchResults from './Pages/SearchResults.jsx'
+import Favorites from './Pages/Favorites.jsx'
+import StorageUploadTest from './Pages/StorageUploadTest.jsx'
+import PerfilLugar from './Pages/PerfilLugar.jsx'
+import GuestOnly from './Components/GuestOnly.jsx'
+import AuthProvider from './context/AuthProvider.jsx'
+
 import './index.css'
 
 const router = createBrowserRouter([
   { path: '/', element: <Inicio /> },
-  { path: '/ingresar', element: <LoginSINATUR /> },
+  { path: '/buscar', element: <SearchResults /> },
+  { path: '/favoritos', element: <Favorites /> },
+  { path: '/ingresar', element: <GuestOnly><LoginSINATUR /></GuestOnly> },
+  { path: '/registrarse', element: <GuestOnly><RegistroUsuarioSINATUR /></GuestOnly> },
   { path: '/registro-negocio', element: <RegistroNegocioSINATUR /> },
+  { path: '/account', element: <UserAccount /> },
+  { path: '/mis-solicitudes', element: <MyBusinessRequests /> },
+  { path: '/admin/solicitudes', element: <AdminBusinessRequests /> },
+  { path: '/probar-subidas', element: <StorageUploadTest /> },
+  { path: '/gestion-establecimientos', element: <GestionEstablecimientosVista /> },
+  { path: '/gestion-establecimientos/:id/editar', element: <GestionEstablecimientosVista /> },
+  { path: '/perfil-lugar/:id', element: <PerfilLugar /> },
 ])
 import App from './Inicio.jsx'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <RouterProvider router={router} />
+    <AuthProvider>
+      <RouterProvider router={router} />
+    </AuthProvider>
   </StrictMode>,
 )

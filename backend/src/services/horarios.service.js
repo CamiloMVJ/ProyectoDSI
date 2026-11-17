@@ -1,13 +1,13 @@
 import * as repository from '../repositories/horarios.repository.js'
-import * as lugares_turisticosRepository from '../repositories/lugares_turisticos.repository.js'
+import * as localesRepository from '../repositories/locales.repository.js'
 import { AppError } from '../errors/app-error.js'
 import { parseId, allowedData, pick, execute, requireReference, withLockedRecord } from './service-utils.js'
 
-const fields = ["id_lugar", "dia_semama", "hora_apertura", "hora_cierre", "es_feriado"]
-const updateFields = ["id_lugar", "dia_semama", "hora_apertura", "hora_cierre", "es_feriado"]
+const fields = ["id_local", "dia_semana", "hora_apertura", "hora_cierre", "es_feriado"]
+const updateFields = fields
 
 async function checkRules(data, client) {
-  await requireReference(lugares_turisticosRepository, data.id_lugar, 'El lugar', client)
+  await requireReference(localesRepository, data.id_local, 'El local', client)
 }
 
 export async function findAll() {

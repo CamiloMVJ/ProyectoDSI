@@ -1,11 +1,13 @@
 import * as repository from '../repositories/eventos_nacionales.repository.js'
 import * as lugares_turisticosRepository from '../repositories/lugares_turisticos.repository.js'
+import * as departamentosRepository from '../repositories/departamentos.repository.js'
 import { AppError } from '../errors/app-error.js'
 import { parseId, allowedData, pick, execute, requireReference, withLockedRecord, checkDates, checkEvent, normalizeEvent, publicUser } from './service-utils.js'
 
-const fields = ["titulo", "descripcion", "fecha_inicio", "fecha_fin", "hora_inicio", "hora_fin", "departamento", "municipio", "direccion_referencia", "tipo_evento", "costo_entrada", "es_gratuito", "es_anual_recurrente", "id_lugar_asociado", "estado"]
+const fields = ["titulo", "descripcion", "fecha_inicio", "fecha_fin", "hora_inicio", "hora_fin", "id_departamento", "municipio", "direccion_referencia", "tipo_evento", "costo_entrada", "es_gratuito", "es_anual_recurrente", "id_lugar_asociado", "estado"]
 
 async function checkRules(data, client) {
+  await requireReference(departamentosRepository, data.id_departamento, 'El departamento', client)
   await requireReference(lugares_turisticosRepository, data.id_lugar_asociado, 'El lugar asociado', client)
   checkEvent(data)
 }

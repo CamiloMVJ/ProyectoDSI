@@ -38,7 +38,7 @@ export async function create(data, client) {
 }
 
 const lugarFields = [
-  'nombre', 'descripcion', 'departamento', 'municipio',
+  'nombre', 'descripcion', 'id_departamento', 'municipio',
   'direccion_exacta', 'maps_link'
 ]
 

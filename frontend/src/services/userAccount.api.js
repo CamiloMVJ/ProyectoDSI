@@ -1,0 +1,96 @@
+import { request } from "./httpClient"
+const API = (import.meta.env?.VITE_API_URL || "/api").replace(/\/$/, "")
+const SESSION_KEY = "sinatur.sesion"
+
+function usuarioPublico(usuario) {
+  return {
+    id_usuario: usuario.id_usuario,
+    nombre_completo: usuario.nombre_completo,
+    email: usuario.email,
+    telefono: usuario.telefono ?? "",
+    fecha_registro: usuario.fecha_registro ?? null,
+    rol: usuario.rol,
+  }
+}
+
+export function saveSession({ token, usuario }) {
+  if (!token || !Number.isInteger(usuario?.id_usuario)) {
+    throw new Error("El servidor no devolvió una sesión válida")
+  }
+
+  sessionStorage.setItem(
+    SESSION_KEY,
+    JSON.stringify({
+      token,
+      usuario: usuarioPublico(usuario),
+    }),
+  )
+}
+
+export function getSession() {
+  try {
+    const sesion = JSON.parse(sessionStorage.getItem(SESSION_KEY))
+
+    return sesion?.token && Number.isInteger(sesion.usuario?.id_usuario)
+      ? sesion
+      : null
+  } catch {
+    return null
+  }
+}
+
+export function delSession() {
+  sessionStorage.removeItem(SESSION_KEY)
+}
+
+export async function login({ email, password }) {
+  const response = await fetch(`${API}/usuarios/login`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      email: email.trim(),
+      password,
+    }),
+  })
+
+  const respuesta = await response.json().catch(() => null)
+
+  if (!response.ok || respuesta?.success !== true) {
+    throw new Error(
+      respuesta?.message ||
+      respuesta?.mensaje ||
+      'No se pudo iniciar sesión'
+    )
+  }
+
+  // El controller coloca token y usuario dentro de "data".
+  const sesion = respuesta.data
+
+  saveSession(sesion)
+
+  return sesion.usuario
+}
+
+export function registerAccount(datos) {
+  return request('/usuarios', {
+    method: 'POST',
+    body: JSON.stringify(datos),
+  })
+}
+
+export function getAccount(sesion, signal) {
+  return request(`/usuarios/${sesion.usuario.id_usuario}`, {
+    token: sesion.token,
+    signal,
+  })
+}
+
+export function updateAccount(sesion, datos) {
+  return request(`/usuarios/${sesion.usuario.id_usuario}`, {
+    method: "PATCH",
+    token: sesion.token,
+    body: JSON.stringify(datos),
+  })
+}

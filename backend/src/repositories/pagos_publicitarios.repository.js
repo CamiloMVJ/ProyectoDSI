@@ -17,7 +17,6 @@ export async function create(data, client = pool) {
   const { 
     id_campania, 
     id_dueno, 
-    id_administrador, 
     monto, 
     moneda, 
     metodo_pago, 
@@ -28,17 +27,16 @@ export async function create(data, client = pool) {
 
   const query = `
     INSERT INTO pagos_publicidad (
-      id_campania, id_dueno, id_administrador, monto, moneda, 
+      id_campania, id_dueno, monto, moneda,
       metodo_pago, numero_referencia, comprobante_url, estado_pago
     ) 
-    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) 
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
     RETURNING *;
   `;
 
   const values = [
     id_campania, 
     id_dueno || null, 
-    id_administrador || null, 
     monto, 
     moneda || 'NIO', 
     metodo_pago || null, 
@@ -55,7 +53,6 @@ export async function update(id, data, client = pool) {
   const { 
     id_campania, 
     id_dueno, 
-    id_administrador, 
     monto, 
     moneda, 
     metodo_pago, 
@@ -66,17 +63,16 @@ export async function update(id, data, client = pool) {
 
   const query = `
     UPDATE pagos_publicidad 
-    SET id_campania = $1, id_dueno = $2, id_administrador = $3, monto = $4, 
-        moneda = $5, metodo_pago = $6, numero_referencia = $7, 
-        comprobante_url = $8, estado_pago = $9 
-    WHERE id_pago = $10 
+    SET id_campania = $1, id_dueno = $2, monto = $3,
+        moneda = $4, metodo_pago = $5, numero_referencia = $6,
+        comprobante_url = $7, estado_pago = $8
+    WHERE id_pago = $9
     RETURNING *;
   `;
 
   const values = [
     id_campania, 
     id_dueno || null, 
-    id_administrador || null, 
     monto, 
     moneda || 'NIO', 
     metodo_pago, 

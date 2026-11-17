@@ -4,7 +4,7 @@ import { lugarSchema } from './lugar.dto.js'
 export const atractivoIndependienteSchema = Joi.object({
     id_lugar: Joi.number()
         .integer()
-        .positive()
+        .positive().max(2147483647)
         .required()
         .messages({
             'number.base': 'El ID del lugar debe ser un número.',
@@ -25,7 +25,7 @@ export const atractivoIndependienteSchema = Joi.object({
 
     id_administrador: Joi.number()
         .integer()
-        .positive()
+        .positive().max(2147483647)
         .allow(null)
         .optional(),
 

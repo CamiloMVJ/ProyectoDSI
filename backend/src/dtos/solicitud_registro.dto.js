@@ -1,32 +1,20 @@
-import Joi from 'joi';
+import Joi from 'joi'
 
 export const solicitudRegistroSchema = Joi.object({
-    id_dueno: Joi.number()
-        .integer()
-        .positive()
-        .required()
-        .messages({
-            'number.base': 'El ID del dueño debe ser un número.',
-            'number.integer': 'El ID del dueño debe ser un número entero.',
-            'number.positive': 'El ID del dueño debe ser positivo.',
-            'any.required': 'El ID del dueño es obligatorio.'
-        }),
-
-    id_administrador: Joi.number()
-        .integer()
-        .positive()
-        .allow(null)
-        .optional(),
-
-    documentos_adjuntos: Joi.string()
-        .allow('', null)
-        .optional(),
-
-    estado: Joi.string()
-        .max(50)
-        .default('Pendiente'),
-
-    observaciones: Joi.string()
-        .allow('', null)
-        .optional()
-});
+  nombre_negocio: Joi.string().trim().max(150).required(),
+  razon_social: Joi.string().trim().max(150).allow('', null).optional(),
+  codigo_ruc: Joi.string().trim().max(50).required(),
+  numero_cedula_solicitante: Joi.string().trim().max(30).allow('', null).optional(),
+  tipo_persona: Joi.string().valid('Persona Natural', 'Persona Jurídica').allow(null).optional(),
+  descripcion: Joi.string().trim().allow('').optional(),
+  es_independiente: Joi.boolean().optional(),
+  id_complejo_padre: Joi.number().integer().positive().max(2147483647).allow(null).optional(),
+  municipio: Joi.string().trim().max(100).required(),
+  direccion_exacta: Joi.string().trim().required(),
+  maps_link: Joi.string().trim().max(255).allow('', null).optional(),
+  telefono_contacto: Joi.string().trim().max(30).allow('', null).optional(),
+  correo_contacto: Joi.string().trim().max(150).allow('', null).optional(),
+  sitio_web: Joi.string().trim().max(255).allow('', null).optional(),
+  id_departamento: Joi.number().integer().positive().max(2147483647).required(),
+  categorias: Joi.array().items(Joi.number().integer().positive().max(2147483647)).unique().optional(),
+})

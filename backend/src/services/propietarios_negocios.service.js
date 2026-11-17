@@ -24,6 +24,15 @@ export async function findOne(id) {
   })
 }
 
+export async function findOneByUserId(id) {
+  id = parseId(id)
+  return execute(async () => {
+    const record = await repository.findByUserId(id)
+    if (!record) throw new AppError('El propietario no existe', 404)
+    return record
+  })
+}
+
 // El middleware debe validar el DTO de creación antes de llamar a esta función.
 export async function create(data, client) {
   data = allowedData(data, fields)

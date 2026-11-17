@@ -1,11 +1,11 @@
 import * as repository from '../repositories/usuarios.repository.js'
-import * as repositoryAdmin from '../repositories/administradores.repository.js'
 import { AppError } from '../errors/app-error.js'
 import { parseId, allowedData, pick, execute, requireReference, withLockedRecord, checkDates, checkEvent, normalizeEvent, publicUser } from './service-utils.js'
 import { hashPassword, verifyPassword } from './password-utils.js'
 import jwt from 'jsonwebtoken'
 
 const fields = ["nombre_completo", "email", "password", "telefono"]
+const userWithRole = (usuario) => ({ ...publicUser(usuario), rol: usuario.rol })
 
 async function prepare(data) {
   const result = { ...data }
@@ -17,7 +17,7 @@ async function prepare(data) {
 }
 
 export async function findAll() {
-  return execute(async () => (await repository.findAll()).map(publicUser))
+  return execute(async () => (await repository.findAll()).map(userWithRole))
 }
 
 export async function findOne(id) {
@@ -25,7 +25,7 @@ export async function findOne(id) {
   return execute(async () => {
     const record = await repository.findOne(id)
     if (!record) throw new AppError('El usuario no existe', 404)
-    return publicUser(record)
+    return userWithRole(record)
   })
 }
 
@@ -37,7 +37,7 @@ export async function create(data) {
     // console.log("Data preparada: ", await prepare(data))
     const result = await repository.create(await prepare(data))
     
-    return publicUser(result)
+    return { ...publicUser(result), rol: 'Usuario' }
   })
 }
 
@@ -49,7 +49,7 @@ export async function update(id, data) {
     'usuarios', id, repository, 'El usuario', async (current, client) => {
       const result = await repository.update(id, await prepare(data), client)
       if (!result) throw new AppError('El usuario no existe', 404)
-      return publicUser(result)
+      return userWithRole(await repository.findOne(id, client))
     }
   ))
 }
@@ -64,36 +64,30 @@ export async function remove(id) {
 }
 
 export async function login(body) {
-  const { email, password } = body;
-  const usuario = await repository.findByEmail(email);
-  const admin = await repositoryAdmin.findByUserId(usuario.id_usuario)
-  // console.log('Administrador encontrado:', admin);
-  
+  const { email, password } = body
+  const usuario = await repository.findByEmail(email)
+
   if (!usuario) {
-    throw new Error('Credenciales inválidas 1');
+    throw new AppError('Credenciales inválidas', 401)
   }
 
-  // console.log('Usuario encontrado:', usuario);
-  // console.log('Contraseña ingresada:', password);
-  const isValid = await verifyPassword(password, usuario.password_hash);
+  const isValid = await verifyPassword(password, usuario.password_hash)
   
   if (!isValid) {
-    throw new Error('Credenciales inválidas 2');
+    throw new AppError('Credenciales inválidas', 401)
   }
 
   const payload = {
     id: usuario.id_usuario,
-    rol: admin ? admin.rol : usuario.rol 
-  };
+    rol: usuario.rol
+  }
 
   const token = jwt.sign(payload, process.env.JWT_SECRET, {
     expiresIn: '8h'
-  });
-
-  const { password: _, ...usuarioSinPassword } = usuario;
+  })
 
   return { 
     token, 
-    usuario: usuarioSinPassword 
-  };
+    usuario: userWithRole(usuario)
+  }
 }

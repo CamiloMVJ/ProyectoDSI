@@ -54,14 +54,15 @@ hora_fin: Joi.string()
         'string.pattern.base': 'La hora de finalización debe tener el formato HH:MM.'
     }),
 
-departamento: Joi.string()
-    .trim()
-    .max(100)
+id_departamento: Joi.number()
+    .integer()
+    .positive().max(2147483647)
     .required()
     .messages({
-        'string.empty': 'El departamento es obligatorio.',
-        'string.max': 'El departamento no puede superar los 100 caracteres.',
-        'any.required': 'El departamento es obligatorio.'
+        'number.base': 'El ID del departamento debe ser un número.',
+        'number.integer': 'El ID del departamento debe ser un entero.',
+        'number.positive': 'El ID del departamento debe ser positivo.',
+        'any.required': 'El ID del departamento es obligatorio.'
     }),
 
 municipio: Joi.string()
@@ -85,6 +86,7 @@ tipo_evento: Joi.string()
 
 costo_entrada: Joi.number()
     .min(0)
+    .max(99999999.99)
     .precision(2)
     .allow(null)
     .optional()
@@ -100,7 +102,7 @@ es_anual_recurrente: Joi.boolean()
 
 id_lugar_asociado: Joi.number()
     .integer()
-    .positive()
+    .positive().max(2147483647)
     .allow(null)
     .optional(),
 
