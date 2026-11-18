@@ -3,6 +3,10 @@
     {
       "source": "/(.*)",
       "destination": "/index.html"
+    },
+    {
+      "source": "/api/:path",
+      "destination": "https://proyectodsi-77t1.onrender.com/api/:path*"
     }
   ]
 }
