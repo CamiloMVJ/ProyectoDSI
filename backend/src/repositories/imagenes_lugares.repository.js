@@ -1,7 +1,10 @@
 import { pool } from '../db/db.js';
 
-export async function findAll(client = pool) {
-  const { rows } = await client.query('SELECT * FROM imagenes_locales');
+export async function findAll(client = pool, idLocal = null) {
+  const { rows } = await client.query(
+    'SELECT * FROM imagenes_locales WHERE ($1::integer IS NULL OR id_local = $1) ORDER BY id_imagen',
+    [idLocal]
+  );
   return rows;
 }
 

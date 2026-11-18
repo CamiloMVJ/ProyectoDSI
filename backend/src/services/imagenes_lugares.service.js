@@ -30,8 +30,8 @@ async function checkRules(data, user, client) {
     )
 }
 
-export async function findAll() {
-  return execute(() => repository.findAll())
+export async function findAll(idLocal) {
+  return execute(() => repository.findAll(undefined, idLocal == null ? null : parseId(idLocal)))
 }
 
 export async function findOne(id) {

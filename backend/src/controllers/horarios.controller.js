@@ -2,7 +2,7 @@ import * as service from '../services/horarios.service.js';
 
 // Capa HTTP: delega la lógica de negocio al servicio existente.
 export const listar = async (req, res, next) => {
-  try { res.status(200).json({ success: true, data: await service.findAll() }); }
+  try { res.status(200).json({ success: true, data: await service.findAll(req.query.id_local) }); }
   catch (error) { next(error); }
 };
 

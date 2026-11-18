@@ -1,16 +1,15 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { ArrowLeft, ArrowRight, Clock3, Compass, ExternalLink, Filter, LoaderCircle, MapPin, Search, SlidersHorizontal, Store } from 'lucide-react'
 import Navbar from '../Components/Navbar.jsx'
 import Footer from '../Components/Footer.jsx'
 import DepartmentDropdown from '../Components/DepartmentDropdown.jsx'
-import { filterPlaces, getCategories, getCommercialCatalog, getDepartments, getPlacesCatalog } from '../services/places.api.js'
+import { getCategories, getDepartments, searchPlaces } from '../services/places.api.js'
 import { useAuth } from '../hooks/useAuth.js'
 import { useFavorites } from '../hooks/useFavorites.js'
 import FavoriteButton from '../Components/FavoriteButton.jsx'
 
 const inputClass = 'min-h-11 w-full rounded-xl border border-[#d8e1d5] bg-[#f8faf6] px-4 text-sm text-[#25382e] outline-none focus:border-[#c45111] focus:ring-2 focus:ring-[#c45111]/15'
-const PAGE_SIZE = 8
 
 function SearchFilters({ applied, departments, categories, onApply, onClear }) {
   const [filters, setFilters] = useState(() => ({
@@ -148,46 +147,59 @@ export default function SearchResults() {
   const filterParams = new URLSearchParams(searchParams)
   filterParams.delete('page')
   const filtersKey = filterParams.toString()
-  const maxBudget = searchParams.get('max_budget') ?? ''
   const categoryId = searchParams.get('id_categoria') ?? ''
   const [retry, setRetry] = useState(0)
-  const [catalog, setCatalog] = useState({ key: null, places: [], departments: [], categories: [], error: '' })
-  const catalogKey = `${retry}:${maxBudget}:${categoryId}`
+  const [catalog, setCatalog] = useState({ departments: [], categories: [] })
+  const [results, setResults] = useState({ key: null, items: [], total: 0, totalPages: 1, error: '' })
+  const paramsString = searchParams.toString()
+  const searchKey = `${retry}:${paramsString}`
 
   useEffect(() => {
     const controller = new AbortController()
     Promise.all([
-      getPlacesCatalog(controller.signal, maxBudget, categoryId),
-      getCommercialCatalog(controller.signal, maxBudget, categoryId),
       getDepartments(controller.signal),
       getCategories(controller.signal)
     ])
-      .then(([tourism, commercial, departments, categories]) => {
-        if (controller.signal.aborted) return
-        const places = [
-          ...tourism.places.map(place => ({ ...place, id_local: place.id_lugar })),
-          ...commercial.map(local => ({ ...local, tipo: 'local' }))
-        ]
-        setCatalog({ key: catalogKey, places, departments, categories, error: '' })
+      .then(([departments, categories]) => { if (!controller.signal.aborted) setCatalog({ departments, categories }) })
+      .catch(() => {})
+    return () => controller.abort()
+  }, [])
+
+  useEffect(() => {
+    const controller = new AbortController()
+    const params = new URLSearchParams(paramsString)
+    const requested = Number(params.get('page'))
+    if (params.has('page') && (!Number.isSafeInteger(requested) || requested < 1 || requested > 100000)) params.delete('page')
+    searchPlaces(params, controller.signal)
+      .then(data => {
+        if (!controller.signal.aborted) setResults({ key: searchKey, ...data, error: '' })
       })
       .catch(error => {
-        if (!controller.signal.aborted) setCatalog({ key: catalogKey, places: [], departments: [], categories: [], error: error instanceof TypeError ? 'No se pudo conectar con el servidor.' : error.message })
+        if (!controller.signal.aborted) setResults({ key: searchKey, items: [], total: 0, totalPages: 1, error: error instanceof TypeError ? 'No se pudo conectar con el servidor.' : error.message })
       })
     return () => controller.abort()
-  }, [catalogKey, maxBudget, categoryId])
+  }, [searchKey, paramsString])
 
-  const places = useMemo(() => filterPlaces(catalog.places, Object.fromEntries(new URLSearchParams(filtersKey))), [catalog.places, filtersKey])
-  const loading = catalog.key !== catalogKey
+  const places = results.items
+  const loading = results.key !== searchKey
   const hasFilters = Boolean(filtersKey)
   const onlyCategoryFilter = categoryId !== '' && filterParams.size === 1
-  const totalPages = Math.max(1, Math.ceil(places.length / PAGE_SIZE))
+  const totalPages = results.totalPages
   const requestedPage = Number(searchParams.get('page'))
   const currentPage = Number.isSafeInteger(requestedPage) && requestedPage > 0
-    ? Math.min(requestedPage, totalPages)
+    ? requestedPage
     : 1
-  const visiblePlaces = places.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE)
   const pageNumbers = Array.from({ length: totalPages }, (_, index) => index + 1)
     .filter(page => page === 1 || page === totalPages || Math.abs(page - currentPage) <= 1)
+
+  useEffect(() => {
+    if (loading || results.error || currentPage <= totalPages) return
+    setSearchParams(current => {
+      const next = new URLSearchParams(current)
+      next.set('page', String(totalPages))
+      return next
+    }, { replace: true })
+  }, [loading, results.error, currentPage, totalPages, setSearchParams])
 
   function togglePlace(idLocal, place) {
     if (!sesion) { navigate('/ingresar'); return false }
@@ -225,16 +237,16 @@ export default function SearchResults() {
             {favoriteError && <p role="alert" className="mb-5 rounded-xl bg-[#fff0e9] p-4 text-sm text-[#9d3e0b]">{favoriteError}</p>}
             <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
               <div><p className="text-xs font-bold uppercase tracking-widest text-[#c45111]">Destinos y negocios para descubrir</p><h2 id="results-title" className="mt-1 scroll-mt-28 text-2xl font-bold text-[#263f32]">Resultados de búsqueda</h2></div>
-              {!loading && !catalog.error && <span role="status" className="rounded-full bg-[#eaf0e7] px-3 py-2 text-xs font-bold text-[#344e3b]">{places.length} {places.length === 1 ? 'resultado' : 'resultados'}</span>}
+              {!loading && !results.error && <span role="status" className="rounded-full bg-[#eaf0e7] px-3 py-2 text-xs font-bold text-[#344e3b]">{results.total} {results.total === 1 ? 'resultado' : 'resultados'}</span>}
             </div>
 
             {loading && <p role="status" className="flex items-center gap-3 rounded-2xl border border-[#d8e1d5] bg-white p-8 text-sm text-[#526554]"><LoaderCircle size={20} aria-hidden="true" className="animate-spin" /> Buscando lugares y locales…</p>}
-            {!loading && catalog.error && <div role="alert" className="rounded-2xl border border-[#e9c7b6] bg-[#fff0e9] p-8"><p className="text-sm text-[#9d3e0b]">{catalog.error}</p><button type="button" onClick={() => setRetry(value => value + 1)} className="mt-4 min-h-11 rounded-full bg-[#c45111] px-5 text-sm font-bold text-white hover:bg-[#9d3e0b]">Reintentar</button></div>}
-            {!loading && !catalog.error && places.length === 0 && <div className="rounded-2xl border border-[#d8e1d5] bg-white px-6 py-12 text-center"><Search size={32} aria-hidden="true" className="mx-auto text-[#79927c]" /><h3 className="mt-4 text-lg font-bold">{onlyCategoryFilter ? 'No hay lugares en esta categoría' : 'No encontramos lugares con esos filtros'}</h3><p className="mt-2 text-sm text-[#526554]">{onlyCategoryFilter ? 'No hay límite de presupuesto aplicado. Prueba con otra categoría o consulta todos los lugares.' : 'Prueba con otro término o amplía tu búsqueda.'}</p>{hasFilters && <button type="button" onClick={() => setSearchParams({})} className="mt-5 inline-flex min-h-11 items-center gap-2 rounded-full bg-[#c45111] px-5 text-sm font-bold text-white hover:bg-[#9d3e0b]">Ver todos los lugares <ArrowRight size={16} aria-hidden="true" /></button>}</div>}
-            {!loading && !catalog.error && places.length > 0 && (
+            {!loading && results.error && <div role="alert" className="rounded-2xl border border-[#e9c7b6] bg-[#fff0e9] p-8"><p className="text-sm text-[#9d3e0b]">{results.error}</p><button type="button" onClick={() => setRetry(value => value + 1)} className="mt-4 min-h-11 rounded-full bg-[#c45111] px-5 text-sm font-bold text-white hover:bg-[#9d3e0b]">Reintentar</button></div>}
+            {!loading && !results.error && results.total === 0 && <div className="rounded-2xl border border-[#d8e1d5] bg-white px-6 py-12 text-center"><Search size={32} aria-hidden="true" className="mx-auto text-[#79927c]" /><h3 className="mt-4 text-lg font-bold">{onlyCategoryFilter ? 'No hay lugares en esta categoría' : 'No encontramos lugares con esos filtros'}</h3><p className="mt-2 text-sm text-[#526554]">{onlyCategoryFilter ? 'No hay límite de presupuesto aplicado. Prueba con otra categoría o consulta todos los lugares.' : 'Prueba con otro término o amplía tu búsqueda.'}</p>{hasFilters && <button type="button" onClick={() => setSearchParams({})} className="mt-5 inline-flex min-h-11 items-center gap-2 rounded-full bg-[#c45111] px-5 text-sm font-bold text-white hover:bg-[#9d3e0b]">Ver todos los lugares <ArrowRight size={16} aria-hidden="true" /></button>}</div>}
+            {!loading && !results.error && results.total > 0 && (
               <>
                 <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
-                  {visiblePlaces.map(place => <PlaceCard key={`${place.tipo}-${place.id_local}`} place={place} saved={favorites.some(item => Number(item.id_local) === Number(place.id_local))} pending={loadingFavorites || pendingId !== null} onToggle={togglePlace} />)}
+                  {places.map(place => <PlaceCard key={`${place.tipo}-${place.id_local}`} place={place} saved={favorites.some(item => Number(item.id_local) === Number(place.id_local))} pending={loadingFavorites || pendingId !== null} onToggle={togglePlace} />)}
                 </div>
                 {totalPages > 1 && (
                   <nav aria-label="Paginación de resultados" className="mt-8 flex flex-wrap items-center justify-center gap-2 pb-4">

@@ -25,10 +25,12 @@ import uploadsRoutes from "./uploads.routes.js"
 import gestionEstablecimientosRoutes from './gestion_establecimientos.routes.js'
 import menuCategoriesRoutes from "./menu-categories.routes.js"
 import gestionLugaresRoutes from './gestion_lugares.routes.js'
+import busquedaRoutes from './busqueda.routes.js'
 
 const router = Router()
 router.get("/health", (req, res) => res.json({ success: true, status: "ok" }))
 router.use("/categorias", categoriasRoutes)
+router.use('/buscar', busquedaRoutes)
 router.use("/locales_categorias", localesCategoriasRoutes)
 router.use("/departamentos", departamentosRoutes)
 router.use("/servicios", serviciosRoutes)

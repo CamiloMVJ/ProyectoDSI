@@ -30,15 +30,14 @@ export async function getPerfilLugar(id, signal) {
   const [atractivo, complejo, imagenes, horarios, servicios, menus] = await Promise.all([
     turistico ? optionalRecord(`/atractivos_independientes/${id}`, signal) : null,
     turistico ? optionalRecord(`/complejos_turisticos/${id}`, signal) : null,
-    request('/imagenes_lugares', { signal }),
-    request('/horarios', { signal }),
-    request('/servicios', { signal }),
+    request(`/imagenes_lugares?id_local=${id}`, { signal }),
+    request(`/horarios?id_local=${id}`, { signal }),
+    comercial ? request(`/servicios?id_local=${id}`, { signal }) : [],
     comercial ? request(`/locales_comerciales/${id}/menus`, { signal }) : null,
   ])
 
   const base = comercial ?? turistico
   const galeria = imagenes
-    .filter(imagen => Number(imagen.id_local) === Number(id))
     .sort((a, b) => Number(a.id_imagen) - Number(b.id_imagen))
     .map(imagen => ({ id: imagen.id_imagen, url: imagen.url_imagen, descripcion: imagen.descripcion }))
 
@@ -63,14 +62,13 @@ export async function getPerfilLugar(id, signal) {
     es_comercial: Boolean(comercial),
     menus: menus || [],
     horarios: horarios
-      .filter(horario => Number(horario.id_local) === Number(id))
       .sort((a, b) => Number(a.id_horario) - Number(b.id_horario))
       .map(horario => ({
         dia: horario.dia_semana,
         horas: `${String(horario.hora_apertura).slice(0, 5)} – ${String(horario.hora_cierre).slice(0, 5)}`,
       })),
     servicios: servicios
-      .filter(servicio => Number(servicio.id_local) === Number(id) && servicio.esta_disponible !== false)
+      .filter(servicio => servicio.esta_disponible !== false)
       .map(servicio => servicio.nombre_servicio),
     precios,
     contacto: {
