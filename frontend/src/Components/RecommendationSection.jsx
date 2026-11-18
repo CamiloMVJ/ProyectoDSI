@@ -1,8 +1,12 @@
+import { useState, useEffect } from 'react';
 import SectionHeaderDecoration from './SectionHeaderDecoration';
 import { ChevronLeft, Clock, MapPin, Star, Heart, ChevronRight, Sparkles, ExternalLink } from "lucide-react";
+
 const RecommendationSection = ({
   id,
   sectionTitle,
+  items = [],
+  loading = false,
   nombreNegocio = 'Nombre negocio',
   descripcion = 'Descripción',
   localidad = 'Localidad / Dirección',
@@ -20,6 +24,93 @@ const RecommendationSection = ({
   onPrevImage,
   onNextImage
 }) => {
+  const [businessIdx, setBusinessIdx] = useState(0);
+  const [imageIdx, setImageIdx] = useState(0);
+
+  // Reinicia los índices si cambia la lista de items
+  useEffect(() => {
+    setBusinessIdx(0);
+    setImageIdx(0);
+  }, [items]);
+
+  const hasItems = Array.isArray(items) && items.length > 0;
+  const current = hasItems ? items[businessIdx % items.length] : null;
+
+  // Extrae lista de imágenes del negocio actual (soporta array de strings u objetos { url_imagen })
+  const images = current
+    ? (Array.isArray(current.imagenes)
+        ? current.imagenes.map((img) => (typeof img === 'string' ? img : img?.url_imagen)).filter(Boolean)
+        : [current.imagen_portada, current.url_imagen, current.imageUrl].filter(Boolean))
+    : [];
+
+  // Valores resueltos (usa el item actual de la BD si existe, o las props por defecto)
+  const resolvedNombre = current
+    ? (current.nombre || current.razon_social || nombreNegocio)
+    : (loading ? 'Cargando...' : nombreNegocio);
+
+  const resolvedDescripcion = current
+    ? (current.descripcion || 'Sin descripción disponible.')
+    : descripcion;
+
+  const resolvedLocalidad = current
+    ? ([current.municipio, current.departamento, current.direccion_exacta].filter(Boolean).join(', ') || localidad)
+    : localidad;
+
+  const resolvedHorario = current
+    ? (current.horario || current.horario_atencion || 'Horario no especificado')
+    : horario;
+
+  const resolvedPuntuacion = current
+    ? (current.promedio_calificacion != null
+        ? Number(current.promedio_calificacion).toFixed(1)
+        : (current.puntuacion ?? 'Sin reseñas'))
+    : puntuacion;
+
+  const resolvedMapsLink = current ? (current.maps_link || mapsLink) : mapsLink;
+  const resolvedDestacado = current ? Boolean(current.es_destacado) : esDestacado;
+  const resolvedImageUrl = images.length > 0 ? images[imageIdx % images.length] : imageUrl;
+
+  // Manejadores de navegación (usan los internos si hay items, o los callbacks externos)
+  const handlePrevBusiness = () => {
+    if (hasItems) {
+      setBusinessIdx((prev) => (prev - 1 + items.length) % items.length);
+      setImageIdx(0);
+    } else if (onPrevBusiness) {
+      onPrevBusiness();
+    }
+  };
+
+  const handleNextBusiness = () => {
+    if (hasItems) {
+      setBusinessIdx((prev) => (prev + 1) % items.length);
+      setImageIdx(0);
+    } else if (onNextBusiness) {
+      onNextBusiness();
+    }
+  };
+
+  const handlePrevImage = () => {
+    if (images.length > 1) {
+      setImageIdx((prev) => (prev - 1 + images.length) % images.length);
+    } else if (onPrevImage) {
+      onPrevImage();
+    }
+  };
+
+  const handleNextImage = () => {
+    if (images.length > 1) {
+      setImageIdx((prev) => (prev + 1) % images.length);
+    } else if (onNextImage) {
+      onNextImage();
+    }
+  };
+
+  const handleViewDetails = () => {
+    if (onViewDetails) {
+      onViewDetails(current);
+    }
+  };
+
   return (
     <div id={id} className="w-full scroll-mt-24">
       {/* Título de la sección con ornamentos */}
@@ -30,7 +121,7 @@ const RecommendationSection = ({
         {/* Flecha Izquierda de navegación de negocios */}
         <button
           type="button"
-          onClick={onPrevBusiness}
+          onClick={handlePrevBusiness}
           aria-label="Negocio anterior"
           className="absolute left-2.5 sm:left-4 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/15 hover:bg-white/30 text-white flex items-center justify-center transition-all cursor-pointer"
         >
@@ -46,22 +137,28 @@ const RecommendationSection = ({
               <div className="flex flex-wrap items-center gap-2 mb-3">
                 <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold bg-white/20 backdrop-blur-xs px-3 py-1 rounded-full">
                   <Clock className="w-3.5 h-3.5" />
-                  {horario}
+                  {resolvedHorario}
                 </span>
 
-                {esDestacado && (
+                {resolvedDestacado && (
                   <span className="inline-flex items-center gap-1 text-[11px] font-bold bg-[#C45111] text-white px-3 py-1 rounded-full shadow-xs">
                     <Sparkles className="w-3 h-3" />
                     Destacado
                   </span>
                 )}
+
+                {hasItems && (
+                  <span className="text-[11px] font-medium text-white/75 ml-auto">
+                    {(businessIdx % items.length) + 1} / {items.length}
+                  </span>
+                )}
               </div>
 
               <h4 className="text-xl sm:text-2xl font-bold tracking-tight mb-2">
-                {nombreNegocio}
+                {resolvedNombre}
               </h4>
-              <p className="text-xs sm:text-sm text-white/90 font-normal leading-relaxed pl-2 border-l-2 border-white/40">
-                {descripcion}
+              <p className="text-xs sm:text-sm text-white/90 font-normal leading-relaxed pl-2 border-l-2 border-white/40 line-clamp-3">
+                {resolvedDescripcion}
               </p>
             </div>
 
@@ -71,11 +168,11 @@ const RecommendationSection = ({
                 <MapPin className="w-4 h-4 text-white shrink-0 mt-0.5" />
                 <div>
                   <h5 className="text-sm sm:text-base font-bold tracking-tight leading-snug">
-                    {localidad}
+                    {resolvedLocalidad}
                   </h5>
-                  {mapsLink && (
+                  {resolvedMapsLink && (
                     <a
-                      href={mapsLink}
+                      href={resolvedMapsLink}
                       target="_blank"
                       rel="noreferrer"
                       className="inline-flex items-center gap-1 text-[11px] text-white/80 hover:text-white underline mt-0.5"
@@ -96,13 +193,13 @@ const RecommendationSection = ({
                     ))}
                   </div>
                   <span className="text-xs font-semibold text-white ml-1">
-                    {puntuacion}
+                    {resolvedPuntuacion}
                   </span>
                 </div>
 
                 <button
                   type="button"
-                  onClick={onViewDetails}
+                  onClick={handleViewDetails}
                   className="bg-white text-[#5F6B58] hover:bg-[#C45111] hover:text-white text-xs font-bold px-4 py-2 rounded-full transition-colors shadow-xs cursor-pointer"
                 >
                   Ver detalles
@@ -114,10 +211,10 @@ const RecommendationSection = ({
           {/* Columna Derecha: Recuadro blanco para galería de imágenes */}
           <div className="md:col-span-7">
             <div className="relative bg-white rounded-[26px] h-[240px] sm:h-[280px] w-full flex items-center justify-center overflow-hidden shadow-inner group">
-              {imageUrl ? (
+              {resolvedImageUrl ? (
                 <img
-                  src={imageUrl}
-                  alt={nombreNegocio}
+                  src={resolvedImageUrl}
+                  alt={resolvedNombre}
                   className="w-full h-full object-cover"
                 />
               ) : (
@@ -126,38 +223,45 @@ const RecommendationSection = ({
                 </span>
               )}
 
-              {/* Botón de Guardar en Favoritos (conectado a tabla favoritos) */}
-              {onToggleFavorite && <button
-                type="button"
-                onClick={onToggleFavorite}
-                aria-label="Guardar en favoritos"
-                className={`absolute top-3.5 right-3.5 z-10 w-9 h-9 rounded-full flex items-center justify-center shadow-sm transition-all cursor-pointer ${esFavorito
-                  ? 'bg-red-50 text-red-500 scale-105'
-                  : 'bg-gray-100/90 hover:bg-white text-gray-400 hover:text-red-500'
+              {/* Botón de Guardar en Favoritos */}
+              {onToggleFavorite && (
+                <button
+                  type="button"
+                  onClick={() => onToggleFavorite(current)}
+                  aria-label="Guardar en favoritos"
+                  className={`absolute top-3.5 right-3.5 z-10 w-9 h-9 rounded-full flex items-center justify-center shadow-sm transition-all cursor-pointer ${
+                    esFavorito
+                      ? 'bg-red-50 text-red-500 scale-105'
+                      : 'bg-gray-100/90 hover:bg-white text-gray-400 hover:text-red-500'
                   }`}
-              >
-                <Heart className={`w-4 h-4 ${esFavorito ? 'fill-current' : ''}`} />
-              </button>}
+                >
+                  <Heart className={`w-4 h-4 ${esFavorito ? 'fill-current' : ''}`} />
+                </button>
+              )}
 
               {/* Flecha Izquierda de imagen */}
-              <button
-                type="button"
-                onClick={onPrevImage}
-                aria-label="Imagen anterior"
-                className="absolute left-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-gray-100/80 hover:bg-white text-gray-500 hover:text-gray-800 flex items-center justify-center transition-all cursor-pointer shadow-2xs"
-              >
-                <ChevronLeft className="w-5 h-5 stroke-[1.8]" />
-              </button>
+              {images.length > 1 && (
+                <button
+                  type="button"
+                  onClick={handlePrevImage}
+                  aria-label="Imagen anterior"
+                  className="absolute left-3 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-gray-100/80 hover:bg-white text-gray-500 hover:text-gray-800 flex items-center justify-center transition-all cursor-pointer shadow-2xs"
+                >
+                  <ChevronLeft className="w-5 h-5 stroke-[1.8]" />
+                </button>
+              )}
 
               {/* Flecha Derecha de imagen */}
-              <button
-                type="button"
-                onClick={onNextImage}
-                aria-label="Siguiente imagen"
-                className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-gray-100/80 hover:bg-white text-gray-500 hover:text-gray-800 flex items-center justify-center transition-all cursor-pointer shadow-2xs"
-              >
-                <ChevronRight className="w-5 h-5 stroke-[1.8]" />
-              </button>
+              {images.length > 1 && (
+                <button
+                  type="button"
+                  onClick={handleNextImage}
+                  aria-label="Siguiente imagen"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-gray-100/80 hover:bg-white text-gray-500 hover:text-gray-800 flex items-center justify-center transition-all cursor-pointer shadow-2xs"
+                >
+                  <ChevronRight className="w-5 h-5 stroke-[1.8]" />
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -165,7 +269,7 @@ const RecommendationSection = ({
         {/* Flecha Derecha de navegación de negocios */}
         <button
           type="button"
-          onClick={onNextBusiness}
+          onClick={handleNextBusiness}
           aria-label="Siguiente negocio"
           className="absolute right-2.5 sm:right-4 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/15 hover:bg-white/30 text-white flex items-center justify-center transition-all cursor-pointer"
         >
@@ -175,4 +279,5 @@ const RecommendationSection = ({
     </div>
   );
 };
+
 export default RecommendationSection;

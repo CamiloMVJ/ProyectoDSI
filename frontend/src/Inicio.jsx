@@ -7,8 +7,11 @@ import RecommendationSection from './Components/RecommendationSection';
 import HospedajeIcon from './Components/Icons';
 import Footer from './Components/Footer';
 import { useNavigate } from 'react-router-dom';
-import { Utensils, Martini, Disc, Coffee, Bus } from 'lucide-react';
+import { Utensils, Martini, Disc, Coffee} from 'lucide-react';
 import { getDepartments } from './services/places.api.js';
+import { getEventos } from './services/adminCalendar.api.js';
+import { isoDay } from './services/calendarUtils.js';
+import { getEventosNacionales, getRecomendacionesInicio } from './services/Inicio.api.js';
 
 
 /* ============================================================================
@@ -21,7 +24,7 @@ const DEFAULT_CATEGORIES = [
   { id: 'bares', label: 'Bares', Icon: Martini },
   { id: 'discotecas', label: 'Discotecas', Icon: Disc },
   { id: 'cafeterias', label: 'Cafeterías', Icon: Coffee },
-  { id: 'transporte', label: 'Transporte', Icon: Bus }
+
 ];
 
 export const CategorySelector = ({
@@ -36,7 +39,7 @@ export const CategorySelector = ({
         {title}
       </h1>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-5 sm:gap-6 max-w-4xl mx-auto justify-items-center">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-5 sm:gap-6 max-w-3xl mx-auto justify-items-center">
         {categories.map(({ id, label, Icon }) => {
           const isSelected = selectedCategory === id;
           return (
@@ -84,12 +87,60 @@ export default function App() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedDepartment, setSelectedDepartment] = useState('');
   const [departments, setDepartments] = useState([]);
+  const [events, setEvents] = useState([]);
+  const [activeEventIndex, setActiveEventIndex] = useState(0);
+  const [recommendations, setRecommendations] = useState({});
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    getEventos(controller.signal).then(items => {
+      const now = new Date();
+      const current = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+      setEvents(items.filter(e => e.estado === 'Programado' && (e.es_anual_recurrente || isoDay(e.fecha_fin) >= current)).slice(0, 12));
+    }).catch(() => {});
+    return () => controller.abort();
+  }, []);
 
   useEffect(() => {
     const controller = new AbortController();
     getDepartments(controller.signal)
       .then(setDepartments)
       .catch(error => { if (error.name !== 'AbortError') setDepartments([]); });
+    return () => controller.abort();
+  }, []);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    const { signal } = controller;
+
+    async function loadHomeData() {
+      setLoading(true);
+      try {
+        const [deptRes, eventsRes, recsRes] = await Promise.allSettled([
+          getDepartments(signal),
+          getEventosNacionales(signal),
+          getRecomendacionesInicio(signal),
+        ]);
+
+        if (signal.aborted) return;
+
+        if (deptRes.status === 'fulfilled') {
+          setDepartments(Array.isArray(deptRes.value) ? deptRes.value : []);
+        }
+        if (eventsRes.status === 'fulfilled') {
+          setEvents(Array.isArray(eventsRes.value) ? eventsRes.value : []);
+          setActiveEventIndex(0);
+        }
+        if (recsRes.status === 'fulfilled' && recsRes.value) {
+          setRecommendations(recsRes.value);
+        }
+      } finally {
+        if (!signal.aborted) setLoading(false);
+      }
+    }
+
+    loadHomeData();
     return () => controller.abort();
   }, []);
 
@@ -132,7 +183,24 @@ export default function App() {
           onSearchSubmit={handleSearch}
         />
 
-        <EventCarousel />
+        <EventCarousel events={events}
+          activeIndex={activeEventIndex}
+          onPrev={() =>
+            setActiveEventIndex((prev) =>
+              events.length ? (prev - 1 + events.length) % events.length : 0
+            )
+          }
+          onNext={() =>
+            setActiveEventIndex((prev) =>
+              events.length ? (prev + 1) % events.length : 0
+            )
+          }
+          onSelectDot={(index) => setActiveEventIndex(index)}
+          onViewDetails={(evento) => {
+            if (evento?.id_evento) {
+              navigate(`/evento/${evento.id_evento}`);
+            }
+          }}/>
 
         {/* 4. Sección de Recomendaciones */}
         <section className="w-full max-w-7xl mx-auto mt-16 px-6 sm:px-10">
@@ -154,6 +222,12 @@ export default function App() {
                 key={section.id}
                 id={section.id}
                 sectionTitle={section.title}
+                items={recommendations[section.id] || []}
+                loading={loading}
+                onViewDetails={(local) => {
+                  const id = local?.id_local ?? local?.id_lugar;
+                  if (id) navigate(`/perfil-lugar/${id}`);
+                }}
               />
             ))}
           </div>

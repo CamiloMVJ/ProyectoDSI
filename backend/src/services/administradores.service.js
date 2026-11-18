@@ -47,7 +47,7 @@ export async function createAdminUser(data) {
   return execute(() => withTransaction(async (client) => {
     const usuario = await usuariosRepository.create(userData, client)
     const administrador = await create({
-      ...pick(data, profileFields),
+      rol: 'Administrador',
       id_usuario: usuario.id_usuario
     }, client)
 

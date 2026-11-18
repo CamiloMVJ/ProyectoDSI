@@ -53,6 +53,7 @@ export default function Navbar({
             </Link>
           </li>
 
+          <li><Link to="/calendario" className={linkClass}>Eventos</Link></li>
           <li>
             <Link to="/buscar" viewTransition={pathname === '/'} className={linkClass}>
               Explorar
@@ -67,8 +68,7 @@ export default function Navbar({
               text-xs text-[#526554] sm:inline-flex"
             lang="es"
           >
-            <Languages size={16} aria-hidden="true" />
-            Español
+            
           </span>
 
           {sesion ? (

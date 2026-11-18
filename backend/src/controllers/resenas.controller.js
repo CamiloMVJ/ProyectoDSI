@@ -16,8 +16,18 @@ export const listarPublicasDelLocal = async (req, res, next) => {
   catch (error) { next(error); }
 };
 
+export const permisosDelLocal = async (req, res, next) => {
+  try { res.status(200).json({ success: true, data: await service.permissions(req.params.idLocal, req.user.id) }); }
+  catch (error) { next(error); }
+};
+
 export const crear = async (req, res, next) => {
-  try { res.status(201).json({ success: true, data: await service.create(req.body) }); }
+  try { res.status(201).json({ success: true, data: await service.create(req.body, req.user) }); }
+  catch (error) { next(error); }
+};
+
+export const responder = async (req, res, next) => {
+  try { res.status(200).json({ success: true, data: await service.reply(req.params.id, req.body, req.user) }); }
   catch (error) { next(error); }
 };
 
