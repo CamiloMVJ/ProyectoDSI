@@ -9,10 +9,7 @@ import Footer from './Components/Footer';
 import { useNavigate } from 'react-router-dom';
 import { Utensils, Martini, Disc, Coffee} from 'lucide-react';
 import { getDepartments } from './services/places.api.js';
-import {
-  getEventosNacionales,
-  getRecomendacionesInicio,
-} from './services/Inicio.api.js';
+import { getEventosNacionales, getRecomendacionesInicio } from './services/Inicio.api.js';
 
 
 /* ============================================================================
@@ -88,12 +85,50 @@ export default function App() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedDepartment, setSelectedDepartment] = useState('');
   const [departments, setDepartments] = useState([]);
+  const [events, setEvents] = useState([]);
+  const [recommendations, setRecommendations] = useState({});
+  const [loading, setLoading] = useState(false);
+
+
 
   useEffect(() => {
     const controller = new AbortController();
     getDepartments(controller.signal)
       .then(setDepartments)
       .catch(error => { if (error.name !== 'AbortError') setDepartments([]); });
+    return () => controller.abort();
+  }, []);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    const { signal } = controller;
+
+    async function loadHomeData() {
+      setLoading(true);
+      try {
+        const [deptRes, eventsRes, recsRes] = await Promise.allSettled([
+          getDepartments(signal),
+          getEventosNacionales(signal),
+          getRecomendacionesInicio(signal),
+        ]);
+
+        if (signal.aborted) return;
+
+        if (deptRes.status === 'fulfilled') {
+          setDepartments(Array.isArray(deptRes.value) ? deptRes.value : []);
+        }
+        if (eventsRes.status === 'fulfilled') {
+          setEvents(Array.isArray(eventsRes.value) ? eventsRes.value : []);
+        }
+        if (recsRes.status === 'fulfilled' && recsRes.value) {
+          setRecommendations(recsRes.value);
+        }
+      } finally {
+        if (!signal.aborted) setLoading(false);
+      }
+    }
+
+    loadHomeData();
     return () => controller.abort();
   }, []);
 
@@ -156,6 +191,12 @@ export default function App() {
                 key={section.id}
                 id={section.id}
                 sectionTitle={section.title}
+                items={recommendations[section.id] || []}
+                loading={loading}
+                onViewDetails={(local) => {
+                  const id = local?.id_local ?? local?.id_lugar;
+                  if (id) navigate(`/perfil-lugar/${id}`);
+                }}
               />
             ))}
           </div>

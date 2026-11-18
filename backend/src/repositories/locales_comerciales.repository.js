@@ -4,14 +4,24 @@ import { pool } from '../db/db.js'
 const fields = ["codigo_ruc", "id_dueno", "id_complejo_padre", "es_independiente"]
 const baseFields = ["nombre", "descripcion", "id_departamento", "municipio", "direccion_exacta", "maps_link"]
 const selection = `c.*, l.nombre, l.descripcion, l.id_departamento, l.municipio, l.direccion_exacta, l.maps_link,
-  d.nombre AS departamento, imagen.url_imagen`
+  d.nombre AS departamento, imagen.url_imagen, imagen.imagenes, cats.categorias`
+
 const relation = `FROM public.locales_comerciales AS c
   JOIN public.locales AS l ON l.id_local = c.id_local
   JOIN public.departamentos AS d ON d.id_departamento = l.id_departamento
   LEFT JOIN LATERAL (
-    SELECT url_imagen FROM public.imagenes_locales
-    WHERE id_local = c.id_local ORDER BY id_imagen LIMIT 1
-  ) AS imagen ON TRUE`
+    SELECT
+      (ARRAY_AGG(url_imagen ORDER BY id_imagen))[1] AS url_imagen,
+      COALESCE(ARRAY_AGG(url_imagen ORDER BY id_imagen), '{}') AS imagenes
+    FROM public.imagenes_locales
+    WHERE id_local = c.id_local
+  ) AS imagen ON TRUE
+  LEFT JOIN LATERAL (
+    SELECT COALESCE(ARRAY_AGG(cat.nombre ORDER BY cat.id_categoria), '{}') AS categorias
+    FROM public.locales_categorias AS lc
+    JOIN public.categorias AS cat ON cat.id_categoria = lc.id_categoria
+    WHERE lc.id_local = c.id_local
+  ) AS cats ON TRUE`
 
 function getEntries(data) {
   if (!data || typeof data !== 'object' || Array.isArray(data)) {

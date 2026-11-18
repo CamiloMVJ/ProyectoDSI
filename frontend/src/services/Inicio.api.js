@@ -1,93 +1,94 @@
-import { request } from './httpClient.js';
+import { request } from './httpClient.js'
+
+const ALIAS_CATEGORIA = {
+  '1': 'hospedajes',
+  hospedaje: 'hospedajes',
+  hospedajes: 'hospedajes',
+  '2': 'restaurantes',
+  restaurante: 'restaurantes',
+  restaurantes: 'restaurantes',
+  '3': 'bares',
+  bar: 'bares',
+  bares: 'bares',
+  '4': 'discotecas',
+  discoteca: 'discotecas',
+  discotecas: 'discotecas',
+  '5': 'cafeterias',
+  cafeteria: 'cafeterias',
+  cafeterias: 'cafeterias',
+}
 
 function normalize(value) {
   return String(value ?? '')
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
     .toLocaleLowerCase('es')
-    .trim();
+    .trim()
 }
 
-export function getEventosNacionales(signal) {
-  return request('/eventos_nacionales', { signal });
+function extractArray(res) {
+  if (Array.isArray(res)) return res
+  if (Array.isArray(res?.data)) return res.data
+  return []
 }
 
-export function getCategorias(signal) {
-  return request('/categorias', { signal });
-}
-
-/**
- * Obtiene los locales comerciales publicados y los agrupa por las categorías de Inicio
- * ('hospedajes', 'restaurantes', 'bares', 'discotecas', 'cafeterias')
- * ordenados por destacados y mejor puntuación.
- */
-export async function getRecomendacionesInicio(signal) {
-  const locales = await request('/locales_comerciales', { signal });
-  const lista = Array.isArray(locales) ? locales : [];
-
+function agruparPorCategoria(comerciales) {
   const secciones = {
     hospedajes: [],
     restaurantes: [],
     bares: [],
     discotecas: [],
     cafeterias: [],
-  };
+  }
 
-  // Mapea nombres (singular/plural) e IDs de la tabla categorias hacia cada sección
-  const aliasCategoria = {
-    '1': 'hospedajes',
-    hospedaje: 'hospedajes',
-    hospedajes: 'hospedajes',
-    hotel: 'hospedajes',
-    hostal: 'hospedajes',
-    '2': 'restaurantes',
-    restaurante: 'restaurantes',
-    restaurantes: 'restaurantes',
-    '3': 'bares',
-    bar: 'bares',
-    bares: 'bares',
-    '4': 'discotecas',
-    discoteca: 'discotecas',
-    discotecas: 'discotecas',
-    '5': 'cafeterias',
-    cafeteria: 'cafeterias',
-    cafeterias: 'cafeterias',
-  };
+  for (const local of comerciales) {
+    if (local.esta_publicado === false) continue
 
-  for (const local of lista) {
-    // Filtrar si viene explícitamente no publicado
-    if (local.esta_publicado === false) continue;
+    const categorias = Array.isArray(local.categorias) ? local.categorias : []
+    if (categorias.length === 0) continue
 
-    // Extrae todas las categorías asociadas al local (arreglo o campo simple)
-    const rawCats = Array.isArray(local.categorias)
-      ? local.categorias.map((c) => (typeof c === 'object' ? (c.nombre ?? c.id_categoria) : c))
-      : [local.categoria, local.nombre_categoria, local.id_categoria].filter(Boolean);
+    // <--- AQUÍ ES DONDE SE ARMA EL ARREGLO COMPLETO DE FOTOS --->
+    const listaImagenes = [
+      ...(Array.isArray(local.imagenes) ? local.imagenes : []),
+      local.url_imagen,
+    ].filter(Boolean)
 
-    const keysAsignadas = new Set();
-    for (const raw of rawCats) {
-      const key = aliasCategoria[normalize(raw)];
-      if (key && secciones[key]) {
-        keysAsignadas.add(key);
-      }
+    const localFormateado = {
+      ...local,
+      maps_link: typeof local.maps_link === 'string'
+        ? local.maps_link.replace(/^hhttps:\/\//i, 'https://')
+        : null,
+      imagenes: [...new Set(listaImagenes)],
     }
 
-    for (const key of keysAsignadas) {
-      secciones[key].push(local);
+    const keys = new Set(
+      categorias
+        .map((cat) => ALIAS_CATEGORIA[normalize(cat)])
+        .filter((key) => key && secciones[key])
+    )
+
+    for (const key of keys) {
+      secciones[key].push(localFormateado)
     }
   }
 
-  // Ordenar cada categoría: primero destacados, luego mayor calificación
   for (const key of Object.keys(secciones)) {
     secciones[key].sort((a, b) => {
-      const destA = a.es_destacado ? 1 : 0;
-      const destB = b.es_destacado ? 1 : 0;
-      if (destB !== destA) return destB - destA;
-      return (
-        Number(b.promedio_calificacion ?? b.puntuacion ?? 0) -
-        Number(a.promedio_calificacion ?? a.puntuacion ?? 0)
-      );
-    });
+      const destDiff = (b.es_destacado ? 1 : 0) - (a.es_destacado ? 1 : 0)
+      if (destDiff !== 0) return destDiff
+      return Number(b.promedio_calificacion ?? b.puntuacion ?? 0) - Number(a.promedio_calificacion ?? a.puntuacion ?? 0)
+    })
   }
 
-  return secciones;
+  return secciones
+}
+
+export function getEventosNacionales(signal) {
+  return request('/eventos_nacionales', { signal }).then(extractArray)
+}
+
+export function getRecomendacionesInicio(signal) {
+  return request('/locales_comerciales', { signal })
+    .then(extractArray)
+    .then(agruparPorCategoria)
 }
