@@ -7,6 +7,7 @@ import {
     User,
     CheckCircle,
     ClipboardList,
+    ShieldCheck,
 } from 'lucide-react'
 import Navbar from '../Components/Navbar.jsx'
 import Footer from '../Components/Footer.jsx'
@@ -239,6 +240,30 @@ export default function UserAccount() {
                                 <ArrowRight size={17} aria-hidden="true" />
                             </Link>
                         </div>
+
+                        {rol === 'Administrador' && (
+                            <section
+                                aria-labelledby="admin-accounts-title"
+                                className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-6 shadow-sm sm:p-7"
+                            >
+                                <div className="flex size-11 items-center justify-center rounded-xl bg-[#eaf0e7] text-[var(--color-primary)]">
+                                    <ShieldCheck size={22} aria-hidden="true" />
+                                </div>
+                                <h2 id="admin-accounts-title" className="mt-4 text-lg font-bold">
+                                    Administradores
+                                </h2>
+                                <p className="mt-2 text-sm leading-6 text-[var(--color-text-muted)]">
+                                    Crea cuentas de administrador y consulta las cuentas registradas.
+                                </p>
+                                <Link
+                                    to="/admin/administradores"
+                                    className="mt-4 inline-flex min-h-11 items-center gap-2 text-sm font-bold text-[var(--color-primary)] hover:text-[var(--color-accent)]"
+                                >
+                                    Gestionar administradores
+                                    <ArrowRight size={17} aria-hidden="true" />
+                                </Link>
+                            </section>
+                        )}
                     </aside>
                 </div>
             </main>

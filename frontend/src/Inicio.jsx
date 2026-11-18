@@ -9,6 +9,8 @@ import Footer from './Components/Footer';
 import { useNavigate } from 'react-router-dom';
 import { Utensils, Martini, Disc, Coffee, Bus } from 'lucide-react';
 import { getDepartments } from './services/places.api.js';
+import { getEventos } from './services/adminCalendar.api.js';
+import { isoDay } from './services/calendarUtils.js';
 
 
 /* ============================================================================
@@ -84,6 +86,17 @@ export default function App() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedDepartment, setSelectedDepartment] = useState('');
   const [departments, setDepartments] = useState([]);
+  const [events, setEvents] = useState([]);
+  const [activeEvent, setActiveEvent] = useState(0);
+  useEffect(() => {
+    const controller = new AbortController();
+    getEventos(controller.signal).then(items => {
+      const now = new Date();
+      const current = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+      setEvents(items.filter(e => e.estado === 'Programado' && (e.es_anual_recurrente || isoDay(e.fecha_fin) >= current)).slice(0, 12));
+    }).catch(() => {});
+    return () => controller.abort();
+  }, []);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -130,7 +143,7 @@ export default function App() {
           onSearchSubmit={handleSearch}
         />
 
-        <EventCarousel />
+        <EventCarousel events={events} activeIndex={activeEvent % Math.max(1, events.length)} onPrev={() => setActiveEvent(i => (i - 1 + events.length) % Math.max(1,events.length))} onNext={() => setActiveEvent(i => (i + 1) % Math.max(1,events.length))} onSelectDot={setActiveEvent} />
 
         {/* 4. Sección de Recomendaciones */}
         <section className="w-full max-w-7xl mx-auto mt-16 px-6 sm:px-10">

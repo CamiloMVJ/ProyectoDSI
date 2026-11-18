@@ -53,6 +53,7 @@ export default function Navbar({
             </Link>
           </li>
 
+          <li><Link to="/calendario" className={linkClass}>Eventos</Link></li>
           <li>
             <Link to="/buscar" className={linkClass}>
               Explorar

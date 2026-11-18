@@ -1,4 +1,5 @@
 import { Calendar, MapPin, ChevronLeft, ChevronRight   } from "lucide-react";
+import { Link } from 'react-router-dom';
 const EventCarousel = ({
   title = 'Próximos eventos',
   events = [],
@@ -8,7 +9,7 @@ const EventCarousel = ({
   onSelectDot
 }) => {
   const currentEvent = events.length > 0 ? events[activeIndex] : null;
-  const totalDots = events.length > 0 ? events.length : 3;
+  const totalDots = events.length;
 
   return (
     <section id="eventos" className="w-full max-w-7xl mx-auto mt-8 px-6 sm:px-10 scroll-mt-28">
@@ -20,7 +21,7 @@ const EventCarousel = ({
           </h2>
         </div>
         <span className="text-xs font-medium text-[#526554] bg-[#526554]/15 px-3 py-1 rounded-full">
-          Agenda Nacional
+          <Link to="/calendario" className="underline underline-offset-2">Ver calendario</Link>
         </span>
       </div>
 
@@ -66,6 +67,7 @@ const EventCarousel = ({
         {/* Botón Anterior */}
         <button
           type="button"
+          disabled={!events.length}
           onClick={onPrev}
           aria-label="Evento anterior"
           className="relative z-10 w-10 h-10 rounded-full bg-white/80 hover:bg-white text-gray-800 shadow-md flex items-center justify-center hover:scale-105 transition-all cursor-pointer"
@@ -76,6 +78,7 @@ const EventCarousel = ({
         {/* Botón Siguiente */}
         <button
           type="button"
+          disabled={!events.length}
           onClick={onNext}
           aria-label="Siguiente evento"
           className="relative z-10 w-10 h-10 rounded-full bg-white/80 hover:bg-white text-gray-800 shadow-md flex items-center justify-center hover:scale-105 transition-all cursor-pointer"
