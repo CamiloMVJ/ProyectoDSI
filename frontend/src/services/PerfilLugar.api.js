@@ -19,6 +19,24 @@ export function getResenasLugar(id, signal) {
   return request(`/resenas/local/${id}`, { signal })
 }
 
+export function getPermisosResenas(id, token, signal) {
+  return request(`/resenas/local/${id}/permisos`, { token, signal })
+}
+
+export function publicarResena(token, idLocal, calificacion, comentario) {
+  return request('/resenas', {
+    method: 'POST', token,
+    body: JSON.stringify({ id_local: Number(idLocal), calificacion, comentario }),
+  })
+}
+
+export function responderResena(token, idResena, respuestaPropietario) {
+  return request(`/resenas/${idResena}/respuesta`, {
+    method: 'PATCH', token,
+    body: JSON.stringify({ respuesta_propietario: respuestaPropietario }),
+  })
+}
+
 export async function getPerfilLugar(id, signal) {
   if (!/^[1-9]\d*$/.test(String(id))) {
     throw new Error('El identificador del lugar no es válido.')

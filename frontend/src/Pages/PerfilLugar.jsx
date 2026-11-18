@@ -118,7 +118,7 @@ const PerfilLugar = () => {
               {lugar.menus.length ? <ReadOnlyMenus menus={lugar.menus} grouped /> : <div className="rounded-2xl border border-[#d8e1d5] bg-white p-6 text-[#526554]">Este local aún no tiene un menú disponible.</div>}
             </section>}
 
-            <ProfileReviews key={id} id={id} />
+            <ProfileReviews key={id} id={id} isCommercial={lugar.es_comercial} />
           </div>
 
           {/* Columna Derecha (Tarjetas de Información) */}

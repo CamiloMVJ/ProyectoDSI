@@ -6,11 +6,35 @@ on:
 
 permissions:
   contents: read
-  packages: write
 
 jobs:
-  docker:
+  backend-tests:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Instalar dependencias del backend
+        run: npm ci
+
+      - name: Ejecutar tests del backend
+        run: npm test
+
+  docker:
+    needs: backend-tests
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
 
     steps:
       - uses: actions/checkout@v4
