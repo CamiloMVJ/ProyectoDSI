@@ -1,0 +1,100 @@
+.favorite-button {
+  isolation: isolate;
+  transition: background-color .2s ease, color .2s ease, transform .2s ease;
+}
+
+.favorite-button:not(:disabled):hover {
+  transform: scale(1.08)
+}
+
+.favorite-button:focus-visible {
+  outline: 3px solid #c45111;
+  outline-offset: 3px
+}
+
+.favorite-button--added .favorite-button__heart {
+  animation: favorite-pop .6s cubic-bezier(.22, 1.3, .36, 1) both;
+}
+
+.favorite-button--added::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  z-index: -1;
+  border: 2px solid #c45111;
+  border-radius: 50%;
+  pointer-events: none;
+  animation: favorite-ring .6s ease-out both;
+}
+
+.favorite-button--removing .favorite-button__heart {
+  fill: currentColor;
+  color: #c45111;
+  animation: favorite-release .28s ease-in both;
+}
+
+.favorite-button--rollback .favorite-button__heart {
+  animation: favorite-rollback .35s ease-out both;
+}
+
+@keyframes favorite-pop {
+  0% {
+    transform: scale(.45) rotate(-18deg);
+    opacity: .45
+  }
+
+  55% {
+    transform: scale(1.42) rotate(8deg);
+    opacity: 1
+  }
+
+  100% {
+    transform: scale(1) rotate(0);
+    opacity: 1
+  }
+}
+
+@keyframes favorite-ring {
+  0% {
+    transform: scale(.65);
+    opacity: .8
+  }
+
+  100% {
+    transform: scale(1.45);
+    opacity: 0
+  }
+}
+
+@keyframes favorite-release {
+  0% {
+    transform: scale(1);
+    opacity: 1
+  }
+
+  45% {
+    transform: scale(1.2);
+    opacity: 1
+  }
+
+  100% {
+    transform: scale(.35) rotate(16deg);
+    opacity: .25
+  }
+}
+
+@keyframes favorite-rollback {
+  0% { transform: scale(.55); opacity: .5 }
+  60% { transform: scale(1.16); opacity: 1 }
+  100% { transform: scale(1); opacity: 1 }
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+  .favorite-button,
+  .favorite-button__heart,
+  .favorite-button--added::after {
+    transition: none;
+    animation: none
+  }
+}

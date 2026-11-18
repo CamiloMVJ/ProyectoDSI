@@ -5,13 +5,13 @@ import { MapPin, Clock, DollarSign, CheckCircle2, Image as ImageIcon, Loader2, U
 import Navbar from '../Components/Navbar';
 import Footer from '../Components/Footer';
 import ReadOnlyMenus from '../Components/ReadOnlyMenus.jsx';
+import ProfileImageGallery from '../Components/ProfileImageGallery.jsx';
 import { getPerfilLugar } from '../services/PerfilLugar.api.js';
 import '../css/gestion-establecimientos.css';
 
 const PerfilLugar = () => {
   const { id } = useParams();
   const [lugar, setLugar] = useState(null);
-  const [imagenActiva, setImagenActiva] = useState('');
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState(null);
 
@@ -23,11 +23,9 @@ const PerfilLugar = () => {
         setCargando(true);
         setError(null);
         setLugar(null);
-        setImagenActiva('');
         const data = await getPerfilLugar(id, controller.signal);
         if (controller.signal.aborted) return;
         setLugar(data);
-        setImagenActiva(data.galeria[0] ?? '');
       } catch (err) {
         if (!controller.signal.aborted) setError(err.message);
       } finally {
@@ -85,35 +83,7 @@ const PerfilLugar = () => {
           </h1>
         </header>
 
-        {/* Galería Multimedia */}
-        <section className="mb-12">
-          <div className="w-full h-[300px] sm:h-[500px] rounded-2xl overflow-hidden shadow-md mb-4 bg-gray-200 flex items-center justify-center">
-            {imagenActiva ? (
-              <img
-                src={imagenActiva}
-                alt={lugar.nombre}
-                className="w-full h-full object-cover transition-opacity duration-500"
-              />
-            ) : (
-              <ImageIcon className="w-16 h-16 text-gray-400" />
-            )}
-          </div>
-
-          {lugar.galeria && lugar.galeria.length > 0 && (
-            <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
-              {lugar.galeria.map((img, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => setImagenActiva(img)}
-                  className={`flex-shrink-0 w-24 h-20 sm:w-32 sm:h-24 rounded-xl overflow-hidden border-2 transition-all ${imagenActiva === img ? 'border-[#C45111] opacity-100 shadow-md' : 'border-transparent opacity-60 hover:opacity-100'
-                    }`}
-                >
-                  <img src={img} alt={`Miniatura ${idx + 1}`} className="w-full h-full object-cover" />
-                </button>
-              ))}
-            </div>
-          )}
-        </section>
+        <ProfileImageGallery key={id} images={lugar.galeria} name={lugar.nombre} />
 
         {/* Cuadrícula de Contenido Principal */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">

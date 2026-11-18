@@ -5,6 +5,7 @@ import Navbar from '../Components/Navbar.jsx'
 import Footer from '../Components/Footer.jsx'
 import { useAuth } from '../hooks/useAuth.js'
 import { useFavorites } from '../hooks/useFavorites.js'
+import FavoriteButton from '../Components/FavoriteButton.jsx'
 import { getCommercialCatalog, getPlacesCatalog } from '../services/places.api.js'
 
 const types = { complejo: 'Complejo turístico', atractivo: 'Atractivo independiente', lugar: 'Lugar turístico', local: 'Local comercial' }
@@ -14,9 +15,7 @@ function FavoriteCard({ item, saved, pending, onToggle }) {
     <article className="flex h-full flex-col overflow-hidden rounded-2xl border border-[#d8e1d5] bg-[#fffefa] shadow-sm transition-shadow hover:shadow-md">
       <div className="relative flex h-48 items-center justify-center bg-[#eaf0e7]">
         {item.url_imagen ? <img src={item.url_imagen} alt={item.nombre} className="h-full w-full object-cover" /> : item.tipo === 'local' ? <Store size={42} className="text-[#79927c]" aria-hidden="true" /> : <Compass size={42} className="text-[#79927c]" aria-hidden="true" />}
-        <button type="button" onClick={() => onToggle(item.id_local)} disabled={pending} aria-label={saved ? `Quitar ${item.nombre} de favoritos` : `Guardar ${item.nombre} en favoritos`} aria-pressed={saved} className={`absolute right-3 top-3 flex size-11 items-center justify-center rounded-full shadow-sm disabled:opacity-50 ${saved ? 'bg-[#c45111] text-white' : 'bg-white text-[#526554] hover:text-[#c45111]'}`}>
-          {pending ? <LoaderCircle size={19} className="animate-spin" aria-hidden="true" /> : <Heart size={19} className={saved ? 'fill-current' : ''} aria-hidden="true" />}
-        </button>
+        <FavoriteButton name={item.nombre} saved={saved} pending={pending} onToggle={() => onToggle(item.id_local, item)} />
       </div>
       <div className="flex flex-1 flex-col p-5">
         <span className="self-start rounded-full bg-[#f6eee5] px-3 py-1 text-xs font-bold text-[#9d3e0b]">{types[item.tipo] ?? types.lugar}</span>
@@ -90,7 +89,7 @@ export default function Favorites() {
         {tab === 'explorar' && catalog.error && <p role="alert" className="mt-5 rounded-xl bg-[#fff0e9] p-4 text-sm text-[#9d3e0b]">{catalog.error}</p>}
         {((tab === 'guardados' && loadingFavorites) || (tab === 'explorar' && catalog.loading)) && <p role="status" className="mt-8 flex items-center gap-3 text-sm text-[#526554]"><LoaderCircle size={20} className="animate-spin" aria-hidden="true" /> Cargando lugares…</p>}
         {!(tab === 'guardados' && loadingFavorites) && !(tab === 'explorar' && catalog.loading) && items.length === 0 && <div className="mt-8 rounded-2xl border border-[#d8e1d5] bg-white px-6 py-12 text-center"><Heart size={32} className="mx-auto text-[#79927c]" aria-hidden="true" /><h2 className="mt-4 text-xl font-bold text-[#263f32]">{tab === 'guardados' ? 'Aún no tienes favoritos' : 'No encontramos resultados'}</h2><p className="mt-2 text-sm text-[#526554]">{tab === 'guardados' ? 'Explora destinos y negocios para guardar los que te interesen.' : 'Prueba con otro nombre o tipo.'}</p>{tab === 'guardados' && <button type="button" onClick={() => setTab('explorar')} className="mt-5 min-h-11 rounded-full bg-[#c45111] px-5 text-sm font-bold text-white">Explorar lugares</button>}</div>}
-        {items.length > 0 && <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">{items.map(item => <FavoriteCard key={item.id_local} item={item} saved={savedIds.has(Number(item.id_local))} pending={pendingId === item.id_local} onToggle={toggle} />)}</div>}
+        {items.length > 0 && <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">{items.map(item => <FavoriteCard key={item.id_local} item={item} saved={savedIds.has(Number(item.id_local))} pending={loadingFavorites || pendingId !== null} onToggle={toggle} />)}</div>}
         <p className="mt-10 text-sm text-[#526554]">¿Buscas un destino específico? <Link to="/buscar" className="font-bold text-[#c45111] hover:text-[#9d3e0b]">Ir a la búsqueda de lugares</Link></p>
       </main>
       <Footer />

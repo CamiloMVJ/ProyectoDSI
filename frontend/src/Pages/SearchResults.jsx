@@ -1,12 +1,13 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
-import { ArrowLeft, ArrowRight, Clock3, Compass, ExternalLink, Filter, Heart, LoaderCircle, MapPin, Search, SlidersHorizontal, Store } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Clock3, Compass, ExternalLink, Filter, LoaderCircle, MapPin, Search, SlidersHorizontal, Store } from 'lucide-react'
 import Navbar from '../Components/Navbar.jsx'
 import Footer from '../Components/Footer.jsx'
 import DepartmentDropdown from '../Components/DepartmentDropdown.jsx'
 import { filterPlaces, getCategories, getCommercialCatalog, getDepartments, getPlacesCatalog } from '../services/places.api.js'
 import { useAuth } from '../hooks/useAuth.js'
 import { useFavorites } from '../hooks/useFavorites.js'
+import FavoriteButton from '../Components/FavoriteButton.jsx'
 
 const inputClass = 'min-h-11 w-full rounded-xl border border-[#d8e1d5] bg-[#f8faf6] px-4 text-sm text-[#25382e] outline-none focus:border-[#c45111] focus:ring-2 focus:ring-[#c45111]/15'
 const PAGE_SIZE = 8
@@ -114,7 +115,7 @@ function PlaceCard({ place, saved, pending, onToggle }) {
     <article className="flex h-full flex-col overflow-hidden rounded-2xl border border-[#d8e1d5] bg-[#fffefa] shadow-sm transition-shadow hover:shadow-md">
       <div className="relative flex h-48 shrink-0 items-center justify-center bg-[#eaf0e7]">
         {place.url_imagen ? <img src={place.url_imagen} alt={place.nombre} className="h-full w-full object-cover" /> : place.tipo === 'local' ? <Store size={42} aria-hidden="true" className="text-[#79927c]" /> : <Compass size={42} aria-hidden="true" className="text-[#79927c]" />}
-        <button type="button" onClick={() => onToggle(place.id_local)} disabled={pending} aria-label={saved ? `Quitar ${place.nombre} de favoritos` : `Guardar ${place.nombre} en favoritos`} aria-pressed={saved} className={`absolute right-3 top-3 flex size-11 items-center justify-center rounded-full shadow-sm disabled:opacity-50 ${saved ? 'bg-[#c45111] text-white' : 'bg-white text-[#526554] hover:text-[#c45111]'}`}><Heart size={19} className={saved ? 'fill-current' : ''} aria-hidden="true" /></button>
+        <FavoriteButton name={place.nombre} saved={saved} pending={pending} onToggle={() => onToggle(place.id_local, place)} />
       </div>
       <div className="flex flex-1 flex-col p-5">
         <span className="inline-flex self-start rounded-full bg-[#f6eee5] px-3 py-1 text-xs font-bold text-[#9d3e0b]">{typeLabels[place.tipo] ?? typeLabels.otro}</span>
@@ -142,7 +143,7 @@ function PlaceCard({ place, saved, pending, onToggle }) {
 export default function SearchResults() {
   const navigate = useNavigate()
   const { sesion } = useAuth()
-  const { favorites, pendingId, error: favoriteError, toggle } = useFavorites()
+  const { favorites, loading: loadingFavorites, pendingId, error: favoriteError, toggle } = useFavorites()
   const [searchParams, setSearchParams] = useSearchParams()
   const filterParams = new URLSearchParams(searchParams)
   filterParams.delete('page')
@@ -188,9 +189,9 @@ export default function SearchResults() {
   const pageNumbers = Array.from({ length: totalPages }, (_, index) => index + 1)
     .filter(page => page === 1 || page === totalPages || Math.abs(page - currentPage) <= 1)
 
-  function togglePlace(idLocal) {
-    if (!sesion) { navigate('/ingresar'); return }
-    toggle(idLocal)
+  function togglePlace(idLocal, place) {
+    if (!sesion) { navigate('/ingresar'); return false }
+    return toggle(idLocal, place)
   }
 
   function goToPage(page) {
@@ -233,7 +234,7 @@ export default function SearchResults() {
             {!loading && !catalog.error && places.length > 0 && (
               <>
                 <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
-                  {visiblePlaces.map(place => <PlaceCard key={`${place.tipo}-${place.id_local}`} place={place} saved={favorites.some(item => Number(item.id_local) === Number(place.id_local))} pending={pendingId === place.id_local} onToggle={togglePlace} />)}
+                  {visiblePlaces.map(place => <PlaceCard key={`${place.tipo}-${place.id_local}`} place={place} saved={favorites.some(item => Number(item.id_local) === Number(place.id_local))} pending={loadingFavorites || pendingId !== null} onToggle={togglePlace} />)}
                 </div>
                 {totalPages > 1 && (
                   <nav aria-label="Paginación de resultados" className="mt-8 flex flex-wrap items-center justify-center gap-2 pb-4">

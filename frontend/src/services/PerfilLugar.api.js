@@ -40,7 +40,7 @@ export async function getPerfilLugar(id, signal) {
   const galeria = imagenes
     .filter(imagen => Number(imagen.id_local) === Number(id))
     .sort((a, b) => Number(a.id_imagen) - Number(b.id_imagen))
-    .map(imagen => imagen.url_imagen)
+    .map(imagen => ({ id: imagen.id_imagen, url: imagen.url_imagen, descripcion: imagen.descripcion }))
 
   const precios = []
   if (comercial?.precio_minimo != null || comercial?.precio_maximo != null) {
