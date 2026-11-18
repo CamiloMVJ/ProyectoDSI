@@ -12,7 +12,6 @@ import GestionEstablecimientosVista from "./Pages/GestionEstablecimientos.jsx";
 import SearchResults from './Pages/SearchResults.jsx'
 import Favorites from './Pages/Favorites.jsx'
 import StorageUploadTest from './Pages/StorageUploadTest.jsx'
-import PerfilLugar from './Pages/PerfilLugar.jsx'
 import GestionLugares from './Pages/GestionLugares.jsx'
 import PerfilLugar from './Pages/PerfilLugar.jsx'
 import GuestOnly from './Components/GuestOnly.jsx'
