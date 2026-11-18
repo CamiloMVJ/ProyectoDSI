@@ -122,7 +122,7 @@ export default function LoginSINATUR() {
             </button>
           </form>
           <p className="auth-switch">¿Aún no tienes cuenta? <Link to="/registrarse">Regístrate como usuario</Link></p>
-          <p className="auth-switch auth-switch-secondary">¿Tienes un negocio turístico? <Link to="/registro-negocio">Solicita una cuenta</Link></p>
+          <p className="auth-switch auth-switch-secondary">¿Tienes un negocio turístico? <Link to="/registrarse?continuar=negocio"> Solicita una cuenta </Link></p>
         </section>
       </main>
     </div>

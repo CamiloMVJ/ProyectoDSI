@@ -1,13 +1,13 @@
 import { pool } from '../db/db.js';
 
 export async function findAll(client = pool) {
-  const { rows } = await client.query('SELECT * FROM eventos_nacionales');
+  const { rows } = await client.query('SELECT e.*, d.nombre AS departamento FROM eventos_nacionales e JOIN departamentos d ON d.id_departamento = e.id_departamento ORDER BY e.fecha_inicio, e.id_evento');
   return rows;
 }
 
 export async function findOne(id, client = pool) {
   const { rows } = await client.query(
-    'SELECT * FROM eventos_nacionales WHERE id_evento = $1',
+    'SELECT e.*, d.nombre AS departamento FROM eventos_nacionales e JOIN departamentos d ON d.id_departamento = e.id_departamento WHERE e.id_evento = $1',
     [id]
   );
   return rows[0] || null;
@@ -53,7 +53,7 @@ export async function create(data, client = pool) {
     municipio,
     direccion_referencia || null,
     tipo_evento || null,
-    costo_entrada || null,
+    costo_entrada ?? null,
     es_gratuito ?? false,
     es_anual_recurrente ?? false,
     id_lugar_asociado || null,

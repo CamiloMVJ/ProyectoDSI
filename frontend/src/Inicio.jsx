@@ -9,6 +9,8 @@ import Footer from './Components/Footer';
 import { useNavigate } from 'react-router-dom';
 import { Utensils, Martini, Disc, Coffee} from 'lucide-react';
 import { getDepartments } from './services/places.api.js';
+import { getEventos } from './services/adminCalendar.api.js';
+import { isoDay } from './services/calendarUtils.js';
 import { getEventosNacionales, getRecomendacionesInicio } from './services/Inicio.api.js';
 
 
@@ -90,7 +92,15 @@ export default function App() {
   const [recommendations, setRecommendations] = useState({});
   const [loading, setLoading] = useState(false);
 
-
+  useEffect(() => {
+    const controller = new AbortController();
+    getEventos(controller.signal).then(items => {
+      const now = new Date();
+      const current = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+      setEvents(items.filter(e => e.estado === 'Programado' && (e.es_anual_recurrente || isoDay(e.fecha_fin) >= current)).slice(0, 12));
+    }).catch(() => {});
+    return () => controller.abort();
+  }, []);
 
   useEffect(() => {
     const controller = new AbortController();

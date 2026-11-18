@@ -16,12 +16,17 @@ import GestionLugares from './Pages/GestionLugares.jsx'
 import PerfilLugar from './Pages/PerfilLugar.jsx'
 import GuestOnly from './Components/GuestOnly.jsx'
 import AuthProvider from './context/AuthProvider.jsx'
+import NationalEvents from './Pages/NationalEvents.jsx'
+import AdminAccounts from './Pages/AdminAccounts.jsx'
 
 import './index.css'
 
 const router = createBrowserRouter([
   { path: '/', element: <Inicio /> },
   { path: '/buscar', element: <SearchResults /> },
+  { path: '/calendario', element: <NationalEvents /> },
+  { path: '/admin/eventos', element: <NationalEvents admin /> },
+  { path: '/admin/administradores', element: <AdminAccounts /> },
   { path: '/favoritos', element: <Favorites /> },
   { path: '/ingresar', element: <GuestOnly><LoginSINATUR /></GuestOnly> },
   { path: '/registrarse', element: <GuestOnly><RegistroUsuarioSINATUR /></GuestOnly> },

@@ -20,3 +20,9 @@ export const actualizar = async (req, res, next) => {
   try { res.status(200).json({ success: true, data: await service.update(req.params.id, req.body) }); }
   catch (error) { next(error); }
 };
+
+// FRQ-0009: crea cuenta de usuario y rol administrador atómicamente.
+export const crearCuenta = async (req, res, next) => {
+  try { res.status(201).json({ success: true, data: await service.createAdminUser(req.body) }); }
+  catch (error) { next(error); }
+};

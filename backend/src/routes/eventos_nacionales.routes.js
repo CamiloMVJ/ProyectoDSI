@@ -1,6 +1,6 @@
 // Archivo: src/routes/eventos_nacionales.routes.js
 import { Router } from 'express';
-import { listar, obtener, crear, actualizar } from '../controllers/eventos_nacionales.controller.js';
+import { listar, obtener, crear, actualizar, eliminar } from '../controllers/eventos_nacionales.controller.js';
 import { validate } from '../middlewares/validate.middleware.js';
 import { eventoSchema } from '../dtos/evento.dto.js';
 import { updateEventoSchema } from '../dtos/update.dto.js';
@@ -11,4 +11,5 @@ router.get('/', listar);
 router.get('/:id', obtener);
 router.post('/', verifyToken, checkRole(['Administrador']), validate(eventoSchema), crear);
 router.patch('/:id', verifyToken, checkRole(['Administrador']), validate(updateEventoSchema), actualizar);
+router.delete('/:id', verifyToken, checkRole(['Administrador']), eliminar);
 export default router;

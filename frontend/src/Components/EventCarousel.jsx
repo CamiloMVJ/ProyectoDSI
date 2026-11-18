@@ -31,6 +31,7 @@ function extraerFechaEvento(evento) {
   };
 }
 
+import { Link } from 'react-router-dom';
 const EventCarousel = ({
   title = 'Próximos eventos',
   events = [],
@@ -72,7 +73,7 @@ const EventCarousel = ({
           </h2>
         </div>
         <span className="text-xs font-medium text-[#526554] bg-[#526554]/15 px-3 py-1 rounded-full">
-          Agenda Nacional
+          <Link to="/calendario" className="underline underline-offset-2">Ver calendario</Link>
         </span>
       </div>
 
@@ -174,6 +175,7 @@ const EventCarousel = ({
         {/* Botón Siguiente */}
         <button
           type="button"
+          disabled={!events.length}
           onClick={onNext}
           aria-label="Siguiente evento"
           className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 z-10 w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-gray-100 hover:bg-[#C45111] text-gray-700 hover:text-white shadow-xs flex items-center justify-center transition-all cursor-pointer"
