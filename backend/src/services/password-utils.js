@@ -29,7 +29,6 @@ export async function verifyPassword(password, hash) {
     return false;
   }
   const [algorithm, salt, stored, extra] = hash.split("$");
-  console.log("Verifying password:", { algorithm, salt, stored, extra });
   if (
     algorithm !== "scrypt" ||
     extra !== undefined ||

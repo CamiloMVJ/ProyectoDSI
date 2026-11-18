@@ -3,7 +3,7 @@ import * as serviciosService from '../services/servicios.service.js';
 // 1. listar
 export const listar = async (req, res, next) => {
   try {
-    const data = await serviciosService.findAll();
+    const data = await serviciosService.findAll(req.query.id_local);
     res.status(200).json({
       success: true,
       data

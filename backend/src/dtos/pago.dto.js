@@ -3,7 +3,7 @@ import Joi from 'joi';
 export const pagoSchema = Joi.object({
 id_campania: Joi.number()
 .integer()
-.positive()
+.positive().max(2147483647)
 .required()
 .messages({
 'number.base': 'El ID de la campaña debe ser un número.',
@@ -15,18 +15,13 @@ id_campania: Joi.number()
 
 id_dueno: Joi.number()
     .integer()
-    .positive()
-    .allow(null)
-    .optional(),
-
-id_administrador: Joi.number()
-    .integer()
-    .positive()
+    .positive().max(2147483647)
     .allow(null)
     .optional(),
 
 monto: Joi.number()
     .min(0)
+    .max(99999999.99)
     .precision(2)
     .required()
     .messages({
@@ -36,7 +31,7 @@ monto: Joi.number()
     }),
 
 moneda: Joi.string()
-    .max(10)
+    .valid('NIO', 'USD')
     .default('NIO'),
 
 metodo_pago: Joi.string()

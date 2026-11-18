@@ -1,11 +1,19 @@
 import * as repository from '../repositories/lugares_turisticos.repository.js'
+import * as departamentosRepository from '../repositories/departamentos.repository.js'
 import { AppError } from '../errors/app-error.js'
-import { parseId, allowedData, pick, execute, requireReference, withLockedRecord, checkDates, checkEvent, normalizeEvent, publicUser } from './service-utils.js'
+import { buscarLugaresSchema } from '../dtos/lugar.dto.js'
+import { parseId, allowedData, pick, execute, requireReference, withLockedRecord, withTransaction } from './service-utils.js'
 
-const fields = ["nombre", "descripcion", "departamento", "municipio", "direccion_exacta", "maps_link"]
+const fields = ["nombre", "descripcion", "id_departamento", "municipio", "direccion_exacta", "maps_link"]
+
+export async function search(params) {
+  const { error, value } = buscarLugaresSchema.validate(params)
+  if (error) throw new AppError('Los filtros de búsqueda no son válidos', 400)
+  return execute(() => repository.search(value))
+}
 
 async function checkRules(data, client) {
-
+  await requireReference(departamentosRepository, data.id_departamento, 'El departamento', client)
 }
 
 export async function findAll() {
@@ -22,12 +30,14 @@ export async function findOne(id) {
 }
 
 // Recibe datos ya validados por Joi (middleware validar).
-export async function create(data) {
+export async function create(data, client) {
   data = allowedData(data, fields)
   
   return execute(async () => {
-    await checkRules(data)
-    const result = await repository.create(data)
+    await checkRules(data, client)
+    const result = client
+      ? await repository.create(data, client)
+      : await withTransaction((transaction) => repository.create(data, transaction))
     return result
   })
 }

@@ -1,0 +1,306 @@
+import { useEffect, useState } from 'react'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { ArrowLeft, ArrowRight, Clock3, Compass, ExternalLink, Filter, MapPin, Search, SlidersHorizontal, Store } from 'lucide-react'
+import Navbar from '../Components/Navbar.jsx'
+import Footer from '../Components/Footer.jsx'
+import DepartmentDropdown from '../Components/DepartmentDropdown.jsx'
+import { getCategories, getDepartments, searchPlaces } from '../services/places.api.js'
+import { useAuth } from '../hooks/useAuth.js'
+import { useFavorites } from '../hooks/useFavorites.js'
+import FavoriteButton from '../Components/FavoriteButton.jsx'
+
+const inputClass = 'min-h-11 w-full rounded-xl border border-[#d8e1d5] bg-[#f8faf6] px-4 text-sm text-[#25382e] outline-none focus:border-[#c45111] focus:ring-2 focus:ring-[#c45111]/15'
+
+function SearchFilters({ applied, departments, categories, onApply, onClear }) {
+  const [filters, setFilters] = useState(() => ({
+    q: applied.get('q') ?? '',
+    departamento: applied.get('departamento') ?? '',
+    municipio: applied.get('municipio') ?? '',
+    max_budget: applied.get('max_budget') ?? '',
+    tipo: applied.get('tipo') ?? 'todos',
+    id_categoria: applied.get('id_categoria') ?? '',
+    orden: applied.get('orden') ?? 'nombre-asc',
+  }))
+
+  function change(event) {
+    const { name, value } = event.target
+    setFilters(current => ({ ...current, [name]: value }))
+  }
+
+  function submit(event) {
+    event.preventDefault()
+    const params = new URLSearchParams()
+    if (filters.q.trim()) params.set('q', filters.q.trim())
+    if (filters.departamento) params.set('departamento', filters.departamento)
+    if (filters.municipio.trim()) params.set('municipio', filters.municipio.trim())
+    if (filters.max_budget !== '') params.set('max_budget', filters.max_budget)
+    if (filters.tipo !== 'todos') params.set('tipo', filters.tipo)
+    if (filters.id_categoria) params.set('id_categoria', filters.id_categoria)
+    if (filters.orden !== 'nombre-asc') params.set('orden', filters.orden)
+    onApply(params)
+  }
+
+  return (
+    <form onSubmit={submit} className="rounded-2xl border border-[#d8e1d5] bg-[#fffefa] p-5 shadow-sm sm:p-6">
+      <div className="mb-6 flex items-center gap-3 border-b border-[#d8e1d5] pb-4">
+        <span className="flex size-10 items-center justify-center rounded-xl bg-[#eaf0e7] text-[#344e3b]"><SlidersHorizontal size={20} aria-hidden="true" /></span>
+        <div><h2 className="font-bold text-[#263f32]">Filtra tu búsqueda</h2><p className="text-xs text-[#526554]">Ajusta los resultados a tu viaje</p></div>
+      </div>
+
+      <div className="space-y-5">
+        <div>
+          <label htmlFor="search-query" className="mb-2 block text-sm font-semibold">¿Qué estás buscando?</label>
+          <div className="relative"><Search size={17} aria-hidden="true" className="absolute left-4 top-3.5 text-[#657b65]" />
+            <input id="search-query" name="q" value={filters.q} onChange={change} maxLength={150} placeholder="Lugar, actividad o destino" className={`${inputClass} pl-11`} />
+          </div>
+        </div>
+        <div>
+          <label htmlFor="search-department" className="mb-2 block text-sm font-semibold">Departamento o región</label>
+          <DepartmentDropdown id="search-department" value={filters.departamento} departments={departments} onChange={value => setFilters(current => ({ ...current, departamento: value }))} />
+        </div>
+        <div>
+          <label htmlFor="search-municipality" className="mb-2 block text-sm font-semibold">Municipio</label>
+          <input id="search-municipality" name="municipio" value={filters.municipio} onChange={change} maxLength={100} placeholder="Cualquier municipio" className={inputClass} />
+        </div>
+        <div>
+          <label htmlFor="search-max-budget" className="mb-2 block text-sm font-semibold">Presupuesto máximo por persona (C$)</label>
+          <input id="search-max-budget" name="max_budget" type="number" min="0" step="0.01" inputMode="decimal" value={filters.max_budget} onChange={change} placeholder="Sin límite" className={inputClass} />
+          <p className="mt-1 text-xs text-[#526554]">Una comida y una bebida sin alcohol.</p>
+        </div>
+        <div>
+          <label htmlFor="search-type" className="mb-2 block text-sm font-semibold">Tipo de lugar</label>
+          <select id="search-type" name="tipo" value={filters.tipo} onChange={change} className={inputClass}>
+            <option value="todos">Todos los lugares y locales</option>
+            <option value="complejo">Complejos turísticos</option>
+            <option value="atractivo">Atractivos independientes</option>
+            <option value="otro">Otros lugares</option>
+            <option value="local">Locales comerciales</option>
+          </select>
+        </div>
+        <div>
+          <label htmlFor="search-category" className="mb-2 block text-sm font-semibold">Categoría</label>
+          <select id="search-category" name="id_categoria" value={filters.id_categoria} onChange={change} className={inputClass}>
+            <option value="">Todas las categorías</option>
+            {categories.map(category => <option key={category.id_categoria} value={category.id_categoria}>{category.nombre}</option>)}
+          </select>
+        </div>
+        <div>
+          <label htmlFor="search-order" className="mb-2 block text-sm font-semibold">Ordenar por</label>
+          <select id="search-order" name="orden" value={filters.orden} onChange={change} className={inputClass}>
+            <option value="nombre-asc">Nombre: A a Z</option>
+            <option value="nombre-desc">Nombre: Z a A</option>
+            <option value="recientes">Agregados recientemente</option>
+          </select>
+        </div>
+      </div>
+
+      <button type="submit" className="mt-7 flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-[#c45111] px-5 text-sm font-bold text-white hover:bg-[#9d3e0b]">
+        <Filter size={17} aria-hidden="true" /> Aplicar filtros
+      </button>
+      <button type="button" onClick={onClear} className="mt-2 min-h-11 w-full rounded-xl text-sm font-semibold text-[#344e3b] hover:bg-[#f4f7f1]">Limpiar filtros</button>
+    </form>
+  )
+}
+
+const typeLabels = {
+  complejo: 'Complejo turístico',
+  atractivo: 'Atractivo independiente',
+  otro: 'Lugar turístico',
+  local: 'Local comercial',
+}
+
+function PlaceCard({ place, saved, pending, onToggle }) {
+  return (
+    <article className="flex h-full flex-col overflow-hidden rounded-2xl border border-[#d8e1d5] bg-[#fffefa] shadow-sm transition-shadow hover:shadow-md">
+      <div className="relative flex h-48 shrink-0 items-center justify-center bg-[#eaf0e7]">
+        {place.url_imagen ? <img src={place.url_imagen} alt={place.nombre} className="h-full w-full object-cover" /> : place.tipo === 'local' ? <Store size={42} aria-hidden="true" className="text-[#79927c]" /> : <Compass size={42} aria-hidden="true" className="text-[#79927c]" />}
+        <FavoriteButton name={place.nombre} saved={saved} pending={pending} onToggle={() => onToggle(place.id_local, place)} />
+      </div>
+      <div className="flex flex-1 flex-col p-5">
+        <span className="inline-flex self-start rounded-full bg-[#f6eee5] px-3 py-1 text-xs font-bold text-[#9d3e0b]">{typeLabels[place.tipo] ?? typeLabels.otro}</span>
+        <h3 className="mt-3 min-h-14 line-clamp-2 break-words text-lg leading-7 font-bold text-[#263f32]">{place.nombre}</h3>
+        <p className="mt-2 flex min-h-10 items-start gap-2 text-sm leading-5 text-[#526554]"><MapPin size={16} aria-hidden="true" className="mt-0.5 shrink-0" /><span className="line-clamp-2">{[place.municipio, place.departamento].filter(Boolean).join(', ')}</span></p>
+        <div className="mt-3 min-h-18">
+          {place.descripcion && <p className="line-clamp-3 text-sm leading-6 text-[#526554]">{place.descripcion}</p>}
+        </div>
+        <div className="mt-3 min-h-15 border-t border-[#d8e1d5] pt-3">
+          {place.direccion_exacta && <p className="line-clamp-2 text-xs leading-5 text-[#526554]">{place.direccion_exacta}</p>}
+        </div>
+        {place.tipo === 'local' && place.horarios?.length > 0 && <details className="mt-3 rounded-xl border border-[#d8e1d5] bg-[#f8faf6] px-3 py-2 text-xs text-[#344e3b]"><summary className="flex cursor-pointer items-center gap-2 font-bold"><Clock3 size={16} aria-hidden="true" /> Ver horario de atención</summary><ul className="mt-3 space-y-1 border-t border-[#d8e1d5] pt-2">{place.horarios.map((horario, index) => <li key={index} className="flex justify-between gap-3"><span>{horario.dia_semana}{horario.es_feriado ? ' · feriado' : ''}</span><span className="whitespace-nowrap">{horario.hora_apertura}–{horario.hora_cierre}</span></li>)}</ul></details>}
+        {place.precio_minimo != null && place.precio_maximo != null && (
+          <p className="mt-2 text-sm font-semibold text-[#344e3b]">Comida y bebida: C$ {place.precio_minimo} – C$ {place.precio_maximo} por persona</p>
+        )}
+        <div className="mt-auto flex min-h-11 flex-wrap items-center gap-x-5">
+          <Link to={`/perfil-lugar/${place.id_local}`} className="inline-flex min-h-11 items-center text-sm font-bold text-[#c45111] hover:text-[#9d3e0b]">Ver perfil</Link>
+          {place.maps_link && <a href={place.maps_link} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center gap-2 text-sm font-bold text-[#c45111] hover:text-[#9d3e0b]">Ver en Google Maps <ExternalLink size={15} aria-hidden="true" /></a>}
+        </div>
+      </div>
+    </article>
+  )
+}
+
+function SearchResultsSkeleton() {
+  const block = 'animate-pulse bg-[#dfe7dd] motion-reduce:animate-none'
+
+  return (
+    <div role="status" aria-label="Buscando lugares y locales">
+      <span className="sr-only">Buscando lugares y locales…</span>
+      <div aria-hidden="true" className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+        {Array.from({ length: 8 }, (_, index) => (
+          <div key={index} className="flex h-full flex-col overflow-hidden rounded-2xl border border-[#d8e1d5] bg-[#fffefa] shadow-sm">
+            <div className={`${block} h-48 shrink-0`} />
+            <div className="flex flex-1 flex-col p-5">
+              <div className={`${block} h-6 w-32 rounded-full`} />
+              <div className={`${block} mt-3 h-6 w-4/5 rounded-full`} />
+              <div className={`${block} mt-2 h-6 w-2/3 rounded-full`} />
+              <div className={`${block} mt-4 h-4 w-3/5 rounded-full`} />
+              <div className="mt-5 space-y-2">
+                <div className={`${block} h-4 w-full rounded-full`} />
+                <div className={`${block} h-4 w-11/12 rounded-full`} />
+                <div className={`${block} h-4 w-3/4 rounded-full`} />
+              </div>
+              <div className="mt-5 border-t border-[#d8e1d5] pt-4">
+                <div className={`${block} h-4 w-4/5 rounded-full`} />
+                <div className={`${block} mt-2 h-4 w-1/2 rounded-full`} />
+              </div>
+              <div className={`${block} mt-8 h-4 w-24 rounded-full`} />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+export default function SearchResults() {
+  const navigate = useNavigate()
+  const { sesion } = useAuth()
+  const { favorites, loading: loadingFavorites, pendingId, error: favoriteError, toggle } = useFavorites()
+  const [searchParams, setSearchParams] = useSearchParams()
+  const filterParams = new URLSearchParams(searchParams)
+  filterParams.delete('page')
+  const filtersKey = filterParams.toString()
+  const categoryId = searchParams.get('id_categoria') ?? ''
+  const [retry, setRetry] = useState(0)
+  const [catalog, setCatalog] = useState({ departments: [], categories: [] })
+  const [results, setResults] = useState({ key: null, items: [], total: 0, totalPages: 1, error: '' })
+  const paramsString = searchParams.toString()
+  const searchKey = `${retry}:${paramsString}`
+
+  useEffect(() => {
+    const controller = new AbortController()
+    Promise.all([
+      getDepartments(controller.signal),
+      getCategories(controller.signal)
+    ])
+      .then(([departments, categories]) => { if (!controller.signal.aborted) setCatalog({ departments, categories }) })
+      .catch(() => {})
+    return () => controller.abort()
+  }, [])
+
+  useEffect(() => {
+    const controller = new AbortController()
+    const params = new URLSearchParams(paramsString)
+    const requested = Number(params.get('page'))
+    if (params.has('page') && (!Number.isSafeInteger(requested) || requested < 1 || requested > 100000)) params.delete('page')
+    searchPlaces(params, controller.signal)
+      .then(data => {
+        if (!controller.signal.aborted) setResults({ key: searchKey, ...data, error: '' })
+      })
+      .catch(error => {
+        if (!controller.signal.aborted) setResults({ key: searchKey, items: [], total: 0, totalPages: 1, error: error instanceof TypeError ? 'No se pudo conectar con el servidor.' : error.message })
+      })
+    return () => controller.abort()
+  }, [searchKey, paramsString])
+
+  const places = results.items
+  const loading = results.key !== searchKey
+  const hasFilters = Boolean(filtersKey)
+  const onlyCategoryFilter = categoryId !== '' && filterParams.size === 1
+  const totalPages = results.totalPages
+  const requestedPage = Number(searchParams.get('page'))
+  const currentPage = Number.isSafeInteger(requestedPage) && requestedPage > 0
+    ? requestedPage
+    : 1
+  const pageNumbers = Array.from({ length: totalPages }, (_, index) => index + 1)
+    .filter(page => page === 1 || page === totalPages || Math.abs(page - currentPage) <= 1)
+
+  useEffect(() => {
+    if (loading || results.error || currentPage <= totalPages) return
+    setSearchParams(current => {
+      const next = new URLSearchParams(current)
+      next.set('page', String(totalPages))
+      return next
+    }, { replace: true })
+  }, [loading, results.error, currentPage, totalPages, setSearchParams])
+
+  function togglePlace(idLocal, place) {
+    if (!sesion) { navigate('/ingresar'); return false }
+    return toggle(idLocal, place)
+  }
+
+  function goToPage(page) {
+    if (page < 1 || page > totalPages || page === currentPage) return
+    setSearchParams(current => {
+      const next = new URLSearchParams(current)
+      if (page === 1) next.delete('page')
+      else next.set('page', String(page))
+      return next
+    })
+    document.getElementById('results-title')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
+
+  return (
+    <div id="inicio" className="flex min-h-screen flex-col bg-[#f6f8f3] text-[#25382e]">
+      <Navbar />
+      <div className="home-explore-content flex flex-1 flex-col">
+      <main className="w-full flex-1 px-6 pt-10 sm:px-10 sm:pt-14 lg:px-12 2xl:px-16">
+        <Link to="/" viewTransition className="inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-[#344e3b] hover:text-[#c45111]"><ArrowLeft size={17} aria-hidden="true" /> Volver al inicio</Link>
+        <header className="mt-5 border-b border-[#d8e1d5] pb-8">
+          <p className="text-xs font-bold uppercase tracking-[.16em] text-[#c45111]">Explora Nicaragua</p>
+          <h1 className="mt-3 text-3xl font-bold tracking-tight text-[#263f32] sm:text-4xl">Encuentra tu próximo destino</h1>
+          <p className="mt-3 max-w-2xl text-sm leading-6 text-[#526554] sm:text-base">Busca lugares turísticos y locales comerciales por ubicación, tipo o categoría.</p>
+        </header>
+
+        <div id="explorar" className="mt-8 grid scroll-mt-28 items-start gap-8 lg:grid-cols-[300px_minmax(0,1fr)]">
+          <aside aria-label="Filtros de búsqueda">
+            <SearchFilters key={filtersKey} applied={searchParams} departments={catalog.departments} categories={catalog.categories} onApply={setSearchParams} onClear={() => setSearchParams({})} />
+          </aside>
+
+          <section aria-labelledby="results-title" className="min-w-0">
+            {favoriteError && <p role="alert" className="mb-5 rounded-xl bg-[#fff0e9] p-4 text-sm text-[#9d3e0b]">{favoriteError}</p>}
+            <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
+              <div><p className="text-xs font-bold uppercase tracking-widest text-[#c45111]">Destinos y negocios para descubrir</p><h2 id="results-title" className="mt-1 scroll-mt-28 text-2xl font-bold text-[#263f32]">Resultados de búsqueda</h2></div>
+              {!loading && !results.error && <span role="status" className="rounded-full bg-[#eaf0e7] px-3 py-2 text-xs font-bold text-[#344e3b]">{results.total} {results.total === 1 ? 'resultado' : 'resultados'}</span>}
+            </div>
+
+            {loading && <SearchResultsSkeleton />}
+            {!loading && results.error && <div role="alert" className="rounded-2xl border border-[#e9c7b6] bg-[#fff0e9] p-8"><p className="text-sm text-[#9d3e0b]">{results.error}</p><button type="button" onClick={() => setRetry(value => value + 1)} className="mt-4 min-h-11 rounded-full bg-[#c45111] px-5 text-sm font-bold text-white hover:bg-[#9d3e0b]">Reintentar</button></div>}
+            {!loading && !results.error && results.total === 0 && <div className="rounded-2xl border border-[#d8e1d5] bg-white px-6 py-12 text-center"><Search size={32} aria-hidden="true" className="mx-auto text-[#79927c]" /><h3 className="mt-4 text-lg font-bold">{onlyCategoryFilter ? 'No hay lugares en esta categoría' : 'No encontramos lugares con esos filtros'}</h3><p className="mt-2 text-sm text-[#526554]">{onlyCategoryFilter ? 'No hay límite de presupuesto aplicado. Prueba con otra categoría o consulta todos los lugares.' : 'Prueba con otro término o amplía tu búsqueda.'}</p>{hasFilters && <button type="button" onClick={() => setSearchParams({})} className="mt-5 inline-flex min-h-11 items-center gap-2 rounded-full bg-[#c45111] px-5 text-sm font-bold text-white hover:bg-[#9d3e0b]">Ver todos los lugares <ArrowRight size={16} aria-hidden="true" /></button>}</div>}
+            {!loading && !results.error && results.total > 0 && (
+              <>
+                <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+                  {places.map(place => <PlaceCard key={`${place.tipo}-${place.id_local}`} place={place} saved={favorites.some(item => Number(item.id_local) === Number(place.id_local))} pending={loadingFavorites || pendingId !== null} onToggle={togglePlace} />)}
+                </div>
+                {totalPages > 1 && (
+                  <nav aria-label="Paginación de resultados" className="mt-8 flex flex-wrap items-center justify-center gap-2 pb-4">
+                    <button type="button" onClick={() => goToPage(currentPage - 1)} disabled={currentPage === 1} className="min-h-11 rounded-xl border border-[#d8e1d5] bg-white px-4 text-sm font-semibold text-[#344e3b] hover:bg-[#eaf0e7] disabled:cursor-not-allowed disabled:opacity-50">Anterior</button>
+                    {pageNumbers.map((page, index) => (
+                      <div key={page} className="flex items-center gap-2">
+                        {index > 0 && page - pageNumbers[index - 1] > 1 && <span aria-hidden="true" className="px-1 text-[#526554]">…</span>}
+                        <button type="button" onClick={() => goToPage(page)} aria-label={`Página ${page}`} aria-current={page === currentPage ? 'page' : undefined} className={`min-h-11 min-w-11 rounded-xl border px-3 text-sm font-semibold ${page === currentPage ? 'border-[#c45111] bg-[#c45111] text-white' : 'border-[#d8e1d5] bg-white text-[#344e3b] hover:bg-[#eaf0e7]'}`}>{page}</button>
+                      </div>
+                    ))}
+                    <button type="button" onClick={() => goToPage(currentPage + 1)} disabled={currentPage === totalPages} className="min-h-11 rounded-xl border border-[#d8e1d5] bg-white px-4 text-sm font-semibold text-[#344e3b] hover:bg-[#eaf0e7] disabled:cursor-not-allowed disabled:opacity-50">Siguiente</button>
+                  </nav>
+                )}
+              </>
+            )}
+          </section>
+        </div>
+      </main>
+      <Footer />
+      </div>
+    </div>
+  )
+}

@@ -9,8 +9,8 @@ async function checkRules(data, client) {
   await requireReference(locales_comercialesRepository, data.id_local, 'El local', client)
 }
 
-export async function findAll() {
-  return execute(async () => repository.findAll())
+export async function findAll(idLocal) {
+  return execute(async () => repository.findAll(undefined, idLocal == null ? null : parseId(idLocal)))
 }
 
 export async function findOne(id) {

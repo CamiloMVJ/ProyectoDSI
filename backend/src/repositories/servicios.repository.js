@@ -20,9 +20,10 @@ function getEntries(data) {
     .map((field) => [field, data[field]])
 }
 
-export async function findAll(client = pool) {
+export async function findAll(client = pool, idLocal = null) {
   const { rows } = await client.query(
-    'SELECT * FROM public.servicios ORDER BY id_servicio'
+    'SELECT * FROM public.servicios WHERE ($1::integer IS NULL OR id_local = $1) ORDER BY id_servicio',
+    [idLocal]
   )
 
   return rows

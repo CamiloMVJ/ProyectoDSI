@@ -3,7 +3,7 @@ import Joi from 'joi';
 export const servicioSchema = Joi.object({
 id_local: Joi.number()
 .integer()
-.positive()
+.positive().max(2147483647)
 .required()
 .messages({
 'number.base': 'El ID del local debe ser un número.',
@@ -30,6 +30,7 @@ descripcion: Joi.string()
 
 precio: Joi.number()
     .min(0)
+    .max(99999999.99)
     .precision(2)
     .required()
     .messages({
@@ -39,7 +40,7 @@ precio: Joi.number()
     }),
 
 moneda: Joi.string()
-    .max(10)
+    .valid('NIO', 'USD')
     .default('NIO'),
 
 tipo_cobro: Joi.string()

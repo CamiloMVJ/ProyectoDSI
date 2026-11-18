@@ -1,0 +1,23 @@
+services:
+  backend:
+    build: ./backend
+    env_file: ./backend/.env
+    command: ["node", "--watch", "src/server.js"]
+    ports:
+      - "127.0.0.1:3000:3000"
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+
+  frontend:
+    build: ./frontend
+    command: ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
+    environment:
+      VITE_PROXY_TARGET: http://backend:3000
+    ports:
+      - "127.0.0.1:5173:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      - backend

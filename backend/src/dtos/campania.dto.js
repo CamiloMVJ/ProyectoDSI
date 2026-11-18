@@ -3,7 +3,7 @@ import Joi from 'joi';
 export const campaniaSchema = Joi.object({
 id_local: Joi.number()
 .integer()
-.positive()
+.positive().max(2147483647)
 .required()
 .messages({
 'number.base': 'El ID del local debe ser un número.',
@@ -35,6 +35,7 @@ fecha_fin: Joi.date()
 
 monto_total: Joi.number()
     .min(0)
+    .max(99999999.99)
     .precision(2)
     .required()
     .messages({
@@ -44,7 +45,7 @@ monto_total: Joi.number()
     }),
 
 moneda: Joi.string()
-    .max(10)
+    .valid('NIO', 'USD')
     .default('NIO'),
 
 estado: Joi.string()

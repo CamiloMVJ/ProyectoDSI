@@ -10,6 +10,9 @@ export const pool = new Pool({
     max: 20,
     maxLifeSeconds: 60,
     connectionTimeoutMillis: 5000,
+    ssl: {
+        rejectUnauthorized: false,
+    },
 })
 
 pool.on('error', (error) => {

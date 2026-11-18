@@ -1,21 +1,19 @@
+import Joi from 'joi';
 import { categoriaSchema } from './categoria.dto.js';
 import { usuarioSchema } from './usuario.dto.js';
-import { turistaSchema } from './turista.dto.js';
 import { propietarioNegocioSchema } from './propietario_negocio.dto.js';
 import { administradorSchema } from './administradores.dto.js';
 import { lugarSchema } from './lugar.dto.js';
 import { imagenLugarSchema } from './imagen_lugar.dto.js';
 import { horarioSchema } from './horario.dto.js';
 import { resenaSchema } from './resena.dto.js';
-import { favoritoSchema } from './favorito.dto.js';
 import { complejoTuristicoSchema } from './complejo_turistico.dto.js';
 import { atractivoIndependienteSchema } from './atractivos_independientes.dto.js';
 import { localComercialSchema } from './local_comercial.dto.js';
 import { eventoSchema } from './evento.dto.js';
 import { servicioSchema } from './servicio.dto.js';
-import { menuSchema } from './menus.dto.js';
-import { itemMenuSchema } from './items_Menu.dto.js';
-import { solicitudRegistroSchema } from './solicitud_registro.dto.js';
+import { menuSchema } from './Menus.dto.js';
+import { itemMenuSchema } from './Items_Menu.dto.js';
 import { campaniaSchema } from './campania.dto.js';
 import { pagoSchema } from './pago.dto.js';
 
@@ -48,22 +46,6 @@ export const updateUsuarioSchema = usuarioSchema
         'object.min': 'Debés enviar al menos un campo del usuario para actualizar.',
         'object.unknown': 'El campo "{{#label}}" no está permitido en el usuario.',
         'any.required': 'Debés enviar los datos del usuario que querés actualizar.'
-    });
-
-
-export const updateTuristaSchema = turistaSchema
-    .fork(
-        ['id_usuario', 'pais_origen'],
-        (schema) => schema.optional()
-    )
-    .prefs({ noDefaults: true })
-    .unknown(false)
-    .min(1)
-    .required()
-    .messages({
-        'object.min': 'Debés enviar al menos un campo del turista para actualizar.',
-        'object.unknown': 'El campo "{{#label}}" no está permitido en el turista.',
-        'any.required': 'Debés enviar los datos del turista que querés actualizar.'
     });
 
 
@@ -104,7 +86,7 @@ export const updateLugarSchema = lugarSchema
         [
             'nombre',
             'descripcion',
-            'departamento',
+            'id_departamento',
             'municipio',
             'direccion_exacta',
             'maps_link'
@@ -124,7 +106,7 @@ export const updateLugarSchema = lugarSchema
 
 export const updateImagenLugarSchema = imagenLugarSchema
     .fork(
-        ['id_lugar', 'url_imagen', 'descripcion'],
+        ['id_local', 'url_imagen', 'descripcion'],
         (schema) => schema.optional()
     )
     .prefs({ noDefaults: true })
@@ -141,8 +123,8 @@ export const updateImagenLugarSchema = imagenLugarSchema
 export const updateHorarioSchema = horarioSchema
     .fork(
         [
-            'id_lugar',
-            'dia_semama',
+            'id_local',
+            'dia_semana',
             'hora_apertura',
             'hora_cierre',
             'es_feriado'
@@ -163,8 +145,8 @@ export const updateHorarioSchema = horarioSchema
 export const updateResenaSchema = resenaSchema
     .fork(
         [
-            'id_turista',
-            'id_lugar',
+            'id_usuario',
+            'id_local',
             'calificacion',
             'comentario',
             'respuesta_propietario',
@@ -180,22 +162,6 @@ export const updateResenaSchema = resenaSchema
         'object.min': 'Debés enviar al menos un campo de la reseña para actualizar.',
         'object.unknown': 'El campo "{{#label}}" no está permitido en la reseña.',
         'any.required': 'Debés enviar los datos de la reseña que querés actualizar.'
-    });
-
-
-export const updateFavoritoSchema = favoritoSchema
-    .fork(
-        ['id_turista', 'id_lugar'],
-        (schema) => schema.optional()
-    )
-    .prefs({ noDefaults: true })
-    .unknown(false)
-    .min(1)
-    .required()
-    .messages({
-        'object.min': 'Debés enviar al menos un campo del favorito para actualizar.',
-        'object.unknown': 'El campo "{{#label}}" no está permitido en el favorito.',
-        'any.required': 'Debés enviar los datos del favorito que querés actualizar.'
     });
 
 
@@ -250,9 +216,12 @@ export const updateLocalComercialSchema = localComercialSchema
             'id_dueno',
             'id_complejo_padre',
             'es_independiente',
-            'precio_minimo',
-            'precio_maximo',
-            'id_categoria'
+            'nombre',
+            'descripcion',
+            'id_departamento',
+            'municipio',
+            'direccion_exacta',
+            'maps_link'
         ],
         (schema) => schema.optional()
     )
@@ -276,7 +245,7 @@ export const updateEventoSchema = eventoSchema
             'fecha_fin',
             'hora_inicio',
             'hora_fin',
-            'departamento',
+            'id_departamento',
             'municipio',
             'direccion_referencia',
             'tipo_evento',
@@ -356,7 +325,8 @@ export const updateItemMenuSchema = itemMenuSchema
             'moneda',
             'url_foto',
             'es_vegetariano',
-            'esta_disponible'
+            'esta_disponible',
+            'id_categoria_menu'
         ],
         (schema) => schema.optional()
     )
@@ -371,26 +341,9 @@ export const updateItemMenuSchema = itemMenuSchema
     });
 
 
-export const updateSolicitudRegistroSchema = solicitudRegistroSchema
-    .fork(
-        [
-            'id_dueno',
-            'id_administrador',
-            'documentos_adjuntos',
-            'estado',
-            'observaciones'
-        ],
-        (schema) => schema.optional()
-    )
-    .prefs({ noDefaults: true })
-    .unknown(false)
-    .min(1)
-    .required()
-    .messages({
-        'object.min': 'Debés enviar al menos un campo de la solicitud de registro para actualizar.',
-        'object.unknown': 'El campo "{{#label}}" no está permitido en la solicitud de registro.',
-        'any.required': 'Debés enviar los datos de la solicitud de registro que querés actualizar.'
-    });
+export const updateSolicitudRegistroSchema = Joi.object({
+    estado: Joi.string().valid('Aprobada', 'Rechazada').required()
+});
 
 
 export const updateCampaniaSchema = campaniaSchema
@@ -421,7 +374,6 @@ export const updatePagoSchema = pagoSchema
         [
             'id_campania',
             'id_dueno',
-            'id_administrador',
             'monto',
             'moneda',
             'metodo_pago',

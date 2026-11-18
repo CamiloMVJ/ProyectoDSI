@@ -4,7 +4,7 @@ import { lugarSchema } from './lugar.dto.js'
 export const complejoTuristicoSchema = Joi.object({
     id_lugar: Joi.number()
         .integer()
-        .positive()
+        .positive().max(2147483647)
         .required()
         .messages({
             'number.base': 'El ID del lugar debe ser un número.',
@@ -16,6 +16,7 @@ export const complejoTuristicoSchema = Joi.object({
     capacidad_locales: Joi.number()
         .integer()
         .min(0)
+        .max(2147483647)
         .allow(null)
         .optional()
         .messages({
@@ -28,12 +29,13 @@ export const complejoTuristicoSchema = Joi.object({
 
     id_administrador: Joi.number()
         .integer()
-        .positive()
+        .positive().max(2147483647)
         .allow(null)
         .optional(),
 
     costo_entrada: Joi.number()
         .min(0)
+        .max(99999999.99)
         .precision(2)
         .allow(null)
         .optional()
