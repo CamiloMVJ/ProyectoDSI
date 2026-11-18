@@ -1,5 +1,19 @@
 // Comparar fechas calendario como cadenas ISO para no mover el día por zona horaria.
 export const isoDay = (value) => typeof value === 'string' ? value.slice(0, 10) : ''
+
+// PostgreSQL devuelve TIME como HH:mm:ss; el control y la API trabajan con HH:mm.
+export function timeInputValue(value) {
+  const match = typeof value === 'string' && /^([01]\d|2[0-3]):([0-5]\d)(?::[0-5]\d)?$/.exec(value)
+  return match ? `${match[1]}:${match[2]}` : ''
+}
+
+export function formatEventTime(value) {
+  const normalized = timeInputValue(value)
+  if (!normalized) return ''
+  const hour = Number(normalized.slice(0, 2))
+  return `${hour % 12 || 12}:${normalized.slice(3)} ${hour < 12 ? 'a. m.' : 'p. m.'}`
+}
+
 export function eventsForDay(events, day) {
   return events.filter((event) => {
     const start = isoDay(event.fecha_inicio)

@@ -1,10 +1,9 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { User, Languages, LogOut, Heart } from 'lucide-react'
+import { User, LogOut, Heart } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth.js'
+import { isAnimatedPage, shouldTransitionPage } from '../services/pageTransitions.js'
 
-export default function Navbar({
-  onPublishClick,
-}) {
+export default function Navbar() {
   const { pathname } = useLocation()
   const navigate = useNavigate()
   const { sesion, signOut } = useAuth()
@@ -21,7 +20,7 @@ export default function Navbar({
 
   return (
     <header
-      className={`sticky top-0 z-50 w-full border-b border-gray-200/60 bg-white/85 backdrop-blur-md ${pathname === '/' || pathname === '/buscar' ? 'home-explore-navbar' : ''}`}
+      className={`sticky top-0 z-50 w-full border-b border-gray-200/60 bg-white/85 backdrop-blur-md ${isAnimatedPage(pathname) ? 'home-explore-navbar' : ''}`}
     >
       <nav
         aria-label="Navegación principal"
@@ -30,7 +29,7 @@ export default function Navbar({
       >
         <Link
           to="/"
-          viewTransition={pathname === '/buscar'}
+          viewTransition={shouldTransitionPage(pathname, '/')}
           className="flex flex-col"
           aria-label="SINATUR, ir al inicio"
         >
@@ -48,14 +47,14 @@ export default function Navbar({
 
         <ul className="flex items-center gap-6">
           <li>
-            <Link to="/" viewTransition={pathname === '/buscar'} className={linkClass}>
+            <Link to="/" viewTransition={shouldTransitionPage(pathname, '/')} className={linkClass}>
               Inicio
             </Link>
           </li>
 
-          <li><Link to="/calendario" className={linkClass}>Eventos</Link></li>
+          <li><Link to="/calendario" viewTransition={shouldTransitionPage(pathname, '/calendario')} className={linkClass}>Eventos</Link></li>
           <li>
-            <Link to="/buscar" viewTransition={pathname === '/'} className={linkClass}>
+            <Link to="/buscar" viewTransition={shouldTransitionPage(pathname, '/buscar')} className={linkClass}>
               Explorar
             </Link>
           </li>
@@ -73,9 +72,10 @@ export default function Navbar({
 
           {sesion ? (
             <>
-              <Link to="/favoritos" aria-current={pathname === '/favoritos' ? 'page' : undefined} className="inline-flex min-h-11 items-center gap-2 rounded-full px-4 text-sm font-semibold text-[#344e3b] hover:bg-[#eaf0e7]"><Heart size={18} aria-hidden="true" /> Favoritos</Link>
+              <Link to="/favoritos" viewTransition={shouldTransitionPage(pathname, '/favoritos')} aria-current={pathname === '/favoritos' ? 'page' : undefined} className="inline-flex min-h-11 items-center gap-2 rounded-full px-4 text-sm font-semibold text-[#344e3b] hover:bg-[#eaf0e7]"><Heart size={18} aria-hidden="true" /> Favoritos</Link>
               <Link
                 to="/account"
+                viewTransition={shouldTransitionPage(pathname, '/account')}
                 aria-current={
                   pathname === '/account' ? 'page' : undefined
                 }
@@ -111,17 +111,13 @@ export default function Navbar({
                 Ingresar
               </Link>
 
-              {onPublishClick && (
-                <button
-                  type="button"
-                  onClick={onPublishClick}
-                  className="min-h-11 rounded-full bg-[#C45111]
-                    px-5 text-sm font-semibold text-white
-                    hover:bg-[#9d3e0b]"
-                >
-                  Publícate con nosotros
-                </button>
-              )}
+              <Link
+                to="/registro-negocio"
+                className="inline-flex min-h-11 items-center justify-center rounded-full bg-[#C45111]
+                  px-5 text-sm font-semibold text-white hover:bg-[#9d3e0b]"
+              >
+                Publícate con nosotros
+              </Link>
             </>
           )}
         </div>

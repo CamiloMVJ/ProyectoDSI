@@ -68,6 +68,7 @@ export default function UserAccount() {
             className="flex min-h-screen flex-col bg-[#f6f8f3] text-[#25382e]"
         >
             <Navbar />
+            <div className="home-explore-content flex flex-1 flex-col">
 
             <main className="mx-auto w-full max-w-7xl flex-1 px-6 pb-16 pt-10 sm:px-10 sm:pt-14">
                 <header className="mb-9 border-b border-[var(--color-border)] pb-8 sm:mb-10">
@@ -236,7 +237,7 @@ export default function UserAccount() {
                             <p className="mt-2 text-sm leading-6 text-[var(--color-text-muted)]">
                                 Descubre destinos, sabores y experiencias cerca de ti.
                             </p>
-                            <Link to="/" className="mt-4 inline-flex min-h-11 items-center gap-2 text-sm font-bold text-[var(--color-primary)] hover:text-[var(--color-accent)]">
+                            <Link to="/" viewTransition className="mt-4 inline-flex min-h-11 items-center gap-2 text-sm font-bold text-[var(--color-primary)] hover:text-[var(--color-accent)]">
                                 Explorar Nicaragua
                                 <ArrowRight size={17} aria-hidden="true" />
                             </Link>
@@ -270,6 +271,7 @@ export default function UserAccount() {
             </main>
 
             <Footer homeHref="/" />
+            </div>
         </div>
     )
 }

@@ -1,4 +1,5 @@
 import { Calendar, MapPin, Clock, Ticket, Repeat, Navigation, ChevronLeft, ChevronRight } from "lucide-react";
+import { formatEventTime } from '../services/calendarUtils.js';
 
 const MESES_CORTOS = [
   'ENE', 'FEB', 'MAR', 'ABR', 'MAY', 'JUN',
@@ -51,8 +52,8 @@ const EventCarousel = ({
       ? `Del ${fechaInicioTxt} al ${fechaFinTxt}`
       : fechaInicioTxt || 'Fecha por confirmar';
 
-  const horaInicio = currentEvent?.hora_inicio ? String(currentEvent.hora_inicio).slice(0, 5) : null;
-  const horaFin = currentEvent?.hora_fin ? String(currentEvent.hora_fin).slice(0, 5) : null;
+  const horaInicio = formatEventTime(currentEvent?.hora_inicio);
+  const horaFin = formatEventTime(currentEvent?.hora_fin);
   const horarioTexto =
     horaInicio && horaFin
       ? `${horaInicio} - ${horaFin}`
@@ -73,7 +74,7 @@ const EventCarousel = ({
           </h2>
         </div>
         <span className="text-xs font-medium text-[#526554] bg-[#526554]/15 px-3 py-1 rounded-full">
-          <Link to="/calendario" className="underline underline-offset-2">Ver calendario</Link>
+          <Link to="/calendario" viewTransition className="underline underline-offset-2">Ver calendario</Link>
         </span>
       </div>
 

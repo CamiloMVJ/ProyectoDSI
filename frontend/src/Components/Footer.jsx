@@ -1,4 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
+import { shouldTransitionPage } from '../services/pageTransitions.js';
 
 const Footer = () => {
   const { pathname } = useLocation();
@@ -15,10 +16,10 @@ const Footer = () => {
         </div>
 
         <div className="flex items-center gap-6 text-xs text-white/80">
-          <Link to="/" viewTransition={pathname === '/buscar'} className="hover:text-[#C45111] transition-colors">
+          <Link to="/" viewTransition={shouldTransitionPage(pathname, '/')} className="hover:text-[#C45111] transition-colors">
             Inicio
           </Link>
-          <Link to="/buscar" viewTransition={pathname === '/'} className="hover:text-[#C45111] transition-colors">
+          <Link to="/buscar" viewTransition={shouldTransitionPage(pathname, '/buscar')} className="hover:text-[#C45111] transition-colors">
             Explorar
           </Link>
         </div>

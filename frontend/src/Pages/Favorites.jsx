@@ -67,6 +67,7 @@ export default function Favorites() {
   return (
     <div className="flex min-h-screen flex-col bg-[#f6f8f3] text-[#25382e]">
       <Navbar />
+      <div className="home-explore-content flex flex-1 flex-col">
       <main className="mx-auto w-full max-w-7xl flex-1 px-6 pb-16 pt-10 sm:px-10 sm:pt-14">
         <header className="border-b border-[#d8e1d5] pb-8">
           <p className="text-xs font-bold uppercase tracking-[.16em] text-[#c45111]">Tu espacio en SINATUR</p>
@@ -90,9 +91,10 @@ export default function Favorites() {
         {((tab === 'guardados' && loadingFavorites) || (tab === 'explorar' && catalog.loading)) && <p role="status" className="mt-8 flex items-center gap-3 text-sm text-[#526554]"><LoaderCircle size={20} className="animate-spin" aria-hidden="true" /> Cargando lugares…</p>}
         {!(tab === 'guardados' && loadingFavorites) && !(tab === 'explorar' && catalog.loading) && items.length === 0 && <div className="mt-8 rounded-2xl border border-[#d8e1d5] bg-white px-6 py-12 text-center"><Heart size={32} className="mx-auto text-[#79927c]" aria-hidden="true" /><h2 className="mt-4 text-xl font-bold text-[#263f32]">{tab === 'guardados' ? 'Aún no tienes favoritos' : 'No encontramos resultados'}</h2><p className="mt-2 text-sm text-[#526554]">{tab === 'guardados' ? 'Explora destinos y negocios para guardar los que te interesen.' : 'Prueba con otro nombre o tipo.'}</p>{tab === 'guardados' && <button type="button" onClick={() => setTab('explorar')} className="mt-5 min-h-11 rounded-full bg-[#c45111] px-5 text-sm font-bold text-white">Explorar lugares</button>}</div>}
         {items.length > 0 && <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">{items.map(item => <FavoriteCard key={item.id_local} item={item} saved={savedIds.has(Number(item.id_local))} pending={loadingFavorites || pendingId !== null} onToggle={toggle} />)}</div>}
-        <p className="mt-10 text-sm text-[#526554]">¿Buscas un destino específico? <Link to="/buscar" className="font-bold text-[#c45111] hover:text-[#9d3e0b]">Ir a la búsqueda de lugares</Link></p>
+        <p className="mt-10 text-sm text-[#526554]">¿Buscas un destino específico? <Link to="/buscar" viewTransition className="font-bold text-[#c45111] hover:text-[#9d3e0b]">Ir a la búsqueda de lugares</Link></p>
       </main>
       <Footer />
+      </div>
     </div>
   )
 }

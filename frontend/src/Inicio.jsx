@@ -162,9 +162,7 @@ export default function App() {
   return (
     <div id="inicio" className="w-full min-h-screen bg-[#f6f8f3] text-[#25382e] flex flex-col justify-between">
       {/* 1. Barra de Navegación Fija (Glassmorphism) */}
-      <Navbar
-        onPublishClick={() => navigate('/registro-negocio')}
-      />
+      <Navbar />
 
       <div className="home-explore-content flex flex-1 flex-col justify-between">
         <div>
