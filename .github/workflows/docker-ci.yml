@@ -65,3 +65,15 @@ jobs:
           file: ./frontend/dockerfile
           push: true
           tags: ${{ env.IMAGE }}-frontend:latest
+      - name: Solicitar despliegue del backend en Render
+        env:
+          RENDER_DEPLOY_HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+        run: |
+          if [ -z "$RENDER_DEPLOY_HOOK_URL" ]; then
+            echo "::error::Falta el secreto RENDER_DEPLOY_HOOK_URL"
+            exit 1
+          fi
+          curl --fail --silent --show-error \
+            --request POST \
+            --output /dev/null \
+            "$RENDER_DEPLOY_HOOK_URL"
