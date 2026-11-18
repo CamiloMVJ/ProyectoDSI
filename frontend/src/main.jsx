@@ -42,6 +42,7 @@ const router = createBrowserRouter([
   { path: '/perfil-lugar/:id', element: <PerfilLugar /> },
   { path: '/perfil-lugar/:id', element: <PerfilLugar /> },
 ])
+import App from './Inicio.jsx'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
