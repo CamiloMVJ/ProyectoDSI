@@ -86,6 +86,7 @@ export default function App() {
   const [selectedDepartment, setSelectedDepartment] = useState('');
   const [departments, setDepartments] = useState([]);
   const [events, setEvents] = useState([]);
+  const [activeEventIndex, setActiveEventIndex] = useState(0);
   const [recommendations, setRecommendations] = useState({});
   const [loading, setLoading] = useState(false);
 
@@ -119,6 +120,7 @@ export default function App() {
         }
         if (eventsRes.status === 'fulfilled') {
           setEvents(Array.isArray(eventsRes.value) ? eventsRes.value : []);
+          setActiveEventIndex(0);
         }
         if (recsRes.status === 'fulfilled' && recsRes.value) {
           setRecommendations(recsRes.value);
@@ -169,7 +171,24 @@ export default function App() {
           onSearchSubmit={handleSearch}
         />
 
-        <EventCarousel />
+        <EventCarousel events={events}
+          activeIndex={activeEventIndex}
+          onPrev={() =>
+            setActiveEventIndex((prev) =>
+              events.length ? (prev - 1 + events.length) % events.length : 0
+            )
+          }
+          onNext={() =>
+            setActiveEventIndex((prev) =>
+              events.length ? (prev + 1) % events.length : 0
+            )
+          }
+          onSelectDot={(index) => setActiveEventIndex(index)}
+          onViewDetails={(evento) => {
+            if (evento?.id_evento) {
+              navigate(`/evento/${evento.id_evento}`);
+            }
+          }}/>
 
         {/* 4. Sección de Recomendaciones */}
         <section className="w-full max-w-7xl mx-auto mt-16 px-6 sm:px-10">

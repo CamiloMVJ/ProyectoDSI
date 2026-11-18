@@ -29,7 +29,37 @@ function normalize(value) {
 function extractArray(res) {
   if (Array.isArray(res)) return res
   if (Array.isArray(res?.data)) return res.data
+  if (Array.isArray(res?.eventos)) return res.eventos
+  if (Array.isArray(res?.rows)) return res.rows
   return []
+}
+
+function formatearEventos([eventos, departamentos]) {
+  const mapaDepartamentos = new Map(
+    departamentos.map((dep) => [Number(dep.id_departamento), dep.nombre])
+  )
+
+  return eventos
+    .filter((ev) => ev.estado !== 'Cancelado')
+    .map((ev) => ({
+      ...ev,
+      departamento:
+        ev.departamento ||
+        mapaDepartamentos.get(Number(ev.id_departamento)) ||
+        null,
+      es_gratuito: Boolean(ev.es_gratuito),
+      es_anual_recurrente: Boolean(ev.es_anual_recurrente),
+      costo_entrada: ev.costo_entrada != null ? Number(ev.costo_entrada) : null,
+    }))
+    .sort((a, b) => {
+      const timeA = a.fecha_inicio
+        ? new Date(`${String(a.fecha_inicio).split('T')[0]}T00:00:00`).getTime()
+        : Infinity
+      const timeB = b.fecha_inicio
+        ? new Date(`${String(b.fecha_inicio).split('T')[0]}T00:00:00`).getTime()
+        : Infinity
+      return timeA - timeB
+    })
 }
 
 function agruparPorCategoria(comerciales) {
@@ -47,7 +77,6 @@ function agruparPorCategoria(comerciales) {
     const categorias = Array.isArray(local.categorias) ? local.categorias : []
     if (categorias.length === 0) continue
 
-    // <--- AQUÍ ES DONDE SE ARMA EL ARREGLO COMPLETO DE FOTOS --->
     const listaImagenes = [
       ...(Array.isArray(local.imagenes) ? local.imagenes : []),
       local.url_imagen,
@@ -55,9 +84,10 @@ function agruparPorCategoria(comerciales) {
 
     const localFormateado = {
       ...local,
-      maps_link: typeof local.maps_link === 'string'
-        ? local.maps_link.replace(/^hhttps:\/\//i, 'https://')
-        : null,
+      maps_link:
+        typeof local.maps_link === 'string'
+          ? local.maps_link.replace(/^hhttps:\/\//i, 'https://')
+          : null,
       imagenes: [...new Set(listaImagenes)],
     }
 
@@ -76,7 +106,10 @@ function agruparPorCategoria(comerciales) {
     secciones[key].sort((a, b) => {
       const destDiff = (b.es_destacado ? 1 : 0) - (a.es_destacado ? 1 : 0)
       if (destDiff !== 0) return destDiff
-      return Number(b.promedio_calificacion ?? b.puntuacion ?? 0) - Number(a.promedio_calificacion ?? a.puntuacion ?? 0)
+      return (
+        Number(b.promedio_calificacion ?? b.puntuacion ?? 0) -
+        Number(a.promedio_calificacion ?? a.puntuacion ?? 0)
+      )
     })
   }
 
@@ -84,7 +117,10 @@ function agruparPorCategoria(comerciales) {
 }
 
 export function getEventosNacionales(signal) {
-  return request('/eventos_nacionales', { signal }).then(extractArray)
+  return Promise.all([
+    request('/eventos_nacionales', { signal }).then(extractArray),
+    request('/departamentos', { signal }).then(extractArray).catch(() => []),
+  ]).then(formatearEventos)
 }
 
 export function getRecomendacionesInicio(signal) {
