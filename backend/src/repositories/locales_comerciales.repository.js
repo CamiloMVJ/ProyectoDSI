@@ -16,24 +16,24 @@ const baseFields = [
   "maps_link",
 ]
 const selection = `c.*, l.nombre, l.descripcion, l.id_departamento, l.municipio, l.direccion_exacta, l.maps_link,
-  d.nombre AS departamento, imagen.url_imagen,
-  COALESCE((SELECT json_agg(to_char(dc.fecha, 'YYYY-MM-DD') ORDER BY dc.fecha)
-    FROM public.dias_cerrados_locales dc
-    WHERE dc.id_local = c.id_local
-      AND dc.fecha >= (CURRENT_TIMESTAMP AT TIME ZONE 'America/Managua')::date), '[]'::json) AS dias_cerrados,
-  COALESCE((SELECT json_agg(json_build_object(
-    'dia_semana', h.dia_semana,
-    'hora_apertura', to_char(h.hora_apertura, 'HH24:MI'),
-    'hora_cierre', to_char(h.hora_cierre, 'HH24:MI'),
-    'es_feriado', h.es_feriado
-  ) ORDER BY h.id_horario) FROM public.horarios h WHERE h.id_local = c.id_local), '[]'::json) AS horarios`
+  d.nombre AS departamento, imagen.url_imagen, imagen.imagenes, cats.categorias`
+
 const relation = `FROM public.locales_comerciales AS c
   JOIN public.locales AS l ON l.id_local = c.id_local
   JOIN public.departamentos AS d ON d.id_departamento = l.id_departamento
   LEFT JOIN LATERAL (
-    SELECT url_imagen FROM public.imagenes_locales
-    WHERE id_local = c.id_local ORDER BY id_imagen LIMIT 1
-  ) AS imagen ON TRUE`
+    SELECT
+      (ARRAY_AGG(url_imagen ORDER BY id_imagen))[1] AS url_imagen,
+      COALESCE(ARRAY_AGG(url_imagen ORDER BY id_imagen), '{}') AS imagenes
+    FROM public.imagenes_locales
+    WHERE id_local = c.id_local
+  ) AS imagen ON TRUE
+  LEFT JOIN LATERAL (
+    SELECT COALESCE(ARRAY_AGG(cat.nombre ORDER BY cat.id_categoria), '{}') AS categorias
+    FROM public.locales_categorias AS lc
+    JOIN public.categorias AS cat ON cat.id_categoria = lc.id_categoria
+    WHERE lc.id_local = c.id_local
+  ) AS cats ON TRUE`
 
 function getEntries(data) {
   if (!data || typeof data !== "object" || Array.isArray(data)) {
