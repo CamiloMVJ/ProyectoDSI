@@ -50,3 +50,13 @@ estado_moderacion: Joi.string()
     .default('Pendiente')
 
 });
+
+export const publicarResenaSchema = Joi.object({
+    id_local: Joi.number().integer().positive().max(2147483647).required(),
+    calificacion: Joi.number().integer().min(1).max(5).required(),
+    comentario: Joi.string().trim().min(1).max(2000).required()
+}).required();
+
+export const responderResenaSchema = Joi.object({
+    respuesta_propietario: Joi.string().trim().min(1).max(2000).required()
+}).required();

@@ -30,12 +30,28 @@ export function findPublicByLocal(idLocal) {
 }
 
 // Recibe datos ya validados por Joi (middleware validar).
-export async function create(data) {
-  data = allowedData(data, fields)
-  
+export async function create(data, user) {
+  const userId = parseId(user.id)
+  const localId = parseId(data.id_local)
   return execute(async () => {
-    await checkRules(data)
-    const result = await repository.create(data)
+    if (!await repository.findCommercialLocal(localId)) throw new AppError('El negocio no está disponible para reseñas', 404)
+    if (await repository.isOwnerOfLocal(localId, userId)) throw new AppError('No podés reseñar tu propio negocio', 403)
+    return repository.create(data, userId)
+  })
+}
+
+export function permissions(idLocal, userId) {
+  idLocal = parseId(idLocal)
+  userId = parseId(userId)
+  return execute(async () => ({ puede_responder: await repository.isOwnerOfLocal(idLocal, userId) }))
+}
+
+export function reply(id, data, user) {
+  id = parseId(id)
+  const userId = parseId(user.id)
+  return execute(async () => {
+    const result = await repository.reply(id, userId, data.respuesta_propietario)
+    if (!result) throw new AppError('La reseña no existe o no pertenece a tu negocio', 404)
     return result
   })
 }

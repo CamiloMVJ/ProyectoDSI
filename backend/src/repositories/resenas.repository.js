@@ -26,36 +26,47 @@ export async function findPublicByLocal(idLocal, client = pool) {
   return rows
 }
 
-export async function create(data, client = pool) {
-  const {
-    id_usuario,
-    id_local,
-    calificacion,
-    comentario,
-    respuesta_propietario,
-    estado_moderacion
-  } = data;
+export async function findCommercialLocal(idLocal, client = pool) {
+  const { rows } = await client.query(
+    'SELECT id_local FROM public.locales_comerciales WHERE id_local = $1 AND esta_publicado = TRUE',
+    [idLocal]
+  );
+  return rows[0] ?? null;
+}
 
-  const query = `
-    INSERT INTO resenas (
-      id_usuario, id_local, calificacion, comentario,
-      respuesta_propietario, estado_moderacion
-    )
-    VALUES ($1, $2, $3, $4, $5, $6)
-    RETURNING *;
-  `;
+export async function isOwnerOfLocal(idLocal, userId, client = pool) {
+  const { rows } = await client.query(
+    `SELECT EXISTS (
+       SELECT 1 FROM public.locales_comerciales c
+       JOIN public.propietarios_negocios p ON p.id_propietario = c.id_dueno
+       WHERE c.id_local = $1 AND p.id_usuario = $2
+     ) AS owns_local`,
+    [idLocal, userId]
+  );
+  return rows[0]?.owns_local === true;
+}
 
-  const values = [
-    id_usuario,
-    id_local,
-    calificacion,
-    comentario || null,
-    respuesta_propietario || null,
-    estado_moderacion || 'Pendiente'
-  ];
-
-  const { rows } = await client.query(query, values);
+export async function create({ id_local, calificacion, comentario }, userId, client = pool) {
+  const { rows } = await client.query(
+    `INSERT INTO public.resenas (id_usuario, id_local, calificacion, comentario, estado_moderacion)
+     VALUES ($1, $2, $3, $4, 'Aprobada') RETURNING *`,
+    [userId, id_local, calificacion, comentario]
+  );
   return rows[0];
+}
+
+export async function reply(id, userId, answer, client = pool) {
+  const { rows } = await client.query(
+    `UPDATE public.resenas r SET respuesta_propietario = $3
+     WHERE r.id_resena = $1 AND r.estado_moderacion = 'Aprobada'
+       AND EXISTS (
+         SELECT 1 FROM public.locales_comerciales c
+         JOIN public.propietarios_negocios p ON p.id_propietario = c.id_dueno
+         WHERE c.id_local = r.id_local AND p.id_usuario = $2
+       ) RETURNING r.*`,
+    [id, userId, answer]
+  );
+  return rows[0] ?? null;
 }
 
 export async function update(id, data, client = pool) {
