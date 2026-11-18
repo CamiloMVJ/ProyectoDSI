@@ -78,8 +78,7 @@ export default function Navbar({
               text-xs text-[#526554] sm:inline-flex"
             lang="es"
           >
-            <Languages size={16} aria-hidden="true" />
-            Español
+            
           </span>
 
           {sesion ? (
