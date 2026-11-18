@@ -24,6 +24,11 @@ export async function findOne(id) {
   })
 }
 
+export function findPublicByLocal(idLocal) {
+  idLocal = parseId(idLocal)
+  return execute(() => repository.findPublicByLocal(idLocal))
+}
+
 // Recibe datos ya validados por Joi (middleware validar).
 export async function create(data) {
   data = allowedData(data, fields)

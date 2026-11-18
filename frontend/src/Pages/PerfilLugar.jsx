@@ -1,13 +1,16 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { MapPin, Clock, DollarSign, CheckCircle2, Image as ImageIcon, Loader2, UtensilsCrossed } from 'lucide-react';
+import { MapPin, Clock, DollarSign, CheckCircle2, Image as ImageIcon, UtensilsCrossed } from 'lucide-react';
 
 import Navbar from '../Components/Navbar';
 import Footer from '../Components/Footer';
 import ReadOnlyMenus from '../Components/ReadOnlyMenus.jsx';
 import ProfileImageGallery from '../Components/ProfileImageGallery.jsx';
+import ProfileReviews from '../Components/ProfileReviews.jsx';
+import ProfileSkeleton from '../Components/ProfileSkeleton.jsx';
 import { getPerfilLugar } from '../services/PerfilLugar.api.js';
 import '../css/gestion-establecimientos.css';
+import '../css/perfil-lugar.css';
 
 const PerfilLugar = () => {
   const { id } = useParams();
@@ -41,12 +44,7 @@ const PerfilLugar = () => {
     return (
       <div className="min-h-screen flex flex-col bg-[#F4F6F8]">
         <Navbar />
-        <main className="flex-grow flex items-center justify-center text-[#3A3A3A]">
-          <div className="flex flex-col items-center gap-3">
-            <Loader2 className="w-10 h-10 text-[#C45111] animate-spin" />
-            <p className="font-semibold">Cargando información del lugar...</p>
-          </div>
-        </main>
+        <ProfileSkeleton />
         <Footer />
       </div>
     );
@@ -114,10 +112,13 @@ const PerfilLugar = () => {
               </section>
             )}
 
-            {lugar.es_comercial && <section aria-labelledby="perfil-menu-title">
+            {lugar.es_comercial && <section className="perfil-menu" aria-labelledby="perfil-menu-title">
               <h2 id="perfil-menu-title" className="flex items-center gap-2 text-2xl font-bold text-[#3A3A3A] mb-4 border-b border-gray-200/60 pb-2"><UtensilsCrossed size={24} className="text-[#C45111]" aria-hidden="true" /> Menú</h2>
+              <p className="mb-4 text-sm text-[#526554]">Explora los platillos y bebidas disponibles por categoría.</p>
               {lugar.menus.length ? <ReadOnlyMenus menus={lugar.menus} grouped /> : <div className="rounded-2xl border border-[#d8e1d5] bg-white p-6 text-[#526554]">Este local aún no tiene un menú disponible.</div>}
             </section>}
+
+            <ProfileReviews key={id} id={id} />
           </div>
 
           {/* Columna Derecha (Tarjetas de Información) */}

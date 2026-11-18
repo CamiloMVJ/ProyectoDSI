@@ -29,7 +29,7 @@ function MenuPanel({ menu, categories, single, grouped }) {
     categories.get(String(item.id_categoria_menu))].join(' ')).includes(normalize(query.trim())))
   const pages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
   const currentPage = Math.min(page, pages)
-  const visible = grouped ? filtered : filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE)
+  const visible = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE)
 
   const heading = <>
       <span className="ge-read-menu-icon"><UtensilsCrossed size={19} aria-hidden="true" /></span>
@@ -39,10 +39,10 @@ function MenuPanel({ menu, categories, single, grouped }) {
     </>
   const body = <div className="ge-read-menu-body">
       {menu.descripcion && <p className="ge-read-menu-description">{menu.descripcion}</p>}
-      {!grouped && items.length > PAGE_SIZE && <label className="ge-read-menu-search"><Search size={17} aria-hidden="true" /><input type="search" value={query} onChange={event => { setQuery(event.target.value); setPage(1) }} placeholder="Buscar platillo o categoría" aria-label={`Buscar en ${menu.titulo_menu || 'menú'}`} /></label>}
-      {!grouped && availableCategories.length > 1 && <div className="ge-read-menu-categories" role="group" aria-label={`Filtrar categorías de ${menu.titulo_menu || 'menú'}`}><button type="button" aria-pressed={!category} onClick={() => { setCategory(''); setPage(1) }}>Todos</button>{availableCategories.map(id => <button type="button" key={id} aria-pressed={category === id} onClick={() => { setCategory(id); setPage(1) }}>{categories.get(id)}</button>)}</div>}
+      {items.length > PAGE_SIZE && <label className="ge-read-menu-search"><Search size={17} aria-hidden="true" /><input type="search" value={query} onChange={event => { setQuery(event.target.value); setPage(1) }} placeholder="Buscar platillo o categoría" aria-label={`Buscar en ${menu.titulo_menu || 'menú'}`} /></label>}
+      {availableCategories.length > 1 && <div className="ge-read-menu-categories" role="group" aria-label={`Filtrar categorías de ${menu.titulo_menu || 'menú'}`}><button type="button" aria-pressed={!category} onClick={() => { setCategory(''); setPage(1) }}>Todos</button>{availableCategories.map(id => <button type="button" key={id} aria-pressed={category === id} onClick={() => { setCategory(id); setPage(1) }}>{categories.get(id)}</button>)}</div>}
       {!filtered.length ? <p className="ge-empty-section">{items.length ? 'No hay ítems que coincidan con la búsqueda.' : 'Este menú no tiene platillos todavía.'}</p> : grouped ? <div className="ge-read-menu-groups">{[...new Set(visible.map(item => String(item.id_categoria_menu ?? '')))].map(id => <section key={id} className="ge-read-menu-group"><h4>{categories.get(id) || 'Otros'}</h4><ul className="ge-read-items">{visible.filter(item => String(item.id_categoria_menu ?? '') === id).map(item => <MenuItem key={item.id_item} item={item} categories={categories} />)}</ul></section>)}</div> : <ul className="ge-read-items">{visible.map((item, index) => <MenuItem key={item.id_item || `${currentPage}-${index}`} item={item} categories={categories} />)}</ul>}
-      {!grouped && pages > 1 && <nav className="ge-read-menu-pages" aria-label={`Páginas de ${menu.titulo_menu || 'menú'}`}><button type="button" onClick={() => setPage(currentPage - 1)} disabled={currentPage === 1} aria-label="Página anterior"><ChevronLeft size={18} /></button><span>{currentPage} de {pages} · {filtered.length} resultados</span><button type="button" onClick={() => setPage(currentPage + 1)} disabled={currentPage === pages} aria-label="Página siguiente"><ChevronRight size={18} /></button></nav>}
+      {pages > 1 && <nav className="ge-read-menu-pages" aria-label={`Páginas de ${menu.titulo_menu || 'menú'}`}><button type="button" onClick={() => setPage(currentPage - 1)} disabled={currentPage === 1} aria-label="Página anterior"><ChevronLeft size={18} /></button><span aria-live="polite">{currentPage} de {pages} · {filtered.length} resultados</span><button type="button" onClick={() => setPage(currentPage + 1)} disabled={currentPage === pages} aria-label="Página siguiente"><ChevronRight size={18} /></button></nav>}
     </div>
   return single
     ? <div className="ge-read-menu ge-read-menu-single"><div className="ge-read-menu-summary">{heading}</div>{body}</div>

@@ -605,7 +605,26 @@ input {
   }
 }
 
+.home-explore-navbar { view-transition-name: home-explore-navbar }
+.home-explore-content { view-transition-name: home-explore-content }
+
+::view-transition-old(root),
+::view-transition-old(home-explore-navbar) { animation: none; opacity: 0 }
+::view-transition-new(root),
+::view-transition-new(home-explore-navbar) { animation: none }
+::view-transition-old(home-explore-content) { animation: home-explore-exit 180ms ease-in both }
+::view-transition-new(home-explore-content) { animation: home-explore-enter 300ms cubic-bezier(.2, .7, .2, 1) both }
+
+@keyframes home-explore-exit {
+  to { opacity: 0; transform: translateY(-10px) }
+}
+@keyframes home-explore-enter {
+  from { opacity: 0; transform: translateY(14px) }
+}
+
 @media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(home-explore-content),
+  ::view-transition-new(home-explore-content) { animation: none }
 
   *,
   *::before,

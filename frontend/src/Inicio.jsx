@@ -97,7 +97,7 @@ export default function App() {
     const params = new URLSearchParams();
     if (query.trim()) params.set('q', query.trim());
     if (department) params.set('departamento', department);
-    navigate(`/buscar${params.size ? `?${params}` : ''}`);
+    navigate(`/buscar${params.size ? `?${params}` : ''}`, { viewTransition: true });
   };
 
   const handleCategorySelect = (categoryId) => {
@@ -110,11 +110,13 @@ export default function App() {
 
   return (
     <div id="inicio" className="w-full min-h-screen bg-[#f6f8f3] text-[#25382e] flex flex-col justify-between">
-      <div>
-        {/* 1. Barra de Navegación Fija (Glassmorphism) */}
-        <Navbar
-          onPublishClick={() => navigate('/registro-negocio')}
-        />
+      {/* 1. Barra de Navegación Fija (Glassmorphism) */}
+      <Navbar
+        onPublishClick={() => navigate('/registro-negocio')}
+      />
+
+      <div className="home-explore-content flex flex-1 flex-col justify-between">
+        <div>
 
         {/* Explorar primero, luego descubrir eventos y recomendaciones. */}
         <CategorySelector
@@ -156,10 +158,11 @@ export default function App() {
             ))}
           </div>
         </section>
-      </div>
+        </div>
 
-      {/* 5. Pie de Página (Footer) */}
-      <Footer />
+        {/* 5. Pie de Página (Footer) */}
+        <Footer />
+      </div>
     </div>
   );
 }

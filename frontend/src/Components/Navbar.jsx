@@ -21,8 +21,7 @@ export default function Navbar({
 
   return (
     <header
-      className="sticky top-0 z-50 w-full border-b
-        border-gray-200/60 bg-white/85 backdrop-blur-md"
+      className={`sticky top-0 z-50 w-full border-b border-gray-200/60 bg-white/85 backdrop-blur-md ${pathname === '/' || pathname === '/buscar' ? 'home-explore-navbar' : ''}`}
     >
       <nav
         aria-label="Navegación principal"
@@ -31,6 +30,7 @@ export default function Navbar({
       >
         <Link
           to="/"
+          viewTransition={pathname === '/buscar'}
           className="flex flex-col"
           aria-label="SINATUR, ir al inicio"
         >
@@ -48,13 +48,13 @@ export default function Navbar({
 
         <ul className="flex items-center gap-6">
           <li>
-            <Link to="/" className={linkClass}>
+            <Link to="/" viewTransition={pathname === '/buscar'} className={linkClass}>
               Inicio
             </Link>
           </li>
 
           <li>
-            <Link to="/buscar" className={linkClass}>
+            <Link to="/buscar" viewTransition={pathname === '/'} className={linkClass}>
               Explorar
             </Link>
           </li>

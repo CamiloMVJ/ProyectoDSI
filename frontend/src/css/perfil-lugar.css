@@ -1,0 +1,12 @@
+.perfil-menu .ge-read-menu { background: #fff; box-shadow: 0 4px 18px #263f320a }
+.perfil-menu .ge-read-menu-icon { color: #c45111; background: #fff0e6 }
+.perfil-menu .ge-read-items { grid-template-columns: 1fr }
+.perfil-menu .ge-read-item { background: #fbfcf9 }
+.perfil-menu .ge-read-menu-pages button { width: 42px; height: 42px }
+.perfil-skeleton-block { position: relative; overflow: hidden; background: #dfe7dd }
+.perfil-skeleton-block::after { content: ''; position: absolute; inset: 0; transform: translateX(-100%); background: linear-gradient(90deg, transparent, #ffffffa8, transparent); animation: perfil-skeleton-shimmer 1.7s ease-in-out infinite }
+@keyframes perfil-skeleton-shimmer { to { transform: translateX(100%) } }
+@media (prefers-reduced-motion: reduce) { .perfil-skeleton-block::after { animation: none } }
+@media (min-width: 750px) {
+  .perfil-menu .ge-read-items { grid-template-columns: repeat(2, minmax(0, 1fr)) }
+}

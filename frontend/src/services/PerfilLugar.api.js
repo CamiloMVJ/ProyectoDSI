@@ -14,6 +14,11 @@ const cordobas = (amount) => `C$ ${Number(amount).toLocaleString('es-NI', {
   maximumFractionDigits: 2,
 })}`
 
+export function getResenasLugar(id, signal) {
+  if (!/^[1-9]\d*$/.test(String(id))) throw new Error('El identificador del lugar no es válido.')
+  return request(`/resenas/local/${id}`, { signal })
+}
+
 export async function getPerfilLugar(id, signal) {
   if (!/^[1-9]\d*$/.test(String(id))) {
     throw new Error('El identificador del lugar no es válido.')

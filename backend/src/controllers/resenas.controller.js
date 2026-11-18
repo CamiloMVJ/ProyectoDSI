@@ -11,6 +11,11 @@ export const obtener = async (req, res, next) => {
   catch (error) { next(error); }
 };
 
+export const listarPublicasDelLocal = async (req, res, next) => {
+  try { res.status(200).json({ success: true, data: await service.findPublicByLocal(req.params.idLocal) }); }
+  catch (error) { next(error); }
+};
+
 export const crear = async (req, res, next) => {
   try { res.status(201).json({ success: true, data: await service.create(req.body) }); }
   catch (error) { next(error); }

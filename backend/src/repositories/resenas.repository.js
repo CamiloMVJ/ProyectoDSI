@@ -13,6 +13,19 @@ export async function findOne(id, client = pool) {
   return rows[0] || null;
 }
 
+export async function findPublicByLocal(idLocal, client = pool) {
+  const { rows } = await client.query(
+    `SELECT r.id_resena, r.calificacion, r.comentario, r.fecha_publicacion,
+       r.respuesta_propietario, u.nombre_completo AS autor
+     FROM public.resenas r
+     JOIN public.usuarios u ON u.id_usuario = r.id_usuario
+     WHERE r.id_local = $1 AND r.estado_moderacion = 'Aprobada'
+     ORDER BY r.fecha_publicacion DESC, r.id_resena DESC`,
+    [idLocal]
+  )
+  return rows
+}
+
 export async function create(data, client = pool) {
   const {
     id_usuario,

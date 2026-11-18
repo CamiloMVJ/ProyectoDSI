@@ -1,4 +1,7 @@
+import { Link, useLocation } from 'react-router-dom';
+
 const Footer = () => {
+  const { pathname } = useLocation();
   return (
     <footer className="mt-24 w-full bg-[#2F362C] text-white">
       <div className="max-w-7xl mx-auto px-6 sm:px-10 py-12 flex flex-col sm:flex-row items-center justify-between gap-6">
@@ -12,12 +15,12 @@ const Footer = () => {
         </div>
 
         <div className="flex items-center gap-6 text-xs text-white/80">
-          <a href="/" className="hover:text-[#C45111] transition-colors">
+          <Link to="/" viewTransition={pathname === '/buscar'} className="hover:text-[#C45111] transition-colors">
             Inicio
-          </a>
-          <a href="/buscar" className="hover:text-[#C45111] transition-colors">
+          </Link>
+          <Link to="/buscar" viewTransition={pathname === '/'} className="hover:text-[#C45111] transition-colors">
             Explorar
-          </a>
+          </Link>
         </div>
 
         <p className="text-xs text-white/60">

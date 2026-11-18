@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
-import { ArrowLeft, ArrowRight, Clock3, Compass, ExternalLink, Filter, LoaderCircle, MapPin, Search, SlidersHorizontal, Store } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Clock3, Compass, ExternalLink, Filter, MapPin, Search, SlidersHorizontal, Store } from 'lucide-react'
 import Navbar from '../Components/Navbar.jsx'
 import Footer from '../Components/Footer.jsx'
 import DepartmentDropdown from '../Components/DepartmentDropdown.jsx'
@@ -139,6 +139,39 @@ function PlaceCard({ place, saved, pending, onToggle }) {
   )
 }
 
+function SearchResultsSkeleton() {
+  const block = 'animate-pulse bg-[#dfe7dd] motion-reduce:animate-none'
+
+  return (
+    <div role="status" aria-label="Buscando lugares y locales">
+      <span className="sr-only">Buscando lugares y locales…</span>
+      <div aria-hidden="true" className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+        {Array.from({ length: 8 }, (_, index) => (
+          <div key={index} className="flex h-full flex-col overflow-hidden rounded-2xl border border-[#d8e1d5] bg-[#fffefa] shadow-sm">
+            <div className={`${block} h-48 shrink-0`} />
+            <div className="flex flex-1 flex-col p-5">
+              <div className={`${block} h-6 w-32 rounded-full`} />
+              <div className={`${block} mt-3 h-6 w-4/5 rounded-full`} />
+              <div className={`${block} mt-2 h-6 w-2/3 rounded-full`} />
+              <div className={`${block} mt-4 h-4 w-3/5 rounded-full`} />
+              <div className="mt-5 space-y-2">
+                <div className={`${block} h-4 w-full rounded-full`} />
+                <div className={`${block} h-4 w-11/12 rounded-full`} />
+                <div className={`${block} h-4 w-3/4 rounded-full`} />
+              </div>
+              <div className="mt-5 border-t border-[#d8e1d5] pt-4">
+                <div className={`${block} h-4 w-4/5 rounded-full`} />
+                <div className={`${block} mt-2 h-4 w-1/2 rounded-full`} />
+              </div>
+              <div className={`${block} mt-8 h-4 w-24 rounded-full`} />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 export default function SearchResults() {
   const navigate = useNavigate()
   const { sesion } = useAuth()
@@ -220,8 +253,9 @@ export default function SearchResults() {
   return (
     <div id="inicio" className="flex min-h-screen flex-col bg-[#f6f8f3] text-[#25382e]">
       <Navbar />
+      <div className="home-explore-content flex flex-1 flex-col">
       <main className="w-full flex-1 px-6 pt-10 sm:px-10 sm:pt-14 lg:px-12 2xl:px-16">
-        <Link to="/" className="inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-[#344e3b] hover:text-[#c45111]"><ArrowLeft size={17} aria-hidden="true" /> Volver al inicio</Link>
+        <Link to="/" viewTransition className="inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-[#344e3b] hover:text-[#c45111]"><ArrowLeft size={17} aria-hidden="true" /> Volver al inicio</Link>
         <header className="mt-5 border-b border-[#d8e1d5] pb-8">
           <p className="text-xs font-bold uppercase tracking-[.16em] text-[#c45111]">Explora Nicaragua</p>
           <h1 className="mt-3 text-3xl font-bold tracking-tight text-[#263f32] sm:text-4xl">Encuentra tu próximo destino</h1>
@@ -240,7 +274,7 @@ export default function SearchResults() {
               {!loading && !results.error && <span role="status" className="rounded-full bg-[#eaf0e7] px-3 py-2 text-xs font-bold text-[#344e3b]">{results.total} {results.total === 1 ? 'resultado' : 'resultados'}</span>}
             </div>
 
-            {loading && <p role="status" className="flex items-center gap-3 rounded-2xl border border-[#d8e1d5] bg-white p-8 text-sm text-[#526554]"><LoaderCircle size={20} aria-hidden="true" className="animate-spin" /> Buscando lugares y locales…</p>}
+            {loading && <SearchResultsSkeleton />}
             {!loading && results.error && <div role="alert" className="rounded-2xl border border-[#e9c7b6] bg-[#fff0e9] p-8"><p className="text-sm text-[#9d3e0b]">{results.error}</p><button type="button" onClick={() => setRetry(value => value + 1)} className="mt-4 min-h-11 rounded-full bg-[#c45111] px-5 text-sm font-bold text-white hover:bg-[#9d3e0b]">Reintentar</button></div>}
             {!loading && !results.error && results.total === 0 && <div className="rounded-2xl border border-[#d8e1d5] bg-white px-6 py-12 text-center"><Search size={32} aria-hidden="true" className="mx-auto text-[#79927c]" /><h3 className="mt-4 text-lg font-bold">{onlyCategoryFilter ? 'No hay lugares en esta categoría' : 'No encontramos lugares con esos filtros'}</h3><p className="mt-2 text-sm text-[#526554]">{onlyCategoryFilter ? 'No hay límite de presupuesto aplicado. Prueba con otra categoría o consulta todos los lugares.' : 'Prueba con otro término o amplía tu búsqueda.'}</p>{hasFilters && <button type="button" onClick={() => setSearchParams({})} className="mt-5 inline-flex min-h-11 items-center gap-2 rounded-full bg-[#c45111] px-5 text-sm font-bold text-white hover:bg-[#9d3e0b]">Ver todos los lugares <ArrowRight size={16} aria-hidden="true" /></button>}</div>}
             {!loading && !results.error && results.total > 0 && (
@@ -266,6 +300,7 @@ export default function SearchResults() {
         </div>
       </main>
       <Footer />
+      </div>
     </div>
   )
 }
